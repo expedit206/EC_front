@@ -114,10 +114,12 @@ onMounted(async () => {
     try {
         await authStore.fetchUser()
         user.value = authStore.user
+        console.log(user.value);
+        
         if (user.value.commercant) {
-            const response = await axios.get('http://localhost:8000/api/v1/boutiques')
+            const response = await axios.get('api/v1/boutiques')
             boutiques.value = response.data.boutiques.filter(b => b.commercant_id === user.value.commercant.id)
-        }
+        } 
     } catch (error) {
         toast.error('Erreur lors du chargement du profil')
         authStore.logout()

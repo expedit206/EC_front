@@ -92,9 +92,9 @@ const data = form.value;
 
 const register = async () => {
     try {
-        await authStore.register(form.value)
+        await authStore.register(data)
         toast.success('Inscription réussie !')
-        router.push({ name: 'home' })
+        // router.push({ name: 'prodile' })
     } catch (error) {
         toast.error(error.message || "Erreur lors de l'inscription")
     }

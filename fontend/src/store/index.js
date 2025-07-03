@@ -1,22 +1,29 @@
-// src/store/index.js
 import { defineStore } from "pinia";
-import axios from "axios";
+import apiClient from "../api";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
     user: null,
-    token: localStorage.getItem("token") || null,
+    isAuthenticated: false,
   }),
   actions: {
     async login(credentials) {
       try {
-        const response = await axios.post("/login", credentials);
-        this.token = response.data.token;
+        await apiClient.get("/sanctum/csrf-cookie");
+        await apiClient.post("/login", credentials); // Supprimer api/v1 car baseURL est défini
+        const response = await apiClient.get("/profile");
         this.user = response.data.user;
-        localStorage.setItem("token", this.token);
-        axios.defaults.headers.common["Authorization"] = `Bearer ${this.token}`;
+        this.isAuthenticated = true;
+        console.log("Connexion réussie:", this.user);
         return response.data;
       } catch (error) {
+        console.error(
+          "Erreur lors de la connexion:",
+          error.response?.data,
+          error.response?.status
+        );
+        this.user = null;
+        this.isAuthenticated = false;
         throw (
           error.response?.data || { message: "Erreur lors de la connexion" }
         );
@@ -24,41 +31,58 @@ export const useAuthStore = defineStore("auth", {
     },
     async register(data) {
       try {
-        const response = await axios.post("/register", data);
-        this.token = response.data.token;
-        this.user = response.data.user;
-        localStorage.setItem("token", this.token);
-        axios.defaults.headers.common["Authorization"] = `Bearer ${this.token}`;
-        return response.data;
+        await apiClient.get("/sanctum/csrf-cookie");
+        await apiClient.post("api/v1/register", data);
+        
+        // const response = await apiClient.get("api/v1/user");
+        console.log('fghj');
+        // this.user = response.data.user;
+        this.isAuthenticated = true;
+        // console.log("Inscription réussie:", this.user);
+        // return response.data;
       } catch (error) {
+        console.error(
+          "Erreur lors de l'inscription:",
+          error.response?.data,
+          error.response?.status
+        );
+        this.user = null;
+        this.isAuthenticated = false;
         throw (
           error.response?.data || { message: "Erreur lors de l'inscription" }
         );
       }
     },
-    // logout() {
-    //   this.user = null;
-    //   this.token = null;
-    //   localStorage.removeItem("token");
-    //   delete axios.defaults.headers.common["Authorization"];
-    // },
-    async fetchUser() {
+    async logout() {
       try {
-        if (!this.token) {
-          console.warn("Aucun token disponible pour fetchUser");
-          return;
-        }
-        const response = await axios.get("/user");
-        this.user = response.data.user;
+        await apiClient.get("/sanctum/csrf-cookie");
+        await apiClient.post("/logout");
+        this.user = null;
+        this.isAuthenticated = false;
+        console.log("Déconnexion réussie");
       } catch (error) {
-        console.error("Erreur lors de la récupération de l'utilisateur:", {
-          status: error.response?.status,
-          data: error.response?.data,
-          message: error.message,
-        });
-        if (error.response?.status === 401) {
-          // this.logout(); // Déconnexion uniquement si token invalide (401 Unauthorized)
-        }
+        console.error(
+          "Erreur lors de la déconnexion:",
+          error.response?.data,
+          error.response?.status
+        );
+      }
+    },
+    async checkAuth() {
+      
+      try {
+        const response = await apiClient.get("api/v1/user");
+        this.user = response.data.user;
+        this.isAuthenticated = true;
+        console.log("Session restaurée:", this.user);
+      } catch (error) {
+        console.error(
+          "Erreur lors de la vérification de la session:",
+          error.response?.data,
+          error.response?.status
+        );
+        this.user = null;
+        this.isAuthenticated = false;
       }
     },
   },

@@ -17,13 +17,14 @@ import axios from 'axios'
 import { useToast } from 'vue-toastification'
 import ProductCard from '../components/ProductCard.vue'
 import AppHeader from '../components/AppHeader.vue'
+import apiClient from "../api";
 
 const produits = ref([])
 const toast = useToast()
 
 onMounted(async () => {
     try {
-        const response = await axios.get('http://localhost:8000/api/v1/produits')
+        const response = await apiClient.get('api/v1/produits')
         produits.value = response.data.produits
     } catch (error) {
         toast.error('Erreur lors du chargement des produits')

@@ -8,7 +8,7 @@ import Parrainage from "../views/Parrainage.vue";
 import Commande from "../views/Commande.vue";
 import Litige from "../views/Litige.vue";
 import Abonnement from "../views/Abonnement.vue";
-
+import { useAuthStore } from "../store/index";
 const routes = [
     {
         path: "/", component: Home, name: "home",
@@ -21,7 +21,7 @@ const routes = [
     path: "/profil",
     component: Profil,
     name: "profil",
-    meta: { requiresAuth: true },
+    // meta: { requiresAuth: true },
   },
   { path: "/boutique/:id", component: Boutique, name: "boutique" },
   {
@@ -55,10 +55,28 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, from, next) => {
-  const isAuthenticated = !!localStorage.getItem("token");
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    next({ name: "login" });
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore();
+  console.log("isAuthenticated:", authStore.isAuthenticated);
+
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    try {
+      await authStore.checkAuth();
+      if (authStore.isAuthenticated) {
+        next();
+      } else {
+        next({ name: "login" });
+      }
+    } catch (error) {
+      console.error(
+        "Erreur d'authentification:",
+        error.response?.data,
+        error.response?.status
+      );
+      authStore.user = null;
+      authStore.isAuthenticated = false;
+      next({ name: "login" });
+    }
   } else {
     next();
   }
