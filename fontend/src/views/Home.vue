@@ -24,7 +24,7 @@ const toast = useToast()
 
 onMounted(async () => {
     try {
-        const response = await apiClient.get('api/v1/produits')
+        const response = await apiClient.get('produits')
         produits.value = response.data.produits
     } catch (error) {
         toast.error('Erreur lors du chargement des produits')

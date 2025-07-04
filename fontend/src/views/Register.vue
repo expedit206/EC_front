@@ -1,7 +1,7 @@
 <!-- src/views/Register.vue -->
 <template>
     <div class="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-8"
-        :style="{ background: 'url(/src/assets/images/bginsc.jpg) center/cover' }">
+         :style="{ background: 'url(/src/assets/images/bginsc.jpg) center/cover' }">
         <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl p-6 sm:p-10">
             <h1 class="text-3xl sm:text-4xl font-bold text-center text-[var(--espace-vert)] mb-6">
                 <i class="fas fa-user-plus mr-2 text-[var(--espace-or)]"></i> Créez votre compte
@@ -16,10 +16,9 @@
                 <FormField label="Email (optionnel)" icon="fa-envelope" v-model="form.email" type="email" />
                 <FormField label="Ville" icon="fa-city" v-model="form.ville" type="text" required />
                 <FormField label="Mot de passe" icon="fa-lock" v-model="form.mot_de_passe" type="password" required />
-                <FormField label="Code de parrainage (optionnel)" icon="fa-users" v-model="form.parrain_code"
-                    type="text" />
+                <FormField label="Code de parrainage (optionnel)" icon="fa-users" v-model="form.parrain_code" type="text" />
                 <button type="submit"
-                    class="w-full bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold p-3 rounded-xl hover:bg-[var(--espace-vert)] hover:text-white transition flex items-center justify-center shadow-md">
+                        class="w-full bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold p-3 rounded-xl hover:bg-[var(--espace-vert)] hover:text-white transition flex items-center justify-center shadow-md">
                     <i class="fas fa-user-plus mr-2"></i> S'inscrire
                 </button>
             </form>
@@ -33,8 +32,7 @@
                 En vous inscrivant, vous acceptez nos
                 <a href="/conditions" class="hover:underline text-[var(--espace-vert)]">conditions d'utilisation</a>
                 et notre
-                <a href="/confidentialite" class="hover:underline text-[var(--espace-vert)]">politique de
-                    confidentialité</a>.
+                <a href="/confidentialite" class="hover:underline text-[var(--espace-vert)]">politique de confidentialité</a>.
             </p>
         </div>
     </div>
@@ -62,18 +60,17 @@ const authStore = useAuthStore();
 
 const register = async () => {
     try {
-        
+        // console.log('Envoi des données d\'inscription:', form.value);
         await authStore.register(form.value);
         toast.success('Inscription réussie !');
-        router.push({ name: 'profil' }); // Corrigé la faute de frappe 'prodile'
+        router.push({ name: 'profil' });
     } catch (error) {
-     
-        toast.error(error.message || 'Erreur lors de l\'inscription');
         console.error('Erreur lors de l\'inscription dans Register.vue:', {
             message: error.message,
             status: error.status,
             details: error.details,
         });
+        toast.error(error.message || 'Erreur lors de l\'inscription. Veuillez vérifier vos informations.');
     }
 };
 </script>

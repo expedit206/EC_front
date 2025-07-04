@@ -1,14 +1,21 @@
+// src/api.js
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:8000/", // Backend URL
-  withCredentials: true, // Permet l'envoi des cookies
-  headers: {
-    Accept: "application/json",
-    "Content-Type": "application/json",
-  },
-  xsrfCookieName: "XSRF-TOKEN", // Nom du cookie CSRF
-  xsrfHeaderName: "X-XSRF-TOKEN", // En-tête CSRF
+    baseURL: 'http://localhost:8000/api/v1',
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+    },
 });
 
+// Intercepteur pour ajouter le token JWT
+apiClient.interceptors.request.use((config) => {
+    const token = localStorage.getItem('jwt_token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+        console.log('Ajout de Authorization:', config.headers.Authorization);
+    }
+    return config;
+});
 export default apiClient;

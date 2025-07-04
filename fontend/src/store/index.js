@@ -6,25 +6,30 @@ export const useAuthStore = defineStore("auth", {
   state: () => ({
     user: null,
     isAuthenticated: false,
+    token: localStorage.getItem("jwt_token") || null,
   }),
   actions: {
     async login(credentials) {
       try {
-        await apiClient.get("/sanctum/csrf-cookie");
-        await apiClient.post("api/v1/login", credentials);
-        const response = await apiClient.get("api/v1/user");
+        console.log("Connexion avec:", credentials);
+        const response = await apiClient.post("/login", credentials);
+        console.log("Réponse de /login:", response.data);
         this.user = response.data.user;
+        this.token = response.data.token;
         this.isAuthenticated = true;
+        localStorage.setItem("jwt_token", this.token);
         console.log("Connexion réussie:", this.user);
         return response.data;
       } catch (error) {
-        console.error(
-          "Erreur lors de la connexion:",
-          error.response?.data,
-          error.response?.status
-        );
+        console.error("Erreur lors de la connexion:", {
+          message: error.response?.data?.message,
+          status: error.response?.status,
+          details: error.response?.data,
+        });
         this.user = null;
         this.isAuthenticated = false;
+        this.token = null;
+        localStorage.removeItem("jwt_token");
         throw (
           error.response?.data || { message: "Erreur lors de la connexion" }
         );
@@ -32,28 +37,27 @@ export const useAuthStore = defineStore("auth", {
     },
     async register(data) {
       try {
-        console.log("Récupération du cookie CSRF pour register...");
-        await apiClient.get("/sanctum/csrf-cookie");
-      //  await apiClient.get("/sanctum/csrf-cookie").then((response) => {
-      //  });
-        // const a = await apiClient.get("api/v1/csrf-token", data);
-        // console.log(a);
-        const an = await apiClient.post("api/v1/register", data);
-        
-        console.log("Cookie CSRF récupéré pour register.");
-        const response = await apiClient.get("api/v1/user");
+        console.log("Inscription avec:", data);
+        const response = await apiClient.post("/register", data);
+        console.log("Réponse de /register:", response.data);
         this.user = response.data.user;
+        console.log(user);
+        
+        this.token = response.data.token;
         this.isAuthenticated = true;
+        localStorage.setItem("jwt_token", this.token);
         console.log("Inscription réussie:", this.user);
         return response.data;
       } catch (error) {
-        console.error(
-          "Erreur lors de l'inscription:",
-          error.response?.data,
-          error.response?.status
-        );
+        console.error("Erreur lors de l'inscription:", {
+          message: error.response?.data?.message,
+          status: error.response?.status,
+          details: error.response?.data,
+        });
         this.user = null;
         this.isAuthenticated = false;
+        this.token = null;
+        localStorage.removeItem("jwt_token");
         throw (
           error.response?.data || { message: "Erreur lors de l'inscription" }
         );
@@ -61,34 +65,45 @@ export const useAuthStore = defineStore("auth", {
     },
     async logout() {
       try {
-        await apiClient.get("/sanctum/csrf-cookie");
+        console.log("Déconnexion...");
         await apiClient.post("/logout");
         this.user = null;
         this.isAuthenticated = false;
+        this.token = null;
+        localStorage.removeItem("jwt_token");
         console.log("Déconnexion réussie");
       } catch (error) {
-        console.error(
-          "Erreur lors de la déconnexion:",
-          error.response?.data,
-          error.response?.status
-        );
+        console.error("Erreur lors de la déconnexion:", {
+          message: error.response?.data?.message,
+          status: error.response?.status,
+          details: error.response?.data,
+        });
       }
     },
-    // async checkAuth() {
-    //   try {
-    //     const response = await apiClient.get("api/v1/user");
-    //     this.user = response.data.user;
-    //     this.isAuthenticated = true;
-    //     console.log("Session restaurée:", this.user);
-    //   } catch (error) {
-    //     console.error(
-    //       "Erreur lors de la vérification de la session:",
-    //       error.response?.data,
-    //       error.response?.status
-    //     );
-    //     this.user = null;
-    //     this.isAuthenticated = false;
-    //   }
-    // },
+    async checkAuth() {
+      try {
+        if (!this.token) {
+          console.log("Aucun token trouvé, session non restaurée");
+          this.user = null;
+          this.isAuthenticated = false;
+          return;
+        }
+        console.log("Vérification de la session avec /profile...");
+        const response = await apiClient.get("/profile");
+        this.user = response.data.user;
+        this.isAuthenticated = true;
+        console.log("Session restaurée:", this.user);
+      } catch (error) {
+        console.error("Erreur lors de la vérification de la session:", {
+          message: error.response?.data?.message,
+          status: error.response?.status,
+          details: error.response?.data,
+        });
+        this.user = null;
+        this.isAuthenticated = false;
+        this.token = null;
+        localStorage.removeItem("jwt_token");
+      }
+    },
   },
 });

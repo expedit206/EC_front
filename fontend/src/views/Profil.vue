@@ -101,6 +101,7 @@ import { useAuthStore } from '../store'
 import axios from 'axios'
 import AppHeader from '../components/AppHeader.vue'
 import BoutiqueCard from '../components/BoutiqueCard.vue'
+import apiClient from '../api'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -112,18 +113,15 @@ const boutiqueForm = ref({ nom: '', ville: '', description: '' })
 
 onMounted(async () => {
     try {
-        await authStore.fetchUser()
-        user.value = authStore.user
-        console.log(user.value);
+        // await authStore.fetchUser()
+        // user.value =await apiClient.get('/user');
+        // console.log(user.value);
         
-        if (user.value.commercant) {
-            const response = await axios.get('api/v1/boutiques')
-            boutiques.value = response.data.boutiques.filter(b => b.commercant_id === user.value.commercant.id)
-        } 
+     
     } catch (error) {
         toast.error('Erreur lors du chargement du profil')
-        authStore.logout()
-        router.push({ name: 'login' })
+        // authStore.logout()
+        // router.push({ name: 'login' })
     }
 })
 
