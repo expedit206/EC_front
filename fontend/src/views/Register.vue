@@ -1,61 +1,34 @@
 <!-- src/views/Register.vue -->
 <template>
-    <div class="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-8" 
-    style="
-    background: url('/src/assets/images/bginsc.jpg') center/cover ;
-    ">
+    <div class="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-8"
+        :style="{ background: 'url(/src/assets/images/bginsc.jpg) center/cover' }">
         <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl p-6 sm:p-10">
-            <!-- <AppHeader /> -->
-
-            <!-- Titre principal -->
             <h1 class="text-3xl sm:text-4xl font-bold text-center text-[var(--espace-vert)] mb-6">
                 <i class="fas fa-user-plus mr-2 text-[var(--espace-or)]"></i> Créez votre compte
             </h1>
-
-            <!-- Message de confiance -->
             <p class="text-center text-sm sm:text-base text-gray-600 mb-6">
                 Rejoignez <strong>Espace Cameroun</strong> et profitez d’une expérience d’achat unique. Vos informations
                 resteront confidentielles.
             </p>
-
-            <!-- Formulaire -->
             <form @submit.prevent="register" class="space-y-5">
-
-                <!-- Champ Nom -->
                 <FormField label="Nom" icon="fa-user" v-model="form.nom" type="text" required />
-
-                <!-- Champ Téléphone -->
                 <FormField label="Téléphone" icon="fa-phone" v-model="form.telephone" type="tel" required />
-
-                <!-- Champ Email -->
                 <FormField label="Email (optionnel)" icon="fa-envelope" v-model="form.email" type="email" />
-
-                <!-- Champ Ville -->
                 <FormField label="Ville" icon="fa-city" v-model="form.ville" type="text" required />
-
-                <!-- Champ Mot de passe -->
                 <FormField label="Mot de passe" icon="fa-lock" v-model="form.mot_de_passe" type="password" required />
-
-                <!-- Champ Code Parrainage -->
                 <FormField label="Code de parrainage (optionnel)" icon="fa-users" v-model="form.parrain_code"
-                    type="text" readonly=true  />
-
-                <!-- Bouton -->
+                    type="text" />
                 <button type="submit"
                     class="w-full bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold p-3 rounded-xl hover:bg-[var(--espace-vert)] hover:text-white transition flex items-center justify-center shadow-md">
                     <i class="fas fa-user-plus mr-2"></i> S'inscrire
                 </button>
             </form>
-
-            <!-- Lien connexion -->
             <p class="text-center text-sm text-gray-600 mt-6">
                 Vous avez déjà un compte ?
                 <router-link to="/login" class="text-[var(--espace-vert)] font-medium hover:underline">
                     Connectez-vous ici
                 </router-link>
             </p>
-
-            <!-- Mentions légales -->
             <p class="text-center text-xs text-gray-400 mt-4">
                 En vous inscrivant, vous acceptez nos
                 <a href="/conditions" class="hover:underline text-[var(--espace-vert)]">conditions d'utilisation</a>
@@ -68,12 +41,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useToast } from 'vue-toastification'
-import { useAuthStore } from '../store'
-import AppHeader from '../components/AppHeader.vue'
-import FormField from '../components/FormField.vue' // Composant réutilisable pour les champs
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useToast } from 'vue-toastification';
+import { useAuthStore } from '../store';
+import FormField from '../components/FormField.vue';
 
 const form = ref({
     nom: '',
@@ -82,22 +54,26 @@ const form = ref({
     ville: '',
     mot_de_passe: '',
     parrain_code: '',
-})
+});
 
-const router = useRouter()
-const toast = useToast()
-const authStore = useAuthStore()
-
-const data = form.value;
+const router = useRouter();
+const toast = useToast();
+const authStore = useAuthStore();
 
 const register = async () => {
     try {
-        await authStore.register(data)
-        toast.success('Inscription réussie !')
-        // router.push({ name: 'prodile' })
+        
+        await authStore.register(form.value);
+        toast.success('Inscription réussie !');
+        router.push({ name: 'profil' }); // Corrigé la faute de frappe 'prodile'
     } catch (error) {
-        toast.error(error.message || "Erreur lors de l'inscription")
+     
+        toast.error(error.message || 'Erreur lors de l\'inscription');
+        console.error('Erreur lors de l\'inscription dans Register.vue:', {
+            message: error.message,
+            status: error.status,
+            details: error.details,
+        });
     }
-}
+};
 </script>
-  

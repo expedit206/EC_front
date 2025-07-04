@@ -16,8 +16,10 @@ app.use(createPinia());
 app.use(router);
 app.use(Toast, { timeout: 3000 });
 
-const authStore = useAuthStore();
-authStore.checkAuth().then(() => {
-  app.mount("#app");
-});
-// axios.defaults.withCredentials = true;
+// const authStore = useAuthStore();
+// authStore.checkAuth().then(() => {
+// });
+app.mount("#app");
+
+
+// faults.withCredentials = true;

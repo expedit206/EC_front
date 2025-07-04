@@ -1,3 +1,4 @@
+// src/store/index.js
 import { defineStore } from "pinia";
 import apiClient from "../api";
 
@@ -10,8 +11,8 @@ export const useAuthStore = defineStore("auth", {
     async login(credentials) {
       try {
         await apiClient.get("/sanctum/csrf-cookie");
-        await apiClient.post("/login", credentials); // Supprimer api/v1 car baseURL est défini
-        const response = await apiClient.get("/profile");
+        await apiClient.post("api/v1/login", credentials);
+        const response = await apiClient.get("api/v1/user");
         this.user = response.data.user;
         this.isAuthenticated = true;
         console.log("Connexion réussie:", this.user);
@@ -31,15 +32,20 @@ export const useAuthStore = defineStore("auth", {
     },
     async register(data) {
       try {
+        console.log("Récupération du cookie CSRF pour register...");
         await apiClient.get("/sanctum/csrf-cookie");
-        await apiClient.post("api/v1/register", data);
+      //  await apiClient.get("/sanctum/csrf-cookie").then((response) => {
+      //  });
+        // const a = await apiClient.get("api/v1/csrf-token", data);
+        // console.log(a);
+        const an = await apiClient.post("api/v1/register", data);
         
-        // const response = await apiClient.get("api/v1/user");
-        console.log('fghj');
-        // this.user = response.data.user;
+        console.log("Cookie CSRF récupéré pour register.");
+        const response = await apiClient.get("api/v1/user");
+        this.user = response.data.user;
         this.isAuthenticated = true;
-        // console.log("Inscription réussie:", this.user);
-        // return response.data;
+        console.log("Inscription réussie:", this.user);
+        return response.data;
       } catch (error) {
         console.error(
           "Erreur lors de l'inscription:",
@@ -68,22 +74,21 @@ export const useAuthStore = defineStore("auth", {
         );
       }
     },
-    async checkAuth() {
-      
-      try {
-        const response = await apiClient.get("api/v1/user");
-        this.user = response.data.user;
-        this.isAuthenticated = true;
-        console.log("Session restaurée:", this.user);
-      } catch (error) {
-        console.error(
-          "Erreur lors de la vérification de la session:",
-          error.response?.data,
-          error.response?.status
-        );
-        this.user = null;
-        this.isAuthenticated = false;
-      }
-    },
+    // async checkAuth() {
+    //   try {
+    //     const response = await apiClient.get("api/v1/user");
+    //     this.user = response.data.user;
+    //     this.isAuthenticated = true;
+    //     console.log("Session restaurée:", this.user);
+    //   } catch (error) {
+    //     console.error(
+    //       "Erreur lors de la vérification de la session:",
+    //       error.response?.data,
+    //       error.response?.status
+    //     );
+    //     this.user = null;
+    //     this.isAuthenticated = false;
+    //   }
+    // },
   },
 });
