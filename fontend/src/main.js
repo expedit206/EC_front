@@ -8,7 +8,7 @@ import "vue-toastification/dist/index.css";
 import '@fortawesome/fontawesome-free/css/all.min.css' // Import Font Awesome
 import axios from "axios";
 import { useAuthStore } from "./store/index";
-
+// import cors from "cors";
 
 
 const app = createApp(App);
@@ -20,9 +20,16 @@ app.use(Toast, { timeout: 3000 });
 // authStore.checkAuth().then(() => {
 // });
 // app.mount("#app");
+// const corsOptions = {
+// //   credentials: true, // Autoriser les cookies
+// //   maxAge: 1800, // Durée de validité de la réponse CORS
+// //   allowedHeaders: ["Content-Type"], // En-têtes autorisés
+// };
 
-// const authStore = useAuthStore();
-// authStore.checkAuth().then(() => {
-// });
-app.mount("#app");
+// app.use(cors());
+  
+const authStore = useAuthStore();
+authStore.checkAuth().then(() => {
+    app.mount("#app");
+});
 // faults.withCredentials = true;

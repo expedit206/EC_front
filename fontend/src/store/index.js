@@ -1,7 +1,7 @@
 // src/store/index.js
 import { defineStore } from "pinia";
 import apiClient from "../api";
-
+import axios from "axios";
 export const useAuthStore = defineStore("auth", {
   state: () => ({
     user: null,
@@ -38,11 +38,12 @@ export const useAuthStore = defineStore("auth", {
     async register(data) {
       try {
         console.log("Inscription avec:", data);
-        const response = await apiClient.post("/register", data);
+        const response = await axios.post(
+          "http://localhost:8000/api/v1/register",
+          data
+        );
         console.log("Réponse de /register:", response.data);
         this.user = response.data.user;
-        console.log(user);
-        
         this.token = response.data.token;
         this.isAuthenticated = true;
         localStorage.setItem("jwt_token", this.token);
@@ -72,6 +73,9 @@ export const useAuthStore = defineStore("auth", {
         this.token = null;
         localStorage.removeItem("jwt_token");
         console.log("Déconnexion réussie");
+
+     router.push({ name: "login" });
+
       } catch (error) {
         console.error("Erreur lors de la déconnexion:", {
           message: error.response?.data?.message,
@@ -89,7 +93,7 @@ export const useAuthStore = defineStore("auth", {
           return;
         }
         console.log("Vérification de la session avec /profile...");
-        const response = await apiClient.get("/profile");
+        const response = await apiClient.get("/user");
         this.user = response.data.user;
         this.isAuthenticated = true;
         console.log("Session restaurée:", this.user);
@@ -105,5 +109,37 @@ export const useAuthStore = defineStore("auth", {
         localStorage.removeItem("jwt_token");
       }
     },
+  },
+  async fetchUser() {
+    try {
+      if (!this.token || this.token === "undefined" || this.token === "") {
+        throw new Error("Aucun token valide pour récupérer l'utilisateur");
+      }
+      console.log(
+        "Récupération des données utilisateur avec /profile, token:",
+        this.token
+      );
+      const response = await apiClient.get("/user");
+      console.log("Réponse de /profile:", response.data);
+      if (!response.data.user) {
+        throw new Error("Réponse invalide du serveur: user manquant");
+      }
+      this.user = response.data.user;
+      this.isAuthenticated = true;
+      console.log("Utilisateur récupéré:", this.user);
+      return this.user;
+    } catch (error) {
+      console.error("Erreur lors de la récupération de l'utilisateur:", {
+        message: error.response?.data?.message || error.message,
+        status: error.response?.status,
+        details: error.response?.data,
+      });
+      this.resetAuthState();
+      throw (
+        error.response?.data || {
+          message: "Erreur lors de la récupération de l'utilisateur",
+        }
+      );
+    }
   },
 });
