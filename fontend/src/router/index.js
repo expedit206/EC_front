@@ -1,3 +1,4 @@
+// src/router/index.js
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "../views/Home.vue";
 import Login from "../views/Login.vue";
@@ -9,20 +10,17 @@ import Commande from "../views/Commande.vue";
 import Litige from "../views/Litige.vue";
 import Abonnement from "../views/Abonnement.vue";
 import { useAuthStore } from "../store/index";
+
 const routes = [
-    {
-        path: "/", component: Home, name: "home",
-    // meta: { requiresAuth: false },
-      
-   },
+  { path: "/", component: Home, name: "home" },
   { path: "/login", component: Login, name: "login" },
   { path: "/register", component: Register, name: "register" },
   {
     path: "/profil",
     component: Profil,
     name: "profil",
-    // meta: { requiresAuth: true },
-  },
+    meta: { requiresAuth: true },
+  }, // Ajouté requiresAuth
   { path: "/boutique/:id", component: Boutique, name: "boutique" },
   {
     path: "/parrainage",
@@ -57,24 +55,35 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
-  console.log("isAuthenticated:", authStore.isAuthenticated);
+  console.log(
+    "Navigation vers:",
+    to.name,
+    "isAuthenticated:",
+    authStore.isAuthenticated,
+    "token:",
+    authStore.token
+  );
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     try {
-      await authStore.checkAuth();
-      if (authStore.isAuthenticated) {
+      const isAuthenticated = await authStore.checkAuth();
+      console.log(
+        "checkAuth result:",
+        isAuthenticated,
+        "user:",
+        authStore.user
+      );
+      if (isAuthenticated) {
         next();
       } else {
+        console.log("Redirection vers login: utilisateur non authentifié");
         next({ name: "login" });
       }
     } catch (error) {
-      console.error(
-        "Erreur d'authentification:",
-        error.response?.data,
-        error.response?.status
-      );
-      authStore.user = null;
-      authStore.isAuthenticated = false;
+      console.error("Erreur lors de la vérification d'authentification:", {
+        message: error.response?.data?.message || error.message,
+        status: error.response?.status,
+      });
       next({ name: "login" });
     }
   } else {
