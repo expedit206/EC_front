@@ -108,10 +108,17 @@ export const useAuthStore = defineStore("auth", {
           throw new Error("Aucun token valide pour récupérer l'utilisateur");
         }
         console.log(
-          "Récupération des données utilisateur avec /profile, token:",
+          "Récupération des données utilisateur avec /user, token:",
           this.token
         );
-        const response = await apiClient.get("/user");
+
+        // Ajout explicite du header Authorization
+        const response = await apiClient.get("/user", {
+          headers: {
+            // Authorization: `Bearer ${this.token}`,
+          },
+        });
+
         console.log("Réponse de /user :", response.data);
         if (!response.data.user) {
           throw new Error("Réponse invalide du serveur: user manquant");
@@ -130,7 +137,7 @@ export const useAuthStore = defineStore("auth", {
         if (error.response?.status === 401) {
           console.log("Erreur 401: Token invalide ou non autorisé");
         }
-        this.resetAuthState();
+        // this.resetAuthState();
         throw (
           error.response?.data || {
             message: "Erreur lors de la récupération de l'utilisateur",
@@ -138,6 +145,7 @@ export const useAuthStore = defineStore("auth", {
         );
       }
     },
+
     async checkAuth() {
       try {
         console.log("État du token avant checkAuth:", {
@@ -146,7 +154,7 @@ export const useAuthStore = defineStore("auth", {
         });
         if (!this.token || this.token === "undefined" || this.token === "") {
           console.log("Aucun token valide trouvé, session non restaurée");
-          this.resetAuthState();
+          // this.resetAuthState();
           return false;
         }
         console.log(
@@ -176,10 +184,11 @@ export const useAuthStore = defineStore("auth", {
             "Erreur réseau: Vérifiez que le backend est en cours d'exécution sur http://localhost:8000"
           );
         }
-        this.resetAuthState();
+        // this.resetAuthState();
         return false;
       }
     },
+
     resetAuthState() {
       this.user = null;
       this.isAuthenticated = false;

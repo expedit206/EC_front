@@ -15,14 +15,14 @@ app.use(router);
 app.use(Toast, { timeout: 3000 });
 
 const authStore = useAuthStore();
+console.log("État d'authentification initial:", {
+  isAuthenticated: authStore.isAuthenticated,
+  user: authStore.user,
+  token: authStore.token,
+});
 authStore
   .checkAuth()
-  .then((isAuthenticated) => {
-    console.log("État d'authentification initial:", {
-      isAuthenticated: authStore.isAuthenticated,
-      user: authStore.user,
-      token: authStore.token,
-    });
+  .then(() => {
     app.mount("#app");
   })
   .catch((error) => {
@@ -30,5 +30,4 @@ authStore
       "Erreur lors de la restauration de l'authentification:",
       error
     );
-    app.mount("#app");
   });
