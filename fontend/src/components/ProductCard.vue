@@ -15,7 +15,8 @@
 
 <script setup>
 import { useToast } from 'vue-toastification'
-import { useAuthStore } from '../store'
+import { useAuthStore } from '../stores/Auth'
+
 import axios from 'axios'
 
 defineProps({

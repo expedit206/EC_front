@@ -1,9 +1,10 @@
 /* src/assets/main.css */
 
 /* Importation de Tailwind CSS */
- /* @import "tailwindcss/components"; */
-/* @import "tailwindcss/utilities"; */
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* @import "tailwindcss"; */
 /* Variables CSS globales */
 :root {
     /* Couleurs personnalisées pour Espace Cameroun */

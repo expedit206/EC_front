@@ -32,7 +32,7 @@
                 <div class="bg-[var(--espace-vert)] h-4 rounded-full" :style="{ width: progress + '%' }"></div>
             </div>
             <p class="text-[var(--espace-gris)] text-sm sm:text-base">Niveau actuel : {{ niveau.nom }} ({{ niveau.requis
-                }} commerçants)</p>
+            }} commerçants)</p>
         </div>
     </div>
 </template>
@@ -41,7 +41,8 @@
 import { ref, onMounted } from 'vue'
 import { useToast } from 'vue-toastification'
 import axios from 'axios'
-import { useAuthStore } from '../store'
+import { useAuthStore } from '../stores/Auth'
+
 import AppHeader from '../components/AppHeader.vue'
 
 const authStore = useAuthStore()

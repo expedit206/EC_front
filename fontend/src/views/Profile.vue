@@ -135,7 +135,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
-import { useAuthStore } from '../store'
+import { useAuthStore } from '../stores/Auth'
 import axios from 'axios'
 import AppHeader from '../components/AppHeader.vue'
 import BoutiqueCard from '../components/BoutiqueCard.vue'
@@ -152,7 +152,7 @@ const boutiqueForm = ref({ nom: '', ville: '', description: '' })
 
 const createCommercant = async () => {
     try {
-        const response = await axios.post('http://localhost:8000/api/v1/commercants', commercantForm.value)
+        const response = await apiClient.post('/commercants', commercantForm.value)
         user.value.commercant = response.data.commercant
         toast.success('Compte commerçant créé !')
     } catch (error) {

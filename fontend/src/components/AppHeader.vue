@@ -79,7 +79,8 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useAuthStore } from '../store'
+import { useAuthStore } from '../stores/Auth'
+
 import { useRouter } from 'vue-router'
 
 const authStore = useAuthStore()
@@ -93,4 +94,3 @@ const logout = () => {
     menuOpen.value = false
 }
 </script>
-  

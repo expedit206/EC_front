@@ -84,7 +84,7 @@
                 class="p-2 border-b flex flex-col sm:flex-row sm:items-center">
                 <p class="text-[var(--espace-gris)] text-sm sm:text-base">
                     {{ collaboration.user.nom }} - Prix de revente: {{ collaboration.prix_revente }} FCFA - Statut: {{
-                    collaboration.statut }}
+                        collaboration.statut }}
                 </p>
                 <div v-if="collaboration.statut === 'en_attente'" class="mt-2 sm:mt-0 sm:ml-4 flex space-x-2">
                     <button @click="updateCollaboration(collaboration.id, 'validée')"
@@ -105,7 +105,8 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useToast } from 'vue-toastification'
-import { useAuthStore } from '../store'
+import { useAuthStore } from '../stores/Auth'
+
 import axios from 'axios'
 import AppHeader from '../components/AppHeader.vue'
 import ProductCard from '../components/ProductCard.vue'

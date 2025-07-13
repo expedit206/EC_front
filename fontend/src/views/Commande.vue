@@ -41,7 +41,8 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
-import { useAuthStore } from '../store'
+import { useAuthStore } from '../stores/Auth'
+
 import axios from 'axios'
 import AppHeader from '../components/AppHeader.vue'
 

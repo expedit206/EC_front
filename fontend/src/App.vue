@@ -6,10 +6,10 @@
 </template>
 
 <script setup>
-import { useAuthStore } from './store'
-import { onMounted } from 'vue'
+//  './store'
+// import { onMounted } from 'vue'
 
-const authStore = useAuthStore()
+// const authStore = useAuthStore()
 
 // onMounted(async () => {
 //   if (authStore.token) {
