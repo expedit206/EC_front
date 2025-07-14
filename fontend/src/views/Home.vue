@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useToast } from 'vue-toastification';
-import axios from 'axios';
 import ProductCard from '../components/ProductCard.vue';
 import AppHeader from '../components/AppHeader.vue';
+import apiClient from '../api';
 
 const products = ref<any[]>([]);
 const currentPage = ref(1);
@@ -14,6 +14,7 @@ const categories = ref<any[]>([]);
 const toast = useToast();
 
 const filterForm = ref({
+    search: '', // Nouveau champ de recherche
     category: '',
     prix_min: '',
     prix_max: '',
@@ -21,11 +22,11 @@ const filterForm = ref({
     collaboratif: '',
 });
 
-const villes = ref(['Douala', 'Yaoundé', 'Bamenda', 'Buea', 'Garoua']); // Liste statique, peut être dynamique
+const villes = ref(['Douala', 'Yaoundé', 'Bamenda', 'Buea', 'Garoua']);
 
 const fetchCategories = async () => {
     try {
-        const response = await axios.get('http://localhost:8000/api/categories');
+        const response = await apiClient.get('/categories');
         categories.value = response.data.categories;
     } catch (error) {
         toast.error('Erreur lors du chargement des catégories.');
@@ -45,13 +46,14 @@ const fetchProducts = async (reset = false) => {
     try {
         const params = {
             page: currentPage.value,
+            search: filterForm.value.search || undefined, // Ajout du paramètre de recherche
             category: filterForm.value.category || undefined,
             prix_min: filterForm.value.prix_min || undefined,
             prix_max: filterForm.value.prix_max || undefined,
             ville: filterForm.value.ville || undefined,
             collaboratif: filterForm.value.collaboratif || undefined,
         };
-        const response = await axios.get('http://localhost:8000/api/produits', { params });
+        const response = await apiClient.get('/produits', { params });
         products.value = reset ? response.data.data : [...products.value, ...response.data.data];
         currentPage.value = response.data.current_page + 1;
         lastPage.value = response.data.last_page;
@@ -69,13 +71,18 @@ const applyFilters = () => {
             return;
         }
     }
-    fetchProducts(true); // Réinitialiser les produits
-    showFilters.value = false; // Fermer les filtres sur mobile
+    fetchProducts(true);
+    showFilters.value = false;
 };
 
 const resetFilters = () => {
-    filterForm.value = { category: '', prix_min: '', prix_max: '', ville: '', collaboratif: '' };
+    filterForm.value = { search: '', category: '', prix_min: '', prix_max: '', ville: '', collaboratif: '' };
     fetchProducts(true);
+};
+
+// Compter les filtres actifs (exclut les champs vides)
+const activeFiltersCount = () => {
+    return Object.values(filterForm.value).filter(val => val !== '').length;
 };
 
 const observer = ref<IntersectionObserver | null>(null);
@@ -107,126 +114,106 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-100" :style="{ background: 'url(/src/assets/images/bginsc.jpg) center/cover' }">
+    <div class="min-h-screen bg-gray-100" 
+    >
         <AppHeader />
 
-        <div class="container mx-auto px-4 sm:px-6 py-6">
-            <!-- Bouton toggle pour les filtres (mobile) -->
-            <div class="flex justify-between items-center mb-4 sm:hidden">
-                <h1
-                    class="text-2xl sm:text-3xl font-bold text-[var(--espace-vert)] flex items-center gap-2 select-none">
+        <div class="container mx-auto px-4 sm:px-6 py-4">
+            <!-- Bouton toggle pour les filtres (mobile) avec badge -->
+            <div class="flex justify-between items-center mb-3 sm:mb-4">
+                <h1 class="text-xl sm:text-2xl font-bold text-[var(--espace-vert)] flex items-center gap-2 select-none">
                     <i class="fas fa-box"></i> Nos Produits
                 </h1>
                 <button @click="showFilters = !showFilters"
-                    class="flex items-center justify-center w-10 h-10 bg-[var(--espace-or)] text-[var(--espace-vert)] rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition"
+                    class="sm:hidden relative flex items-center justify-center w-8 h-8 bg-[var(--espace-or)] text-[var(--espace-vert)] rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition"
                     :aria-label="showFilters ? 'Masquer les filtres' : 'Afficher les filtres'"
                     :aria-expanded="showFilters">
-                    <i class="fas fa-filter text-xl"></i>
+                    <i class="fas fa-filter text-base"></i>
+                    <span v-if="activeFiltersCount() > 0"
+                        class="absolute -top-1 -right-1 bg-[var(--espace-vert)] text-[var(--espace-blanc)] text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                        {{ activeFiltersCount() }}
+                    </span>
                 </button>
             </div>
 
-            <div class="flex flex-col sm:flex-row gap-4">
-                <!-- Filtres (barre latérale sur desktop, collapsible sur mobile) -->
-                <Transition name="slide">
-                    <aside v-if="showFilters || !isMobile"
-                        class="sm:w-64 bg-[rgba(255,255,255,0.95)] rounded-2xl shadow-lg p-4 sm:p-6 sm:sticky sm:top-20"
-                        :class="{ 'fixed inset-0 z-50 sm:static': showFilters }">
-                        <h2
-                            class="text-lg sm:text-xl font-semibold text-[var(--espace-vert)] flex items-center gap-2 mb-4 select-none">
-                            <i class="fas fa-filter"></i> Filtres
-                        </h2>
-                        <form @submit.prevent="applyFilters" class="space-y-4">
-                            <div>
-                                <label class="block text-[var(--espace-gris)] text-sm font-medium mb-1 select-none"
-                                    for="category">
-                                    Catégorie
-                                </label>
-                                <select v-model="filterForm.category" id="category"
-                                    class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)] transition">
-                                    <option value="">Toutes</option>
-                                    <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.nom }}
-                                    </option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-[var(--espace-gris)] text-sm font-medium mb-1 select-none"
-                                    for="prix_min">
-                                    Prix minimum (FCFA)
-                                </label>
-                                <input v-model="filterForm.prix_min" id="prix_min" type="number" min="0"
-                                    class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)] transition"
-                                    placeholder="Ex: 1000" />
-                            </div>
-                            <div>
-                                <label class="block text-[var(--espace-gris)] text-sm font-medium mb-1 select-none"
-                                    for="prix_max">
-                                    Prix maximum (FCFA)
-                                </label>
-                                <input v-model="filterForm.prix_max" id="prix_max" type="number" min="0"
-                                    class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)] transition"
-                                    placeholder="Ex: 50000" />
-                            </div>
-                            <div>
-                                <label class="block text-[var(--espace-gris)] text-sm font-medium mb-1 select-none"
-                                    for="ville">
-                                    Ville
-                                </label>
-                                <select v-model="filterForm.ville" id="ville"
-                                    class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)] transition">
-                                    <option value="">Toutes</option>
-                                    <option v-for="ville in villes" :key="ville" :value="ville">{{ ville }}</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-[var(--espace-gris)] text-sm font-medium mb-1 select-none"
-                                    for="collaboratif">
-                                    Collaboratif
-                                </label>
-                                <select v-model="filterForm.collaboratif" id="collaboratif"
-                                    class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)] transition">
-                                    <option value="">Tous</option>
-                                    <option value="true">Oui</option>
-                                    <option value="false">Non</option>
-                                </select>
-                            </div>
-                            <div class="flex gap-2">
-                                <button type="submit"
-                                    class="w-full bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold p-2 sm:p-3 rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition flex items-center justify-center gap-2 text-sm"
-                                    aria-label="Appliquer les filtres">
-                                    <i class="fas fa-check"></i>
-                                    <span class="hidden sm:inline">Appliquer</span>
-                                </button>
-                                <button @click="resetFilters" type="button"
-                                    class="w-full bg-[var(--espace-gris)] text-[var(--espace-blanc)] font-semibold p-2 sm:p-3 rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition flex items-center justify-center gap-2 text-sm"
-                                    aria-label="Réinitialiser les filtres">
-                                    <i class="fas fa-times"></i>
-                                    <span class="hidden sm:inline">Réinitialiser</span>
-                                </button>
-                            </div>
-                        </form>
-                    </aside>
-                </Transition>
-
-                <!-- Liste des produits -->
-                <div class="flex-1">
-                    <h1
-                        class="text-2xl sm:text-3xl font-bold text-[var(--espace-vert)] flex items-center gap-2 mb-4 select-none hidden sm:flex">
-                        <i class="fas fa-box"></i> Nos Produits
-                    </h1>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                        <ProductCard v-for="produit in products" :key="produit.id" :produit="produit" />
-                    </div>
-                    <div ref="loadMoreTrigger" class="h-10 flex items-center justify-center" aria-live="polite"
-                        aria-busy="isLoading">
-                        <div v-if="isLoading" class="flex items-center gap-2 text-[var(--espace-vert)]">
-                            <i class="fas fa-spinner animate-spin text-2xl"></i>
-                            <span class="text-sm font-poppins">Chargement...</span>
+            <!-- Filtres (horizontal sur desktop, coulissant depuis le bas sur mobile) -->
+            <Transition name="slide-up">
+                <div v-if="showFilters"
+                    class="sm:flex bg-[rgba(255,255,255,0.85)] rounded-xl shadow-md p-3 sm:p-4 mb-4 sm:items-center sm:gap-2 sm:flex-wrap relative"
+                    :class="{ 'fixed bottom-0 left-0 right-0 z-50 sm:static': showFilters }">
+                    <!-- Badge pour filtres actifs (desktop) -->
+                    <span v-if="activeFiltersCount() > 0"
+                        class="sm:block hidden absolute -top-2 -right-2 bg-[var(--espace-vert)] text-[var(--espace-blanc)] text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {{ activeFiltersCount() }}
+                    </span>
+                    <form @submit.prevent="applyFilters" class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                        <div class="flex-1 min-w-[120px]">
+                            <input v-model="filterForm.search" id="search" type="text"
+                                class="w-full h-8 p-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--espace-vert)] transition"
+                                placeholder="Rechercher..." aria-label="Rechercher un produit" />
                         </div>
-                        <p v-else-if="currentPage > lastPage" class="text-[var(--espace-gris)] text-sm font-poppins">
-                            Aucun produit supplémentaire
-                        </p>
-                    </div>
+                        <div class="flex-1 min-w-[120px]">
+                            <select v-model="filterForm.category" id="category"
+                                class="w-full h-8 p-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--espace-vert)] transition">
+                                <option value="">Catégorie</option>
+                                <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.nom }}</option>
+                            </select>
+                        </div>
+                        <div class="flex-1 min-w-[100px]">
+                            <input v-model="filterForm.prix_min" id="prix_min" type="number" min="0"
+                                class="w-full h-8 p-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--espace-vert)] transition"
+                                placeholder="Prix min" aria-label="Prix minimum" />
+                        </div>
+                        <div class="flex-1 min-w-[100px]">
+                            <input v-model="filterForm.prix_max" id="prix_max" type="number" min="0"
+                                class="w-full h-8 p-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--espace-vert)] transition"
+                                placeholder="Prix max" aria-label="Prix maximum" />
+                        </div>
+                        <div class="flex-1 min-w-[120px]">
+                            <select v-model="filterForm.ville" id="ville"
+                                class="w-full h-8 p-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--espace-vert)] transition">
+                                <option value="">Ville</option>
+                                <option v-for="ville in villes" :key="ville" :value="ville">{{ ville }}</option>
+                            </select>
+                        </div>
+                        <div class="flex-1 min-w-[100px]">
+                            <select v-model="filterForm.collaboratif" id="collaboratif"
+                                class="w-full h-8 p-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--espace-vert)] transition">
+                                <option value="">Collaboratif</option>
+                                <option value="true">Oui</option>
+                                <option value="false">Non</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-2 sm:gap-3">
+                            <button type="submit"
+                                class="w-8 h-8 bg-[var(--espace-or)] text-[var(--espace-vert)] rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition flex items-center justify-center"
+                                aria-label="Appliquer les filtres">
+                                <i class="fas fa-check text-base"></i>
+                            </button>
+                            <button @click="resetFilters" type="button"
+                                class="w-8 h-8 bg-[var(--espace-gris)] text-[var(--espace-blanc)] rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition flex items-center justify-center"
+                                aria-label="Réinitialiser les filtres">
+                                <i class="fas fa-times text-base"></i>
+                            </button>
+                        </div>
+                    </form>
                 </div>
+            </Transition>
+
+            <!-- Liste des produits avec animation de fondu -->
+            <TransitionGroup name="fade" tag="div"
+                class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                <ProductCard v-for="produit in products" :key="produit.id" :produit="produit" />
+            </TransitionGroup>
+            <div ref="loadMoreTrigger" class="h-10 flex items-center justify-center" aria-live="polite"
+                aria-busy="isLoading">
+                <div v-if="isLoading" class="flex items-center gap-2 text-[var(--espace-vert)]">
+                    <i class="fas fa-spinner animate-spin text-lg"></i>
+                    <span class="text-sm font-poppins">Chargement...</span>
+                </div>
+                <p v-else-if="currentPage > lastPage" class="text-[var(--espace-gris)] text-sm font-poppins">
+                    Aucun produit supplémentaire
+                </p>
             </div>
         </div>
     </div>
@@ -244,13 +231,23 @@ onUnmounted(() => {
     font-family: 'Poppins', sans-serif;
 }
 
-.slide-enter-active,
-.slide-leave-active {
+.slide-up-enter-active,
+.slide-up-leave-active {
     transition: transform 0.3s ease;
 }
 
-.slide-enter-from,
-.slide-leave-to {
-    transform: translateX(-100%);
+.slide-up-enter-from,
+.slide-up-leave-to {
+    transform: translateY(100%);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
 }
 </style>

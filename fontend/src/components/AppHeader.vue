@@ -32,29 +32,42 @@ const logout = () => {
 </script>
 
 <template>
-    <header class="bg-[var(--espace-vert)] left-0 text-[var(--espace-blanc)] fixed top-0 w-full z-50 shadow-md">
-        <div class="container mx-auto px-4 py-2 flex justify-between items-center">
-            <!-- Logo et icône de paramètres -->
-            <div class="flex items-center gap-6">
-                <h1 class="text-2xl font-bold font-poppins flex items-center gap-2">
-                    <i class="fas fa-store text-[var(--espace-or)]"></i> Espace Cameroun
-                </h1>
-                <router-link to="/parametres" aria-label="Paramètres"
-                    class="flex items-center justify-center w-10 h-10 hover:text-[var(--espace-or)] transition-colors duration-300">
-                    <i class="fas fa-cog text-xl"></i>
-                </router-link>
+    <header class="bg-[var(--espace-vert)] text-[var(--espace-blanc)] fixed top-0 left-0 w-full z-50 shadow-md">
+        <div class="container px-4 sm:px-6 py-2 flex justify-between items-center">
+            <!-- Logo et titre -->
+            <div class="flex items-center justify-between gap-10 sm:gap-6 w-full">
+                <!-- <div> -->
+                <span class="flex items-center  gap-2 sm:gap-6">
+
+                    <RouterLink to="/" aria-label="Retour à l'accueil">
+                        <div class="bg-[var(--espace-blanc)] rounded-full p-1">
+                            <img src="/src/assets/images/logo.png" alt="Logo Espace Cameroun"
+                                class="h-8 w-8 sm:h-10 sm:w-10 object-contain transition-transform duration-300 hover:scale-105" />
+                        </div>
+                    </RouterLink>
+                    <h1 class="text-lg sm:text-xl font-bold font-poppins text-[var(--espace-blanc)]">
+                        Espace Cameroun
+                    </h1>
+                </span>
+                <!-- </div> -->
+                <RouterLink to="/parametres" aria-label="Paramètres"
+                    class="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 text-[var(--espace-blanc)] hover:text-[var(--espace-or)] transition-colors duration-300">
+                    <i class="fas fa-cog text-base sm:text-lg"></i>
+                </RouterLink>
             </div>
 
             <!-- Navigation Desktop -->
-            <nav class="hidden sm:flex items-center space-x-6 font-poppins">
-                <router-link v-for="link in navLinks" :key="link.to" :to="link.to"
-                    class="hover:text-[var(--espace-or)] flex items-center gap-2 transition-colors duration-300"
+            <nav class="hidden sm:flex items-center space-x-4 sm:space-x-6 font-poppins text-sm sm:text-base">
+                <RouterLink v-for="link in navLinks" :key="link.to" :to="link.to"
+                    class="hover:text-[var(--espace-or)] flex items-center gap-1 sm:gap-2 transition-colors duration-300"
                     active-class="text-[var(--espace-or)]">
-                    <i class="fas" :class="link.icon"></i> {{ link.label }}
-                </router-link>
+                    <i class="fas" :class="link.icon"></i>
+                    {{ link.label }}
+                </RouterLink>
                 <button v-if="user" @click="logout"
-                    class="hover:text-[var(--espace-or)] flex items-center gap-2 transition-colors duration-300">
-                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    class="hover:text-[var(--espace-or)] flex items-center gap-1 sm:gap-2 transition-colors duration-300">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Déconnexion
                 </button>
             </nav>
         </div>
