@@ -4,6 +4,7 @@ import Login from "../views/auth/Login.vue";
 import Register from "../views/auth/Register.vue";
 import Profile from "../views/Profile.vue"; // À créer si non existant
 import Home from "../views/Home.vue"; // À créer si non existant
+import CommercantDashboard from "../views/CommercantDashboard.vue"; // À créer si non existant
 import { useAuthStore } from "../stores/Auth"; // Assurez-vous que le chemin est correct
 
 const routes = [
@@ -12,6 +13,11 @@ const routes = [
   { path: "/profil", component: Profile, name: "profil" },
   { path: "/home", component: Home, name: "home" },
   { path: "/", redirect: "/home" },
+
+  {
+    path: "/commercant",
+    component: CommercantDashboard,
+  },
 ];
 
 
