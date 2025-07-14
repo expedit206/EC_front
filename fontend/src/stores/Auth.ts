@@ -29,10 +29,12 @@ export const useAuthStore = defineStore("auth", () => {
     mot_de_passe: string;
     remember?: boolean;
   }) => {
-    const response = await axios.post("http://localhost:8000/api/login", form);
+    const response = await apiClient.post("/login", form);
+    console.log(response.data.user);
+    
     user.value = response.data.user;
-    const storage = form.remember ? localStorage : sessionStorage;
-    storage.setItem("user", JSON.stringify(user.value));
+    // const storage = form.remember ? localStorage : sessionStorage;
+    localStorage.setItem("user", JSON.stringify(user.value));
     return response.data;
   };
 
@@ -42,15 +44,18 @@ export const useAuthStore = defineStore("auth", () => {
     sessionStorage.removeItem("user");
   };
 
-  const loadUserFromStorage = () => {
-    const storedUser =
-      localStorage.getItem("user");
-    // console.log(storedUser);
+    const loadUserFromStorage = () => {
+      const storedUser =
+        localStorage.getItem("user");
+    // // console.log(storedUser);
     
     if (storedUser) {
-      user.value = JSON.parse(storedUser);
+      user.value =  JSON.parse(storedUser);
+      
     } else {
-      router.push("login");
+      console.log('ok');
+      user.value = null;
+      // router.push("login");
     }
   };
 

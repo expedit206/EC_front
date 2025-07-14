@@ -23,12 +23,20 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
-  authStore.loadUserFromStorage(); // Toujours charger l'utilisateur depuis localStorage
 
+  const authPages = ["login", "register"];
+  
+  
+  const storedUser = localStorage.getItem("user");
+  if (storedUser) {
+    authStore.loadUserFromStorage();
+  } else {
+    // if (!authPages.includes(to.name)) ; // Toujours charger l'utilisateur depuis localStorage
+  }
+             
   const isAuthenticated = !!authStore.user;
   // console.log(isAuthenticated);
   
-  const authPages = ["login", "register"];
   
   if (!isAuthenticated && !authPages.includes(to.name)) {
     console.log(isAuthenticated);

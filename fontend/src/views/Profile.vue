@@ -1,84 +1,78 @@
 <template>
-<div class="container mx-auto p-4 sm:p-6 space-y-6">
+  <div class="container mx-auto px-4 sm:px-6 py-6 space-y-8">
     <AppHeader />
 
-    <!-- Titre Principal -->
-    <h1 class="text-3xl font-bold text-[var(--espace-vert)] flex items-center gap-2">
+    <h1 class="text-3xl font-bold text-espace-vert flex items-center gap-2 select-none">
       <i class="fas fa-user"></i> Mon Profil
     </h1>
 
     <!-- Bloc Informations personnelles -->
-    <div class="bg-[var(--espace-blanc)] rounded-2xl shadow-lg p-6 transition hover:shadow-xl space-y-2">
-      <h2 class="text-xl font-semibold text-[var(--espace-vert)] flex items-center gap-2 mb-4">
+    <section class="bg-espace-blanc rounded-2xl shadow-lg p-6 transition-shadow hover:shadow-xl space-y-3">
+      <h2 class="text-xl font-semibold text-espace-vert flex items-center gap-2 mb-4 select-none">
         <i class="fas fa-info-circle"></i> Informations personnelles
       </h2>
-      <p class="text-[var(--espace-gris)] text-base"><strong>Nom :</strong> {{ user.nom }}</p>
-      <p class="text-[var(--espace-gris)] text-base"><strong>Téléphone :</strong> {{ user.telephone }}</p>
-      <p class="text-[var(--espace-gris)] text-base"><strong>Email :</strong> {{ user.email || 'Non défini' }}</p>
-      <p class="text-[var(--espace-gris)] text-base"><strong>Ville :</strong> {{ user.ville }}</p>
-      <p class="text-[var(--espace-gris)] text-base">
+      <p class="text-espace-gris text-base"><strong>Nom :</strong> {{ user.nom }}</p>
+      <p class="text-espace-gris text-base"><strong>Téléphone :</strong> {{ user.telephone }}</p>
+      <p class="text-espace-gris text-base">
+        <strong>Email :</strong> {{ user.email || 'Non défini' }}
+      </p>
+      <p class="text-espace-gris text-base"><strong>Ville :</strong> {{ user.ville }}</p>
+      <p class="text-espace-gris text-base">
         <strong>Statut Premium :</strong> {{ user.premium ? 'Actif' : 'Inactif' }}
       </p>
-    </div>
+    </section>
 
-<!-- Bloc Compte Commerçant -->
-<div class="bg-[var(--espace-blanc)] rounded-2xl shadow-lg p-6 transition hover:shadow-xl space-y-4">
-      <h2 class="text-xl font-semibold text-[var(--espace-vert)] flex items-center gap-2">
+    <!-- Bloc Compte Commerçant -->
+    <section class="bg-espace-blanc rounded-2xl shadow-lg p-6 transition-shadow hover:shadow-xl space-y-6">
+      <h2 class="text-xl font-semibold text-espace-vert flex items-center gap-2 select-none">
         <i class="fas fa-store-alt"></i> Compte Commerçant
       </h2>
 
-      <div v-if="user.commercant" class="space-y-2">
-        <p class="text-[var(--espace-gris)] text-base"><strong>Nom :</strong> {{ user.commercant.nom }}</p>
-        <p class="text-[var(--espace-gris)] text-base"><strong>Ville :</strong> {{ user.commercant.ville }}</p>
-        <p class="text-[var(--espace-gris)] text-base"><strong>Actif :</strong> {{ user.commercant.actif ? 'Oui' : 'Non' }}</p>
+      <div v-if="user.commercant" class="space-y-2 text-espace-gris text-base">
+        <p><strong>Nom :</strong> {{ user.commercant.nom }}</p>
+        <p><strong>Ville :</strong> {{ user.commercant.ville }}</p>
+        <p><strong>Actif :</strong> {{ user.commercant.actif ? 'Oui' : 'Non' }}</p>
       </div>
 
-<div v-else>
-        <p class="text-[var(--espace-gris)] text-base">Aucun compte commerçant. Créez-en un !</p>
-        <form @submit.prevent="createCommercant" class="space-y-4 mt-4">
+      <div v-else>
+        <p class="text-espace-gris text-base">Aucun compte commerçant. Créez-en un !</p>
+
+        <form @submit.prevent="createCommercant" class="space-y-5 mt-4">
           <div>
-            <label class="block text-[var(--espace-gris)] text-sm sm:text-base">
+            <label class="block text-espace-gris text-sm sm:text-base font-medium mb-1 select-none">
               <i class="fas fa-store mr-1"></i> Nom du commerçant
             </label>
-            <input
-              v-model="commercantForm.nom"
-              type="text"
-              class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]"
-              required
-            />
+            <input v-model="commercantForm.nom" type="text" required
+              class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-espace-vert transition"
+              placeholder="Ex: Ma Boutique" />
           </div>
-<div>
-            <label class="block text-[var(--espace-gris)] text-sm sm:text-base">
+          <div>
+            <label class="block text-espace-gris text-sm sm:text-base font-medium mb-1 select-none">
               <i class="fas fa-city mr-1"></i> Ville
             </label>
-            <input
-              v-model="commercantForm.ville"
-              type="text"
-              class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]"
-              required
-            />
+            <input v-model="commercantForm.ville" type="text" required
+              class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-espace-vert transition"
+              placeholder="Ex: Douala" />
           </div>
-<div>
-            <label class="block text-[var(--espace-gris)] text-sm sm:text-base">
+          <div>
+            <label class="block text-espace-gris text-sm sm:text-base font-medium mb-1 select-none">
               <i class="fas fa-align-left mr-1"></i> Description (optionnel)
             </label>
-            <textarea
-              v-model="commercantForm.description"
-              class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]"
-            ></textarea>
+            <textarea v-model="commercantForm.description" rows="3"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-espace-vert transition resize-none"
+              placeholder="Décrivez votre commerce"></textarea>
           </div>
-<button type="submit"
-    class="w-full bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold p-3 rounded-md 
-                   hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition duration-300 flex items-center justify-center gap-2">
+          <button type="submit"
+            class="w-full bg-espace-or text-espace-vert font-semibold p-3 rounded-lg hover:bg-espace-vert hover:text-espace-blanc transition duration-300 flex items-center justify-center gap-2 select-none">
             <i class="fas fa-store-alt"></i> Créer Compte Commerçant
           </button>
-</form>
-</div>
-</div>
+        </form>
+      </div>
+    </section>
 
-<!-- Bloc Mes Boutiques -->
-<div class="bg-[var(--espace-blanc)] rounded-2xl shadow-lg p-6 transition hover:shadow-xl space-y-4">
-      <h2 class="text-xl font-semibold text-[var(--espace-vert)] flex items-center gap-2">
+    <!-- Bloc Mes Boutiques -->
+    <section class="bg-espace-blanc rounded-2xl shadow-lg p-6 transition-shadow hover:shadow-xl space-y-6">
+      <h2 class="text-xl font-semibold text-espace-vert flex items-center gap-2 select-none">
         <i class="fas fa-shop"></i> Mes Boutiques
       </h2>
 
@@ -86,51 +80,42 @@
         <BoutiqueCard v-for="boutique in boutiques" :key="boutique.id" :boutique="boutique" />
       </div>
 
-<p v-else class="text-[var(--espace-gris)] text-base">Aucune boutique. Créez-en une !</p>
+      <p v-else class="text-espace-gris text-base">Aucune boutique. Créez-en une !</p>
 
-<form v-if="user.commercant" @submit.prevent="createBoutique" class="space-y-4 mt-4">
+      <form v-if="user.commercant" @submit.prevent="createBoutique" class="space-y-5 mt-4">
         <div>
-          <label class="block text-[var(--espace-gris)] text-sm sm:text-base">
+          <label class="block text-espace-gris text-sm sm:text-base font-medium mb-1 select-none">
             <i class="fas fa-shop mr-1"></i> Nom de la boutique
           </label>
-          <input
-            v-model="boutiqueForm.nom"
-            type="text"
-            class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]"
-            required
-          />
+          <input v-model="boutiqueForm.nom" type="text" required
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-espace-vert transition"
+            placeholder="Ex: Boutique du Centre" />
         </div>
         <div>
-          <label class="block text-[var(--espace-gris)] text-sm sm:text-base">
+          <label class="block text-espace-gris text-sm sm:text-base font-medium mb-1 select-none">
             <i class="fas fa-city mr-1"></i> Ville
           </label>
-          <input
-            v-model="boutiqueForm.ville"
-            type="text"
-            class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]"
-            required
-          />
+          <input v-model="boutiqueForm.ville" type="text" required
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-espace-vert transition"
+            placeholder="Ex: Yaoundé" />
         </div>
         <div>
-          <label class="block text-[var(--espace-gris)] text-sm sm:text-base">
+          <label class="block text-espace-gris text-sm sm:text-base font-medium mb-1 select-none">
             <i class="fas fa-align-left mr-1"></i> Description (optionnel)
           </label>
-          <textarea
-            v-model="boutiqueForm.description"
-            class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]"
-          ></textarea>
+          <textarea v-model="boutiqueForm.description" rows="3"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-espace-vert transition resize-none"
+            placeholder="Décrivez votre boutique"></textarea>
         </div>
-        <button
-          type="submit"
-          class="w-full bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold p-3 rounded-md 
-                 hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition duration-300 flex items-center justify-center gap-2"
-        >
+        <button type="submit"
+          class="w-full bg-espace-or text-espace-vert font-semibold p-3 rounded-lg hover:bg-espace-vert hover:text-espace-blanc transition duration-300 flex items-center justify-center gap-2 select-none">
           <i class="fas fa-shop"></i> Créer Boutique
         </button>
       </form>
-</div>
-</div>
+    </section>
+  </div>
 </template>
+
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'

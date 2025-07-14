@@ -22,7 +22,7 @@ const login = async () => {
     try {
         await authStore.login(form.value);
         toast.success('Connexion réussie !');
-        router.push({ name: 'dashboard' });
+        router.push({ name: 'home' });
     } catch (error: any) {
         console.error('Erreur lors de la connexion:', error);
         const message = error.response?.data?.message || 'Erreur lors de la connexion. Veuillez vérifier vos informations.';
@@ -37,41 +37,59 @@ const login = async () => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-8"
-        :style="{ background: 'url(/src/assets/images/bginsc.jpg) center/cover' }">
-        <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl p-6 sm:p-10">
+    <div class="min-h-screen flex items-center justify-center px-4 py-8 bg-gray-100"
+        >
+        <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl p-6 sm:p-10 backdrop-blur-sm bg-opacity-95">
+            <!-- Titre -->
             <h1 class="text-3xl sm:text-4xl font-bold text-center text-[var(--espace-vert)] mb-6">
-                <i class="fas fa-sign-in-alt mr-2 text-[var(--espace-or)]"></i> Se connecter
+                <i class="fas fa-sign-in-alt mr-2 text-[var(--espace-or)]"></i>
+                Se connecter
             </h1>
-            <p class="text-center text-sm sm:text-base text-gray-600 mb-6">
-                Connectez-vous à <strong>Espace Cameroun</strong> pour accéder à votre compte et profitez de nos
+
+            <!-- Texte d'intro -->
+            <p class="text-center text-sm sm:text-base mb-16">
+                Connectez-vous à <strong>Espace Cameroun</strong> pour accéder à votre compte et profiter de nos
                 services.
             </p>
+
+            <!-- Formulaire -->
             <form @submit.prevent="login" class="space-y-5">
+                <!-- Champ Email ou Téléphone -->
                 <FormField label="Email ou numéro de téléphone" icon="fa-envelope" v-model="form.login" type="text"
                     required placeholder="email@example.com ou +237 6XX XXX XXX" :error="errors.login" />
+
+                <!-- Champ Mot de passe -->
                 <FormField label="Mot de passe" icon="fa-lock" v-model="form.mot_de_passe" type="password" required
                     placeholder="Mot de passe" :error="errors.mot_de_passe" />
+
+                <!-- Souvenir -->
                 <div class="flex items-center justify-between">
                     <label class="flex items-center space-x-3">
                         <input type="checkbox" v-model="form.remember" id="remember"
-                            class="form-checkbox text-[var(--espace-or)]" />
+                            class="form-checkbox text-[var(--espace-or)] rounded focus:ring-[var(--espace-or)]" />
                         <span class="text-sm text-[var(--espace-vert)]">Se souvenir de moi</span>
                     </label>
                 </div>
+
+                <!-- Bouton Connexion -->
                 <button type="submit"
-                    class="w-full bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold p-3 rounded-xl hover:bg-[var(--espace-vert)] hover:text-white transition flex items-center justify-center shadow-md"
+                    class="w-full bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold p-3 rounded-xl hover:bg-[var(--espace-vert)] hover:text-white transition flex items-center justify-center shadow-md disabled:opacity-50"
                     :disabled="processing">
                     <i v-if="processing" class="fas fa-spinner fa-spin mr-2"></i>
-                    <i v-else class="fas fa-sign-in-alt mr-2"></i> Se connecter
+                    <i v-else class="fas fa-sign-in-alt mr-2"></i>
+                    Se connecter
                 </button>
             </form>
+
+            <!-- Lien vers inscription -->
             <p class="text-center text-sm text-gray-600 mt-6">
                 Vous n'avez pas de compte ?
                 <router-link to="/register" class="text-[var(--espace-vert)] font-medium hover:underline">
                     S'inscrire ici
                 </router-link>
             </p>
+
+            <!-- Lien vers mot de passe oublié -->
             <p class="text-center text-xs text-gray-400 mt-4">
                 <router-link to="/forgot-password" class="hover:underline text-[var(--espace-vert)]">
                     Mot de passe oublié ?
@@ -80,7 +98,7 @@ const login = async () => {
         </div>
     </div>
 </template>
-
+  
 <style scoped>
 :root {
     --espace-vert: #14532d;
