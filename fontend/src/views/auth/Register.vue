@@ -28,6 +28,7 @@ const authStore = useAuthStore();
 
 const register = async () => {
     try {
+        
         console.log('Envoi des données d\'inscription:', form.value);
         await authStore.register(form.value);
         toast.success('Inscription réussie !');

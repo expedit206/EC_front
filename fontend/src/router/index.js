@@ -10,14 +10,16 @@ import { useAuthStore } from "../stores/Auth"; // Assurez-vous que le chemin est
 const routes = [
   { path: "/login", component: Login, name: "login" },
   { path: "/register", component: Register, name: "register" },
-  { path: "/profil", component: Profile, name: "profil" },
+  { path: "/profil", component: Profile, name: "profil", meta: { requiresAuth: true, } },
   { path: "/home", component: Home, name: "home" },
   { path: "/", redirect: "/home" },
-
   {
     path: "/commercant",
     component: CommercantDashboard,
-  },
+    meta: {
+      requiresAuth: true,
+    },
+  }
 ];
 
 
@@ -27,36 +29,52 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore();
+// router.beforeEach((to, from, next) => {
+//   const authStore = useAuthStore();
 
-  const authPages = ["login", "register"];
+//   const authPages = ["login", "register"];
   
   
-  const storedUser = localStorage.getItem("user");
-  if (storedUser) {
-    authStore.loadUserFromStorage();
-  } else {
-    // if (!authPages.includes(to.name)) ; // Toujours charger l'utilisateur depuis localStorage
-  }
+//   const storedUser = localStorage.getItem("user");
+//   if (storedUser) {
+//     authStore.loadUserFromStorage();
+//   } else {
+//     // if (!authPages.includes(to.name)) ; // Toujours charger l'utilisateur depuis localStorage
+//   }
              
-  const isAuthenticated = !!authStore.user;
-  // console.log(isAuthenticated);
+//   const isAuthenticated = !!authStore.user;
+//   // console.log(isAuthenticated);
   
   
-  if (!isAuthenticated && !authPages.includes(to.name)) {
-    console.log(isAuthenticated);
-    // Pas connecté et essaie d'accéder à une page protégée
-    return next({ name: "login" });
-  }
+//   if (!isAuthenticated && !authPages.includes(to.name)) {
+//     console.log(isAuthenticated);
+//     // Pas connecté et essaie d'accéder à une page protégée
+//     return next({ name: "login" });
+//   }
 
-  if (isAuthenticated && authPages.includes(to.name)) {
-    // Déjà connecté et essaie d'accéder à login ou register
-    return next({ name: "home" });
-  }
+//   if (isAuthenticated && authPages.includes(to.name)) {
+//     // Déjà connecté et essaie d'accéder à login ou register
+//     return next({ name: "home" });
+//   }
 
-  // Cas normal
-  next();
+//   // Cas normal
+//   next();
+// });
+
+
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore();
+  const isAuthenticated = await authStore.checkAuth();
+
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next({ name: "login" });
+  } else if (
+    to.meta.requiresCommercant &&
+    (!isAuthenticated || !authStore.user?.commercant)
+  ) {
+    next({ name: "dashboard" });
+  } else {
+    next();
+  }
 });
-
 export default router;
