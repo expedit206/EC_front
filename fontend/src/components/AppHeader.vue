@@ -12,6 +12,9 @@ const navLinks = [
     ...(user
         ? [
             { to: '/profil', label: 'Profil', icon: 'fa-user', badge: 0 },
+            ...(user.commercant
+                ? [{ to: '/commercant', label: 'Espace Commerçant', icon: 'fa-store-alt', badge: 0 }]
+                : []),
             { to: '/parrainage', label: 'Parrainage', icon: 'fa-users', badge: 0 },
             { to: '/commandes', label: 'Commandes', icon: 'fa-shopping-cart', badge: 0 },
             { to: '/abonnements', label: 'Abonnements', icon: 'fa-star', badge: 0 },
@@ -29,7 +32,7 @@ const logout = () => {
 </script>
 
 <template>
-    <header class="bg-[var(--espace-vert)] left-0  text-[var(--espace-blanc)] fixed top-0 w-full z-50 shadow-md">
+    <header class="bg-[var(--espace-vert)] left-0 text-[var(--espace-blanc)] fixed top-0 w-full z-50 shadow-md">
         <div class="container mx-auto px-4 py-2 flex justify-between items-center">
             <!-- Logo et icône de paramètres -->
             <div class="flex items-center gap-6">
@@ -62,7 +65,7 @@ const logout = () => {
         class="sm:hidden fixed bottom-0 w-full left-0 bg-[var(--espace-vert)] text-[var(--espace-blanc)] shadow-md z-50">
         <div class="flex justify-around items-center py-1">
             <router-link v-for="link in navLinks" :key="link.to" :to="link.to" :aria-label="link.label"
-                class="relative flex items-center justify-center w-12 h-12 hover:text-[var(--espace-or)] transition-colors duration-300"
+                class="relative flex items-center justify-center w-10 h-10 hover:text-[var(--espace-or)] transition-colors duration-300"
                 active-class="text-[var(--espace-or)]">
                 <i class="fas text-xl" :class="link.icon"></i>
                 <span v-if="link.badge > 0"
@@ -71,8 +74,8 @@ const logout = () => {
                 </span>
             </router-link>
             <button v-if="user" @click="logout" :aria-label="'Déconnexion'"
-                class="relative flex items-center justify-center w-12 h-12 hover:text-[var(--espace-or)] transition-colors duration-300">
-                <i class="fas fa-sign-out-alt text-2xl"></i>
+                class="relative flex items-center justify-center w-10 h-10 hover:text-[var(--espace-or)] transition-colors duration-300">
+                <i class="fas fa-sign-out-alt text-xl"></i>
             </button>
         </div>
     </nav>

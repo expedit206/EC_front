@@ -1,6 +1,6 @@
 <!-- src/App.vue -->
 <template>
-  <div class="min-h-screen mt-12 ">
+  <div class="min-h-screen mt-20 ">
     <router-view />
   </div>
 </template>
