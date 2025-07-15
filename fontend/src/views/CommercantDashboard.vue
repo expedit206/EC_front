@@ -42,6 +42,9 @@ const fetchCommercantData = async () => {
             apiClient.get('/categories'),
             apiClient.get('/commercant/profil'),
         ]);
+        isLoading.value = false;
+        console.log('Produits:', productsResponse.data);
+        
         products.value = productsResponse.data.produits;
         categories.value = categoriesResponse.data.categories;
         commerçant.value = commercantResponse.data.commercant;
@@ -60,7 +63,8 @@ const fetchCommercantData = async () => {
 // Ajouter un produit
 const addProduct = async () => {
     try {
-        await apiClient.post('/commercant/produits', productForm.value);
+        const res = await apiClient.post('/commercant/produits', productForm.value);
+        console.log('Produit ajouté:', res.data);
         toast.success('Produit ajouté avec succès.');
         fetchCommercantData();
         productForm.value = { nom: '', description: '', prix: '', photo_url: '', category_id: '', collaboratif: false, marge_min: '', stock: '', ville: '' };

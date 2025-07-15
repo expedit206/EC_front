@@ -6,7 +6,7 @@ import { useAuthStore } from '../../stores/Auth';
 import FormField from '../../components/FormField.vue';
 
 const credentials = ref({
-    email: '',
+    login: '',
     mot_de_passe: '',
 });
 
@@ -22,8 +22,8 @@ const authStore = useAuthStore();
 const login = async () => {
     try {
         await authStore.login({
-            email: credentials.value.email,
-            password: credentials.value.mot_de_passe,
+            login: credentials.value.login,
+            mot_de_passe: credentials.value.mot_de_passe,
         });
         toast.success('Connexion réussie !');
         router.push(authStore.user.commercant ? { name: 'commercant' } : { name: 'profil' });
@@ -49,7 +49,7 @@ const login = async () => {
                 Connectez-vous à <strong>Espace Cameroun</strong> pour accéder à vos achats et votre espace commerçant.
             </p>
             <form @submit.prevent="login" class="space-y-5">
-                <FormField label="Email" icon="fa-envelope" v-model="credentials.email" type="email" required
+                <FormField label="Email" icon="fa-envelope" v-model="credentials.login" type="email" required
                     :error="errors.email" />
                 <FormField label="Mot de passe" icon="fa-lock" v-model="credentials.mot_de_passe" type="password"
                     required :error="errors.mot_de_passe" />

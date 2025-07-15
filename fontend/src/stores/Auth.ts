@@ -31,7 +31,7 @@ import router from "../router";
 //     remember?: boolean;
 //   }) => {
 //     const response = await apiClient.post("/login", form);
-//     console.log(response.data.user);
+    // console.log(response.data.user);
 
 //     user.value = response.data.user;
 //     // const storage = form.remember ? localStorage : sessionStorage;
@@ -48,13 +48,13 @@ import router from "../router";
 //     const loadUserFromStorage = () => {
 //       const storedUser =
 //         localStorage.getItem("user");
-//     // // console.log(storedUser);
+    // // console.log(storedUser);
 
 //     if (storedUser) {
 //       user.value =  JSON.parse(storedUser);
 
 //     } else {
-//       console.log('ok');
+      // console.log('ok');
 //       user.value = null;
 //       // router.push("login");
 //     }
@@ -66,12 +66,12 @@ import router from "../router";
 export const useAuthStore = defineStore("auth", {
   state: () => {
     const rawUser = localStorage.getItem("user");
-    console.log(rawUser=='undefined');
+    // console.log(rawUser=='undefined');
     
     const user = rawUser && rawUser !== "undefined" ? JSON.parse(rawUser) : null;
 
     const token = localStorage.getItem("token") || null;
-console.log(token);
+// console.log(token);
 
     return {
       user,
@@ -79,13 +79,19 @@ console.log(token);
     };
   },
   actions: {
-    async login(credentials: { email: string; password: string }) {
+
+
+    async   login(credentials: { login: string; mot_de_passe: string }) {
       const response = await apiClient.post("/login", credentials);
+      // console.log(response.data);
+      
       this.user = response.data.user;
       this.token = response.data.token;
-      localStorage.setItem("user", JSON.stringify(this.user));
+      // localStorage.setItem("user", JSON.stringify(this.user));
       localStorage.setItem("token", this.token);
     },
+
+
     async register(data: {
       nom: string;
       telephone: string;
@@ -94,14 +100,17 @@ console.log(token);
       mot_de_passe: string;
       parrain_id?: string;
     }) {
+      // console.log(data);
+      
       const response = await apiClient.post("/register", {
         nom: data.nom,
         telephone: data.telephone,
         email: data.email || null,
         ville: data.ville,
-        password: data.mot_de_passe,
+        mot_de_passe: data.mot_de_passe,
         parrain_id: data.parrain_id || null,
       });
+// console.log(response.data);
 
       this.user = response.data.user;
       this.token = response.data.token;
@@ -115,7 +124,7 @@ console.log(token);
       }
       try {
         const response = await apiClient.get("/user");
-      console.log(response.data);
+      // console.log(response.data);
         
         this.user = response.data.user;
         localStorage.setItem("user", JSON.stringify(this.user));

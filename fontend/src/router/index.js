@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 // import Login from "../views/auth/Login.vue";
 import Login from "../views/auth/Login.vue";
+import CommercantProduits from "../views/CommercantProduits.vue"; // Assurez-vous que le chemin est correct
 import Register from "../views/auth/Register.vue";
 import Profile from "../views/Profile.vue"; // À créer si non existant
 import Home from "../views/Home.vue"; // À créer si non existant
@@ -10,16 +11,28 @@ import { useAuthStore } from "../stores/Auth"; // Assurez-vous que le chemin est
 const routes = [
   { path: "/login", component: Login, name: "login" },
   { path: "/register", component: Register, name: "register" },
-  { path: "/profil", component: Profile, name: "profil", meta: { requiresAuth: true, } },
+  {
+    path: "/profil",
+    component: Profile,
+    name: "profil",
+    meta: { requiresAuth: true },
+  },
   { path: "/home", component: Home, name: "home" },
   { path: "/", redirect: "/home" },
+
+  {
+    path: "/commercant/produits",
+    name: "commercant.produits",
+    component: CommercantProduits,
+    meta: { requiresAuth: true, requiresCommercant: true },
+  },
   {
     path: "/commercant",
     component: CommercantDashboard,
     meta: {
       requiresAuth: true,
     },
-  }
+  },
 ];
 
 
