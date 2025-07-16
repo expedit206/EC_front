@@ -1,83 +1,89 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import apiClient from '../api';
+import { useUserStateStore } from '../stores/userState';
 import { useToast } from 'vue-toastification';
+import apiClient from '../api';
 
-const toast = useToast();
+const userStateStore = useUserStateStore();
 const router = useRouter();
-const panier = ref([]);
+const toast = useToast();
+const cartItems = ref<any[]>([]);
 
-const fetchPanier = async () => {
+const fetchCart = async () => {
     try {
         const response = await apiClient.get('/panier');
-        panier.value = response.data.items;
+        cartItems.value = response.data.items;
+        userStateStore.saveCartToLocalStorage(
+            cartItems.value.map((item: any) => ({
+                produit_id: item.produit_id,
+                quantite: item.quantite,
+                nom: item.produit.nom,
+                prix: item.produit.prix,
+            }))
+        );
     } catch (error) {
         toast.error('Erreur lors du chargement du panier');
     }
 };
 
-const updateQuantite = async (itemId: string, quantite: number) => {
-    try {
-        await apiClient.put(`/panier/${itemId}`, { quantite });
-        const item = panier.value.find((i: any) => i.id === itemId);
-        if (item) item.quantite = quantite;
-        toast.success('Quantité mise à jour');
-    } catch (error) {
-        toast.error('Erreur lors de la mise à jour');
+const placeOrder = async () => {
+    if (cartItems.value.length === 0) {
+        toast.error('Votre panier est vide');
+        return;
+    }
+    const success = await userStateStore.placeOrder();
+    if (success) {
+        router.push({ path: '/commandes' });
     }
 };
 
-const removeFromPanier = async (itemId: string) => {
+const removeFromCart = async (produitId: string) => {
     try {
-        await apiClient.delete(`/panier/${itemId}`);
-        panier.value = panier.value.filter((i: any) => i.id !== itemId);
+        await apiClient.delete(`/panier/${produitId}`);
+        await fetchCart();
         toast.success('Produit retiré du panier');
     } catch (error) {
         toast.error('Erreur lors de la suppression');
     }
 };
 
-const viewProduit = (produitId: string) => {
-    router.push({ path: `/produits/${produitId}` });
-};
-
-onMounted(fetchPanier);
+onMounted(fetchCart);
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-100 pt-16 pb-20 px-4 sm:px-6">
-        <div class="container mx-auto max-w-4xl">
-            <h1 class="text-2xl sm:text-3xl font-bold text-[var(--espace-vert)] mb-6">
-                <i class="fas fa-shopping-cart mr-2 text-[var(--espace-or)]"></i> Mon Panier
-            </h1>
-            <div v-if="panier.length" class="grid grid-cols-1 gap-4">
-                <div v-for="item in panier" :key="item.id"
-                    class="bg-[var(--espace-blanc)] rounded-lg shadow-md p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div class="flex items-center gap-4">
-                        <img :src="item.produit.photo_url || 'https://via.placeholder.com/150'"
-                            :alt="`Image de ${item.produit.nom}`" class="w-16 h-16 object-cover rounded" />
-                        <div>
-                            <h2 @click="viewProduit(item.produit_id)"
-                                class="text-lg font-semibold text-[var(--espace-vert)] hover:text-[var(--espace-or)] hover:underline cursor-pointer">
-                                {{ item.produit.nom }}
-                            </h2>
-                            <p class="text-sm text-[var(--espace-gris)]">{{ item.produit.prix }} FCFA</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <input type="number" v-model.number="item.quantite" min="1"
-                            class="w-16 h-8 p-1 text-sm border border-gray-300 rounded focus:ring-[var(--espace-vert)]"
-                            @change="updateQuantite(item.id, item.quantite)" aria-label="Quantité" />
-                        <button @click="removeFromPanier(item.id)"
-                            class="bg-red-500 text-white px-3 py-1.5 rounded hover:bg-red-600 transition"
-                            aria-label="Supprimer du panier">
-                            <i class="fas fa-trash"></i>
-                        </button>
+    <div class="container mx-auto px-4 py-6 min-h-screen bg-gray-100 pt-16 pb-20">
+        <h1 class="text-2xl font-bold text-[var(--espace-vert)] mb-4 font-poppins">Votre Panier</h1>
+        <div v-if="cartItems.length === 0" class="text-center text-[var(--espace-gris)]">
+            Votre panier est vide.
+        </div>
+        <div v-else class="space-y-4">
+            <div v-for="item in cartItems" :key="item.produit_id"
+                class="flex items-center justify-between border-b py-2">
+                <div class="flex items-center gap-4">
+                    <img :src="item.produit.photo_url || 'https://via.placeholder.com/50'"
+                        :alt="`Image de ${item.produit.nom}`" class="w-12 h-12 object-cover rounded" />
+                    <div>
+                        <p class="text-[var(--espace-vert)] font-semibold font-poppins">{{ item.produit.nom }}</p>
+                        <p class="text-[var(--espace-gris)] text-sm">Quantité: {{ item.quantite }}</p>
+                        <p class="text-[var(--espace-or)] font-bold">{{ item.produit.prix * item.quantite }} FCFA</p>
                     </div>
                 </div>
+                <button @click="removeFromCart(item.produit_id)" class="text-red-500 hover:text-red-600"
+                    aria-label="Supprimer du panier">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
-            <p v-else class="text-center text-[var(--espace-gris)]">Votre panier est vide.</p>
+            <div class="flex justify-between items-center mt-4">
+                <p class="text-[var(--espace-vert)] font-bold">
+                    Total: {{cartItems.reduce((sum, item) => sum + item.produit.prix * item.quantite, 0)}} FCFA
+                </p>
+                <button @click="placeOrder"
+                    class="bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold px-4 py-2 rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-transform hover:scale-105"
+                    aria-label="Passer la commande">
+                    Passer la commande
+                </button>
+            </div>
         </div>
     </div>
 </template>

@@ -11,6 +11,8 @@ const collaborations = ref([]);
 const fetchCollaborations = async () => {
     try {
         const response = await apiClient.get('/collaborations');
+        console.log(response.data);
+        
         collaborations.value = response.data.collaborations;
     } catch (error) {
         toast.error('Erreur lors du chargement des collaborations');

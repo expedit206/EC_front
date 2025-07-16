@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { defineProps } from 'vue';
 import { useRouter } from 'vue-router';
-import { useToast } from 'vue-toastification';
 import { useAuthStore } from '../stores/Auth';
-import apiClient from '../api';
-import Produit from '../views/Produit.vue';
 
 const props = defineProps<{
   produit: {
@@ -17,61 +14,40 @@ const props = defineProps<{
     marge_min?: number;
   };
 }>();
-// console.log(props.produit);
-// produit = props.produit;
+
 const router = useRouter();
-const toast = useToast();
 const authStore = useAuthStore();
 const user = authStore.user;
 
 const viewProduit = () => {
+  console.log(props.produit.id);
   router.push({ path: `/produits/${props.produit.id}` });
 };
+console.log(props.produit.collaboratif);
 
-const collaborer = async (event: Event) => {
-  event.stopPropagation(); // Empêche la redirection lors du clic sur "Collaborer"
-  try {
-    const response = await apiClient.post('/collaborations', {
-      produit_id: props.produit.id,
-      prix_revente: props.produit.prix + (props.produit.marge_min || 500),
-    });
-    toast.success('Demande de collaboration envoyée !');
-  } catch (error: any) {
-    toast.error(error.response?.data.message || 'Erreur lors de la demande de collaboration');
-  }
-};
+
 </script>
 
 <template>
-  <div
-    @click="viewProduit"
-    class="border rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition bg-[var(--espace-blanc)] max-w-xs w-full cursor-pointer"
-    :aria-label="`Voir les détails de ${produit.nom}`"
-    role="button"
-    tabindex="0"
-    @keydown.enter="viewProduit"
-  >
-    <img
-      :src="produit.photo_url || 'https://via.placeholder.com/150'"
-      :alt="`Image de ${produit.nom}`"
-      class="w-full h-32 sm:h-36 object-cover rounded mb-2"
-    />
-    <h3 class="text-base sm:text-lg font-semibold text-[var(--espace-vert)] truncate font-poppins">
-      {{ produit.nom }}
+  <div @click="viewProduit"
+    class="border rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition bg-[var(--espace-blanc)] max-w-xs w-full cursor-pointer relative"
+    :aria-label="`Voir les détails de ${props.produit.nom}`" role="button" tabindex="0" @keydown.enter="viewProduit">
+    <!-- Indicateur collaboratif -->
+
+    <img src='/src/assets/images/selphie.jpg' :alt=" `Image de
+      ${props.produit.nom}`" class="w-full h-32 sm:h-36 object-cover rounded mb-2" />
+    <h3 class="text-base sm:text-lg flex justify-between font-semibold text-[var(--espace-vert)] truncate font-poppins">
+      {{ props.produit.nom }}
+      <span v-if="props.produit.collaboratif" class=" top-2 right-2 text-[var(--espace-or)]"
+        :title="user?.commercant?.id === props.produit.commercant_id ? 'Vous ne pouvez pas collaborer sur votre produit' : 'Produit ouvert à la collaboration'"
+        aria-label="Produit collaboratif">
+        <i class="fas fa-handshake text-lg"></i>
+      </span>
     </h3>
     <p class="text-[var(--espace-gris)] text-xs sm:text-sm truncate">
-      {{ produit.description || 'Aucune description' }}
+      {{ props.produit.description || 'Aucune description' }}
     </p>
-    <p class="text-[var(--espace-or)] font-bold text-sm sm:text-base">{{ produit.prix }} FCFA</p>
-    <button
-      v-if="produit.collaboratif && user"
-      @click="collaborer"
-      class="mt-2 w-full bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold px-3 py-1.5 rounded hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] flex items-center justify-center transition sm:text-sm text-xs"
-      aria-label="Collaborer sur ce produit"
-    >
-      <i class="fas fa-handshake mr-1 sm:mr-2"></i>
-      <span class="hidden sm:inline">Collaborer</span>
-    </button>
+    <p class="text-[var(--espace-or)] font-bold text-sm sm:text-base">{{ props.produit.prix }} FCFA</p>
   </div>
 </template>
 

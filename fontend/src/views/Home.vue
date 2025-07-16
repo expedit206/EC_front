@@ -121,11 +121,9 @@ onUnmounted(() => {
         <div class="container mx-auto px-4 sm:px-6 py-4">
             <!-- Bouton toggle pour les filtres (mobile) avec badge -->
             <div class="flex justify-between items-center mb-3 sm:mb-4">
-                <h1 class="text-xl sm:text-2xl font-bold text-[var(--espace-vert)] flex items-center gap-2 select-none">
-                    <i class="fas fa-box"></i> Nos Produits
-                </h1>
+               
                 <button @click="showFilters = !showFilters"
-                    class="sm:hidden relative flex items-center justify-center w-8 h-8 bg-[var(--espace-or)] text-[var(--espace-vert)] rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition"
+                    class=" relative flex items-center justify-center w-8 h-8 bg-[var(--espace-or)] text-[var(--espace-vert)] rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition"
                     :aria-label="showFilters ? 'Masquer les filtres' : 'Afficher les filtres'"
                     :aria-expanded="showFilters">
                     <i class="fas fa-filter text-base"></i>

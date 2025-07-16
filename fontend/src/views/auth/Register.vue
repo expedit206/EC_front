@@ -32,7 +32,7 @@ const register = async () => {
         console.log('Envoi des données d\'inscription:', form.value);
         await authStore.register(form.value);
         toast.success('Inscription réussie !');
-        router.push({ name: 'profil' });
+        router.push({ name: 'home' });
     } catch (error: any) {
         console.error('Erreur lors de l\'inscription:', error);
         const message = error.response?.data?.message || 'Erreur lors de l\'inscription. Veuillez vérifier vos informations.';

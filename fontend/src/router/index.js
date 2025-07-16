@@ -9,7 +9,7 @@ import Home from "../views/Home.vue"; // À créer si non existant
 import Produit from "../views/Produit.vue";
 import CommercantDashboard from "../views/CommercantDashboard.vue"; // À créer si non existant
 // import Parrainage from "../views/Parrainage.vue"; // À créer si non existant
-// import Commandes from "../views/Commandes.vue"; // À créer si non existant
+import Commandes from "../views/commandes.vue"; // À créer si non existant
 // import Abonnements from "../views/Abonnements.vue"; // À créer si non existant
 import Collaborations from "../views/Collaborations.vue"; // À créer si non existant
 import Panier from "../views/Panier.vue"; // À créer si non existant
@@ -45,12 +45,21 @@ const routes = [
     meta: {
       requiresAuth: true,
     },
-
   },
-  { path: '/panier', name: 'panier', component: Panier, meta: { requiresAuth: true } },
+  {
+    path: "/panier",
+    name: "panier",
+    component: Panier,
+    meta: { requiresAuth: true },
+  },
 
   // { path: '/parrainage', name: 'parrainage', component: Parrainage, meta: { requiresAuth: true } },
-  // { path: '/commandes', name: 'commandes', component: Commandes, meta: { requiresAuth: true } },
+  {
+    path: "/commandes",
+    name: "commandes",
+    component: Commandes,
+    meta: { requiresAuth: true },
+  },
   // { path: '/abonnements', name: 'abonnements', component: Abonnements, meta: { requiresAuth: true } },
   {
     path: "/parametres",
