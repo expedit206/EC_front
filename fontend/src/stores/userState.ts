@@ -141,7 +141,7 @@ export const useUserStateStore = defineStore("userState", () => {
       toast.error("Votre panier est vide");
       return false;
     }
-
+    
     const pendingOrders = JSON.parse(
       localStorage.getItem("pending_orders") || "[]"
     );
@@ -157,11 +157,13 @@ export const useUserStateStore = defineStore("userState", () => {
     };
     pendingOrders.push(newOrder);
     saveOrdersToLocalStorage(pendingOrders);
-
+    
     try {
-      console.log('hjkl');
+      console.log(cart);
       
       const response = await apiClient.post("/commandes", { items: cart });
+      console.log(response.data);
+
       saveCartToLocalStorage([]); // Vider le panier
       await syncOrdersWithBackend();
       toast.success("Commande passée avec succès !");
@@ -222,6 +224,7 @@ export const useUserStateStore = defineStore("userState", () => {
   const syncOrdersWithBackend = async () => {
     try {
       const response = await apiClient.get("/commandes");
+      
       const backendOrders = response.data.filter(
         (order: any) => order.status === "pending"
       );

@@ -4,6 +4,7 @@ import { useAuthStore } from '../stores/Auth';
 import { useUserStateStore } from '../stores/userState';
 import { useToast } from 'vue-toastification';
 import apiClient from '../api';
+import { log } from 'console';
 
 const authStore = useAuthStore();
 const userStateStore = useUserStateStore();
@@ -17,6 +18,8 @@ const fetchOrders = async () => {
     }
     try {
         const response = await apiClient.get('/commandes');
+        console.log('ok');
+        
         orders.value = response.data;
         userStateStore.saveOrdersToLocalStorage(
             response.data.filter((order: any) => order.status === 'pending').map((order: any) => ({
