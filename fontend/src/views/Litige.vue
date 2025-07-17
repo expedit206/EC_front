@@ -1,7 +1,7 @@
 <!-- src/views/Litige.vue -->
 <template>
     <div class="container mx-auto p-4 sm:p-6">
-        <AppHeader />
+
         <h1 class="text-2xl sm:text-3xl font-bold text-[var(--espace-vert)] mb-4 flex items-center">
             <i class="fas fa-exclamation-triangle mr-2"></i> Mes Litiges
         </h1>
@@ -91,7 +91,7 @@ onMounted(async () => {
     try {
         await authStore.fetchUser()
         isCommercant.value = !!authStore.user.commercant
-        const response = await axios.get('http://localhost:8000/api/v1/litiges')
+        const response = await apiClient.get('/litiges')
         litiges.value = response.data.litiges.filter(l =>
             l.user_id === authStore.user.id || (authStore.user.commercant && l.commande.commercant_id === authStore.user.commercant.id)
         )
@@ -109,7 +109,7 @@ const addPreuve = () => {
 
 const createLitige = async () => {
     try {
-        await axios.post('http://localhost:8000/api/v1/litiges', litigeForm.value)
+        await apiClient.post('/litiges', litigeForm.value)
         toast.success('Litige signalé !')
         router.push({ name: 'litiges' })
     } catch (error) {

@@ -44,7 +44,7 @@ const fetchCommercantData = async () => {
         ]);
         isLoading.value = false;
         console.log('Produits:', productsResponse.data);
-        
+
         products.value = productsResponse.data.produits;
         categories.value = categoriesResponse.data.categories;
         commerçant.value = commercantResponse.data.commercant;
@@ -103,7 +103,7 @@ onMounted(() => {
 
 <template>
     <div class="min-h-screen bg-gray-100" :style="{ background: 'url(/src/assets/images/bginsc.jpg) center/cover' }">
-        <AppHeader />
+
 
         <div class="container mx-auto px-4 sm:px-6 py-4">
             <!-- Titre -->

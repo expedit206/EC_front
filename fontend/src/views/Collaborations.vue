@@ -3,19 +3,22 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import apiClient from '../api';
 import { useToast } from 'vue-toastification';
+import Loader from '../components/Loader.vue'; // ← 🔥 Import du loader
 
 const toast = useToast();
 const router = useRouter();
+
 const collaborations = ref([]);
+const isLoading = ref(true); // ← 🔥 état de chargement
 
 const fetchCollaborations = async () => {
     try {
         const response = await apiClient.get('/collaborations');
-        console.log(response.data);
-        
         collaborations.value = response.data.collaborations;
     } catch (error) {
         toast.error('Erreur lors du chargement des collaborations');
+    } finally {
+        isLoading.value = false; // ← 🔥 arrêt du loader
     }
 };
 
@@ -23,16 +26,24 @@ const viewProduit = (produitId: string) => {
     router.push({ path: `/produits/${produitId}` });
 };
 
-onMounted(fetchCollaborations);
+onMounted(() => {
+    isLoading.value = true;
+    fetchCollaborations();
+});
 </script>
 
 <template>
+    <!-- 🔥 Affichage du loader -->
+    <Loader :isLoading="isLoading" />
+
     <div class="min-h-screen bg-gray-100 pt-16 pb-20 px-4 sm:px-6">
         <div class="container mx-auto max-w-4xl">
             <h1 class="text-2xl sm:text-3xl font-bold text-[var(--espace-vert)] mb-6">
                 <i class="fas fa-handshake mr-2 text-[var(--espace-or)]"></i> Mes Collaborations
             </h1>
-            <div v-if="collaborations.length" class="grid grid-cols-1 gap-4">
+
+            <!-- 🔥 Affichage conditionnel -->
+            <div v-if="!isLoading && collaborations.length" class="grid grid-cols-1 gap-4">
                 <div v-for="collaboration in collaborations" :key="collaboration.id"
                     class="bg-[var(--espace-blanc)] rounded-lg shadow-md p-4 hover:shadow-lg transition">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -41,8 +52,9 @@ onMounted(fetchCollaborations);
                                 class="text-lg font-semibold text-[var(--espace-vert)] hover:text-[var(--espace-or)] hover:underline cursor-pointer">
                                 {{ collaboration.produit.nom }}
                             </h2>
-                            <p class="text-sm text-[var(--espace-gris)]">Prix de revente : {{ collaboration.prix_revente
-                                }} FCFA</p>
+                            <p class="text-sm text-[var(--espace-gris)]">
+                                Prix de revente : {{ collaboration.prix_revente }} FCFA
+                            </p>
                             <p class="text-sm text-[var(--espace-gris)]">
                                 Statut :
                                 <span :class="{
@@ -50,8 +62,13 @@ onMounted(fetchCollaborations);
                                     'text-yellow-600': collaboration.status === 'pending',
                                     'text-red-600': collaboration.status === 'rejected',
                                 }">
-                                    {{ collaboration.status === 'pending' ? 'En attente' : collaboration.status ===
-                                    'accepted' ? 'Acceptée' : 'Rejetée' }}
+                                    {{
+                                        collaboration.status === 'pending'
+                                            ? 'En attente'
+                                            : collaboration.status === 'accepted'
+                                                ? 'Acceptée'
+                                                : 'Rejetée'
+                                    }}
                                 </span>
                             </p>
                         </div>
@@ -63,7 +80,10 @@ onMounted(fetchCollaborations);
                     </div>
                 </div>
             </div>
-            <p v-else class="text-center text-[var(--espace-gris)]">Aucune collaboration pour le moment.</p>
+
+            <p v-else-if="!isLoading" class="text-center text-[var(--espace-gris)]">
+                Aucune collaboration pour le moment.
+            </p>
         </div>
     </div>
 </template>

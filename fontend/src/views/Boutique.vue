@@ -1,7 +1,7 @@
 <!-- src/views/Boutique.vue -->
 <template>
     <div class="container mx-auto p-4 sm:p-6">
-        <AppHeader />
+
         <h1 class="text-2xl sm:text-3xl font-bold text-[var(--espace-vert)] mb-4 flex items-center">
             <i class="fas fa-store mr-2"></i> {{ boutique.nom }}
         </h1>
@@ -142,7 +142,7 @@ onMounted(async () => {
 
 const createProduit = async () => {
     try {
-        await axios.post('http://localhost:8000/api/v1/produits', {
+        await apiClient.post('/produits', {
             ...produitForm.value,
             boutique_id: boutique.value.id,
         })

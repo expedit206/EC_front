@@ -1,7 +1,7 @@
 <!-- src/views/Parrainage.vue -->
 <template>
     <div class="container mx-auto p-4 sm:p-6">
-        <AppHeader />
+
         <h1 class="text-2xl sm:text-3xl font-bold text-[var(--espace-vert)] mb-4 flex items-center">
             <i class="fas fa-users mr-2"></i> Mon Parrainage
         </h1>
@@ -32,7 +32,7 @@
                 <div class="bg-[var(--espace-vert)] h-4 rounded-full" :style="{ width: progress + '%' }"></div>
             </div>
             <p class="text-[var(--espace-gris)] text-sm sm:text-base">Niveau actuel : {{ niveau.nom }} ({{ niveau.requis
-            }} commerçants)</p>
+                }} commerçants)</p>
         </div>
     </div>
 </template>
@@ -67,7 +67,7 @@ onMounted(async () => {
     try {
         await authStore.fetchUser()
         user.value = authStore.user
-        const response = await axios.get('http://localhost:8000/api/v1/parrainages')
+        const response = await apiClient.get('/parrainages')
         filleuls.value = response.data.parrainages
         const actifs = filleuls.value.filter(f => f.filleul.commercant?.actif).length
         niveau.value = niveaux.find(n => actifs >= n.requis) || niveaux[0]

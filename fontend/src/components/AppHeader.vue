@@ -35,6 +35,7 @@ const navLinks = computed(() => [
 const fetchBadges = async () => {
     if (!user) return;
     try {
+        console.log('ghj');
         const response = await apiClient.get('/user/badges');
         
         userStateStore.saveCollaborationsToLocalStorage(
@@ -54,17 +55,11 @@ const fetchBadges = async () => {
                 total: order.total,
             }))
         );
-        console.log('ghj');
     } catch (error) {
         console.error('Erreur lors du chargement des badges');
     }
 };
 
-const logout = () => {
-    authStore.logout();
-    userStateStore.clearState();
-    router.push({ name: 'login' });
-};
 
 // Animation pour le badge du panier
 watch(
@@ -146,12 +141,7 @@ onMounted(() => {
                         {{ typeof link.badge === 'object' ? link.badge.value : link.badge }}
                     </span>
                 </RouterLink>
-                <button v-if="user" @click="logout"
-                    class="hover:text-[var(--espace-or)] flex items-center gap-1 sm:gap-2 transition-colors duration-300"
-                    aria-label="Se déconnecter">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Déconnexion
-                </button>
+          
             </nav>
         </div>
     </header>
@@ -180,10 +170,7 @@ onMounted(() => {
                         {{ typeof link.badge === 'object' ? link.badge.value : link.badge }}
                     </span>
                 </RouterLink>
-                <button v-if="user" @click="logout" aria-label="Déconnexion"
-                    class="relative flex items-center justify-center w-10 h-10 hover:text-[var(--espace-or)] transition-colors duration-300">
-                    <i class="fas fa-sign-out-alt text-lg"></i>
-                </button>
+             
             </div>
         </nav>
     </Transition>

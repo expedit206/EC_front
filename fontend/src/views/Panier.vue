@@ -4,14 +4,17 @@ import { useRouter } from 'vue-router';
 import { useUserStateStore } from '../stores/userState';
 import { useToast } from 'vue-toastification';
 import apiClient from '../api';
+import Loader from '../components/Loader.vue'; // Importer le composant Loader
 
 const userStateStore = useUserStateStore();
 const router = useRouter();
 const toast = useToast();
 const cartItems = ref<any[]>([]);
+const isLoading = ref(true); // Ajouter isLoading
 
 const fetchCart = async () => {
     try {
+        isLoading.value = true;
         const response = await apiClient.get('/panier');
         cartItems.value = response.data.items;
         userStateStore.saveCartToLocalStorage(
@@ -24,6 +27,8 @@ const fetchCart = async () => {
         );
     } catch (error) {
         toast.error('Erreur lors du chargement du panier');
+    } finally {
+        isLoading.value = false;
     }
 };
 
@@ -52,9 +57,13 @@ onMounted(fetchCart);
 </script>
 
 <template>
+    <Loader :isLoading="isLoading" />
     <div class="container mx-auto px-4 py-6 min-h-screen bg-gray-100 pt-16 pb-20">
         <h1 class="text-2xl font-bold text-[var(--espace-vert)] mb-4 font-poppins">Votre Panier</h1>
-        <div v-if="cartItems.length === 0" class="text-center text-[var(--espace-gris)]">
+        <div v-if="isLoading" class="text-center text-[var(--espace-gris)]">
+            <!-- Le loader remplace ce contenu -->
+        </div>
+        <div v-else-if="cartItems.length === 0" class="text-center text-[var(--espace-gris)]">
             Votre panier est vide.
         </div>
         <div v-else class="space-y-4">

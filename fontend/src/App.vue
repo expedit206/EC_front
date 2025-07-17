@@ -1,6 +1,6 @@
 <!-- src/App.vue -->
 <template>
-  
+
   <div class="min-h-screen mt-16 mb-8 ">
     <AppHeader />
     <router-view />

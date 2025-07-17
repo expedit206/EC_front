@@ -1,7 +1,7 @@
 <!-- src/views/Abonnement.vue -->
 <template>
     <div class="container mx-auto p-4 sm:p-6">
-        <AppHeader />
+
         <h1 class="text-2xl sm:text-3xl font-bold text-[var(--espace-vert)] mb-4 flex items-center">
             <i class="fas fa-star mr-2"></i> Abonnements Premium
         </h1>
@@ -69,7 +69,7 @@ const abonnement = ref(null)
 onMounted(async () => {
     try {
         await authStore.fetchUser()
-        const response = await axios.get('http://localhost:8000/api/v1/abonnements')
+        const response = await apiClient.get('/abonnements')
         abonnement.value = response.data.abonnements.find(a => a.user_id === authStore.user.id && a.actif)
     } catch (error) {
         toast.error('Erreur lors du chargement des abonnements')
@@ -78,7 +78,7 @@ onMounted(async () => {
 
 const subscribe = async (plan) => {
     try {
-        await axios.post('http://localhost:8000/api/v1/abonnements', { plan })
+        await apiClient.post('/abonnements', { plan })
         toast.success('Abonnement souscrit !')
         await authStore.fetchUser()
         abonnement.value = { plan, actif: true, debut: new Date(), fin: new Date() }

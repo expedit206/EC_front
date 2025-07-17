@@ -1,7 +1,6 @@
 <template>
-  <AppHeader />
-  <div class="min-h-screen bg-gray-100 py-6 px-4 sm:px-6"
-    >
+
+  <div class="min-h-screen bg-gray-100 py-6 px-4 sm:px-6">
     <div class="container mx-auto space-y-6">
 
       <h1 class="text-2xl sm:text-3xl font-bold text-[var(--espace-vert)] flex items-center gap-2 select-none">
@@ -141,53 +140,6 @@
         </div>
       </section>
 
-      <!-- Bloc Mes Boutiques -->
-      <section
-        class="bg-[rgba(255,255,255,0.95)] rounded-2xl shadow-lg p-4 sm:p-6 transition-shadow hover:shadow-xl space-y-4">
-        <h2 class="text-lg sm:text-xl font-semibold text-[var(--espace-vert)] flex items-center gap-2 select-none">
-          <i class="fas fa-shop"></i> Mes Boutiques
-        </h2>
-        <div v-if="user.commercant && boutiques.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <BoutiqueCard v-for="boutique in boutiques" :key="boutique.id" :boutique="boutique" @update="updateBoutique"
-            @delete="deleteBoutique" />
-        </div>
-        <p v-else class="text-[var(--espace-gris)] text-sm sm:text-base">
-          Aucune boutique. Créez-en une !
-        </p>
-        <form v-if="user.commercant" @submit.prevent="createBoutique" class="space-y-4 mt-4">
-          <div>
-            <label class="block text-[var(--espace-gris)] text-sm font-medium mb-1 select-none" for="boutique-nom">
-              <i class="fas fa-shop mr-1"></i> Nom de la boutique
-            </label>
-            <input v-model="boutiqueForm.nom" id="boutique-nom" type="text" required
-              class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)] transition"
-              placeholder="Ex: Boutique du Centre" />
-          </div>
-          <div>
-            <label class="block text-[var(--espace-gris)] text-sm font-medium mb-1 select-none" for="boutique-ville">
-              <i class="fas fa-city mr-1"></i> Ville
-            </label>
-            <input v-model="boutiqueForm.ville" id="boutique-ville" type="text" required
-              class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)] transition"
-              placeholder="Ex: Yaoundé" />
-          </div>
-          <div>
-            <label class="block text-[var(--espace-gris)] text-sm font-medium mb-1 select-none"
-              for="boutique-description">
-              <i class="fas fa-align-left mr-1"></i> Description (optionnel)
-            </label>
-            <textarea v-model="boutiqueForm.description" id="boutique-description" rows="3"
-              class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)] transition resize-none"
-              placeholder="Décrivez votre boutique"></textarea>
-          </div>
-          <button type="submit"
-            class="w-full bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold p-2 sm:p-3 rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition flex items-center justify-center gap-2 text-sm"
-            aria-label="Créer boutique">
-            <i class="fas fa-shop"></i>
-            <span class="hidden sm:inline">Créer Boutique</span>
-          </button>
-        </form>
-      </section>
 
       <!-- Bloc Collaborations -->
       <section
@@ -218,13 +170,12 @@ import { useToast } from 'vue-toastification';
 import { useAuthStore } from '../stores/Auth';
 import axios from 'axios';
 import AppHeader from '../components/AppHeader.vue';
-import BoutiqueCard from '../components/BoutiqueCard.vue';
+import apiClient from '../api';
 
 const authStore = useAuthStore();
 const router = useRouter();
 const toast = useToast();
 const user = ref(authStore.user);
-const boutiques = ref([]);
 const collaborations = ref([]);
 const stats = ref({ commandes: 0, parrainages: 0, revenus: 0, produits_vendus: 0 });
 const editProfile = ref(false);
@@ -235,16 +186,13 @@ const profileForm = ref({
   ville: user.value.ville,
 });
 const commercantForm = ref({ nom: '', ville: '', description: '' });
-const boutiqueForm = ref({ nom: '', ville: '', description: '' });
 
 const fetchData = async () => {
   try {
-    const [boutiquesResponse, statsResponse, collabsResponse] = await Promise.all([
-      axios.get('http://localhost:8000/api/v1/boutiques'),
-      axios.get('http://localhost:8000/api/v1/stats'),
-      axios.get('http://localhost:8000/api/v1/collaborations'),
+    const [ statsResponse, collabsResponse] = await Promise.all([
+      apiClient.get('/stats'),
+      apiClient.get('/collaborations'),
     ]);
-    boutiques.value = boutiquesResponse.data.boutiques;
     stats.value = statsResponse.data;
     collaborations.value = collabsResponse.data.collaborations;
   } catch (error) {
@@ -254,7 +202,7 @@ const fetchData = async () => {
 
 const updateProfile = async () => {
   try {
-    const response = await axios.put('http://localhost:8000/api/v1/profile', profileForm.value);
+    const response = await apiClient.put('profile', profileForm.value);
     user.value = { ...user.value, ...response.data.user };
     authStore.user = user.value; // Mettre à jour le store
     editProfile.value = false;
@@ -266,7 +214,7 @@ const updateProfile = async () => {
 
 const createCommercant = async () => {
   try {
-    const response = await axios.post('http://localhost:8000/api/v1/commercants', commercantForm.value);
+    const response = await apiClient.post('/commercants', commercantForm.value);
     user.value.commercant = response.data.commercant;
     authStore.user = user.value; // Mettre à jour le store
     toast.success('Compte commerçant créé !');
@@ -276,38 +224,8 @@ const createCommercant = async () => {
   }
 };
 
-const createBoutique = async () => {
-  try {
-    const response = await axios.post('http://localhost:8000/api/v1/boutiques', boutiqueForm.value);
-    boutiques.value.push(response.data.boutique);
-    toast.success('Boutique créée !');
-    boutiqueForm.value = { nom: '', ville: '', description: '' };
-  } catch (error: any) {
-    toast.error(error.response?.data.message || 'Erreur lors de la création');
-  }
-};
 
-const updateBoutique = async (boutique: any) => {
-  try {
-    const response = await axios.put(`http://localhost:8000/api/v1/boutiques/${boutique.id}`, boutique);
-    boutiques.value = boutiques.value.map((b) =>
-      b.id === boutique.id ? response.data.boutique : b
-    );
-    toast.success('Boutique mise à jour !');
-  } catch (error: any) {
-    toast.error(error.response?.data.message || 'Erreur lors de la mise à jour');
-  }
-};
 
-const deleteBoutique = async (boutiqueId: string) => {
-  try {
-    await axios.delete(`http://localhost:8000/api/v1/boutiques/${boutiqueId}`);
-    boutiques.value = boutiques.value.filter((b) => b.id !== boutiqueId);
-    toast.success('Boutique supprimée !');
-  } catch (error: any) {
-    toast.error(error.response?.data.message || 'Erreur lors de la suppression');
-  }
-};
 
 onMounted(fetchData);
 </script>

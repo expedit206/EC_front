@@ -6,6 +6,7 @@ import { useUserStateStore } from '../stores/userState';
 import { useToast } from 'vue-toastification';
 import apiClient from '../api';
 import ProductCard from '../components/ProductCard.vue';
+import Loader from '../components/Loader.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -20,8 +21,8 @@ const prixRevente = ref<number | null>(null);
 
 const fetchProduit = async () => {
     try {
-        isLoading.value = true;
         const response = await apiClient.get(`/produits/${route.params.id}`);
+        isLoading.value = true;
         produit.value = response.data.produit;
         await fetchRelatedProducts();
     } catch (error) {
@@ -39,7 +40,7 @@ const fetchRelatedProducts = async () => {
         });
         relatedProducts.value = response.data.produits;
     } catch (error) {
-        toast.error('Erreur lors du chargement des produits similaires');
+        toast.error('Erreur lors du Akbar du chargement des produits similaires');
     }
 };
 
@@ -116,16 +117,17 @@ onMounted(() => {
 </script>
 
 <template>
+    <Loader :isLoading="isLoading" />
     <div class="min-h-screen bg-gray-100 pt-16 pb-20 px-4 sm:px-6">
         <div class="container mx-auto max-w-5xl">
             <div v-if="isLoading" class="text-center text-[var(--espace-gris)]">
-                <i class="fas fa-spinner fa-spin text-2xl"></i> Chargement...
+
             </div>
             <div v-else-if="produit" class="bg-[var(--espace-blanc)] rounded-lg shadow-md p-6 sm:p-8">
                 <div class="flex flex-col lg:flex-row gap-6 sm:gap-8">
                     <!-- Image du produit -->
                     <div class="w-full lg:w-1/2">
-                        <div class="relative">
+                         <div class="relative">
                             <img :src="produit.photo_url || 'https://via.placeholder.com/300'"
                                 :alt="`Image de ${produit.nom}`"
                                 class="w-full h-64 sm:h-80 lg:h-96 object-cover rounded-lg shadow-sm hover:scale-105 transition-transform duration-300" />
@@ -142,7 +144,8 @@ onMounted(() => {
                             class="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--espace-vert)] mb-4 font-poppins">
                             {{ produit.nom }}
                         </h1>
-                        <p class="text-md text-[var(--espace-gris)] mb-4">{{ produit.description || 'Aucune description' }}</p>
+                        <p class="text-md text-[var(--espace-gris)] mb-4">{{ produit.description || 'Aucune description'
+                            }}</p>
                         <p class="text-xl sm:text-2xl font-semibold text-[var(--espace-or)] mb-4">{{ produit.prix }} XAF
                         </p>
                         <div class="grid grid-cols-2 gap-4 mb-4">
@@ -310,4 +313,4 @@ onMounted(() => {
         transform: scale(1);
     }
 }
-</style>    
+</style>

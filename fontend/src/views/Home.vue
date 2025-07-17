@@ -4,6 +4,7 @@ import { useToast } from 'vue-toastification';
 import ProductCard from '../components/ProductCard.vue';
 import AppHeader from '../components/AppHeader.vue';
 import apiClient from '../api';
+import Loader from '../components/Loader.vue';
 
 const products = ref<any[]>([]);
 const currentPage = ref(1);
@@ -114,14 +115,13 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-100" 
-    >
-        <AppHeader />
+    <div class="min-h-screen bg-gray-100">
+        <Loader :isLoading="isLoading" />
 
         <div class="container mx-auto px-4 sm:px-6 py-4">
             <!-- Bouton toggle pour les filtres (mobile) avec badge -->
             <div class="flex justify-between items-center mb-3 sm:mb-4">
-               
+              
                 <button @click="showFilters = !showFilters"
                     class=" relative flex items-center justify-center w-8 h-8 bg-[var(--espace-or)] text-[var(--espace-vert)] rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition"
                     :aria-label="showFilters ? 'Masquer les filtres' : 'Afficher les filtres'"
@@ -205,11 +205,8 @@ onUnmounted(() => {
             </TransitionGroup>
             <div ref="loadMoreTrigger" class="h-10 flex items-center justify-center" aria-live="polite"
                 aria-busy="isLoading">
-                <div v-if="isLoading" class="flex items-center gap-2 text-[var(--espace-vert)]">
-                    <i class="fas fa-spinner animate-spin text-lg"></i>
-                    <span class="text-sm font-poppins">Chargement...</span>
-                </div>
-                <p v-else-if="currentPage > lastPage" class="text-[var(--espace-gris)] text-sm font-poppins">
+
+                <p v-if="currentPage > lastPage" class="text-[var(--espace-gris)] text-sm font-poppins">
                     Aucun produit supplémentaire
                 </p>
             </div>
