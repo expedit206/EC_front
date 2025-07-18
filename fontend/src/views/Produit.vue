@@ -1,13 +1,16 @@
+<!-- src/views/Produit.vue -->
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/Auth';
 import { useUserStateStore } from '../stores/userState';
 import { useToast } from 'vue-toastification';
-import apiClient from '../api';
+import { useProductStore } from '../stores/product';
 import ProductCard from '../components/ProductCard.vue';
 import Loader from '../components/Loader.vue';
+import AppHeader from '../components/AppHeader.vue';
 
+const productStore = useProductStore();
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
@@ -15,21 +18,16 @@ const userStateStore = useUserStateStore();
 const toast = useToast();
 const produit = ref<any>(null);
 const relatedProducts = ref<any[]>([]);
-const isLoading = ref(true);
 const showCollaborationModal = ref(false);
 const prixRevente = ref<number | null>(null);
 
 const fetchProduit = async () => {
     try {
-        const response = await apiClient.get(`/produits/${route.params.id}`);
-        isLoading.value = true;
-        produit.value = response.data.produit;
+        produit.value = await productStore.viewProduct(route.params.id);
         await fetchRelatedProducts();
-    } catch (error) {
-        toast.error('Erreur lors du chargement du produit');
+    } catch (error: any) {
+        toast.error(error || 'Erreur lors du chargement du produit');
         router.push({ name: 'dashboard' });
-    } finally {
-        isLoading.value = false;
     }
 };
 
@@ -39,8 +37,8 @@ const fetchRelatedProducts = async () => {
             params: { category_id: produit.value.category_id, limit: 4 },
         });
         relatedProducts.value = response.data.produits;
-    } catch (error) {
-        toast.error('Erreur lors du Akbar du chargement des produits similaires');
+    } catch (error: any) {
+        toast.error(error.response?.data?.message || 'Erreur lors du chargement des produits similaires');
     }
 };
 
@@ -60,7 +58,7 @@ const addToCart = async () => {
         prix: produit.value.prix,
     });
     if (success) {
-        toast.success('Produit ajouté au panier');
+        toast.success('Produit ajouté au panier', { timeout: 3000 });
     }
 };
 
@@ -92,6 +90,7 @@ const submitCollaboration = async () => {
         prix_revente: prixRevente.value,
     });
     if (success) {
+        toast.success('Demande de collaboration envoyée', { timeout: 3000 });
         showCollaborationModal.value = false;
         prixRevente.value = null;
     }
@@ -100,10 +99,6 @@ const submitCollaboration = async () => {
 const closeCollaborationModal = () => {
     showCollaborationModal.value = false;
     prixRevente.value = null;
-};
-
-const goToCommercant = () => {
-    router.push({ path: `/commercant/${produit.value.commercant_id}` });
 };
 
 const editProduit = () => {
@@ -117,112 +112,125 @@ onMounted(() => {
 </script>
 
 <template>
-    <Loader :isLoading="isLoading" />
-    <div class="min-h-screen bg-gray-100 pt-16 pb-20 px-4 sm:px-6">
+    <AppHeader />
+    <Loader :isLoading="productStore.isLoading" />
+    <div class="min-h-screen bg-[var(--espace-blanc)] pt-16 pb-20 px-4 sm:px-6">
         <div class="container mx-auto max-w-5xl">
-            <div v-if="isLoading" class="text-center text-[var(--espace-gris)]">
-
+            <div v-if="productStore.isLoading" class="text-center text-[var(--espace-gris)]">
+                <!-- Loader géré par Loader.vue -->
             </div>
-            <div v-else-if="produit" class="bg-[var(--espace-blanc)] rounded-lg shadow-md p-6 sm:p-8">
-                <div class="flex flex-col lg:flex-row gap-6 sm:gap-8">
-                    <!-- Image du produit -->
-                    <div class="w-full lg:w-1/2">
-                         <div class="relative">
+            <div v-else-if="produit" class="bg-[var(--espace-blanc)] rounded-lg shadow-md p-4 sm:p-6">
+                <Transition name="slide-up">
+                    <div class="flex flex-col lg:flex-row gap-4 sm:gap-6">
+                        <!-- Image du produit -->
+                        <div class="w-full lg:w-1/2 relative">
                             <img :src="produit.photo_url || 'https://via.placeholder.com/300'"
                                 :alt="`Image de ${produit.nom}`"
-                                class="w-full h-64 sm:h-80 lg:h-96 object-cover rounded-lg shadow-sm hover:scale-105 transition-transform duration-300" />
+                                class="w-full h-64 sm:h-80 lg:h-96 object-cover rounded-lg shadow-sm hover:scale-[1.02] transition-transform duration-300" />
                             <span v-if="produit.collaboratif"
-                                class="absolute top-4 left-4 bg-[var(--espace-or)] text-[var(--espace-vert)] text-xs font-semibold px-2 py-1 rounded-full font-poppins"
+                                class="absolute top-3 left-3 bg-[var(--espace-or)] text-[var(--espace-vert)] text-[10px] font-semibold px-2 py-1 rounded-full font-poppins"
                                 aria-label="Produit collaboratif">
                                 Collaboratif
                             </span>
                         </div>
+                        <!-- Détails du produit -->
+                        <div class="w-full lg:w-1/2">
+                            <h1
+                                class="text-xl sm:text-2xl lg:text-3xl font-bold text-[var(--espace-vert)] mb-3 font-poppins">
+                                {{ produit.nom }}
+                            </h1>
+                            <p class="text-sm text-[var(--espace-gris)] mb-3">{{ produit.description || 'Aucune' }}</p>
+                            <p class="text-lg sm:text-xl font-semibold text-[var(--espace-or)] mb-3">{{ produit.prix }}
+                                XAF</p>
+                            <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4 text-xs text-[var(--espace-gris)]">
+                                <p><strong>Catégorie :</strong> {{ produit.category?.nom || 'Non spécifiée' }}</p>
+                                <p><strong>Quantité :</strong> {{ produit.quantite }}</p>
+                                <p><strong>Ville :</strong> {{ produit.ville || 'Non spécifiée' }}</p>
+                                <p><strong>Ajouté le :</strong> {{ new
+                                    Date(produit.created_at).toLocaleDateString('fr-FR') }}</p>
+                                <div class="flex items-center gap-3">
+                                    <div class="flex items-center gap-1">
+                                        <i class="fas fa-eye text-[10px]"></i>
+                                        <span>{{ produit.view_count }} vues</span>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <i class="fas fa-heart text-[10px]"></i>
+                                        <span>{{ produit.favorites_count }} favoris</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button @click="productStore.toggleFavorite(produit.id)"
+                                class="w-full bg-gradient-to-r from-[var(--espace-or)] to-[var(--espace-vert)] text-[var(--espace-blanc)] font-semibold py-2 rounded-lg hover:from-[var(--espace-vert)] hover:to-[var(--espace-or)] transition-all duration-200 active:scale-95 text-sm mb-3"
+                                :aria-label="produit.is_favorited_by ? 'Retirer des favoris' : 'Ajouter aux favoris'">
+                                <i class="fas fa-heart mr-2 text-sm"
+                                    :class="{ 'text-[var(--espace-or)]': produit.is_favorited_by }"></i>
+                                {{ produit.is_favorited_by ? 'Retirer des favoris' : 'Ajouter aux favoris' }}
+                            </button>
+                            <!-- Détails du commerçant -->
+                            <div class="border-t pt-3 mt-3">
+                                <h2 class="text-base font-semibold text-[var(--espace-vert)] mb-2 font-poppins">
+                                    À propos du commerçant
+                                </h2>
+                                <p class="text-xs text-[var(--espace-gris)] mb-1">
+                                    <strong>{{ produit.commercant.nom }}</strong>
+                                    <span v-if="produit.commercant.verified" class="ml-1 text-[var(--espace-or)]"
+                                        aria-label="Commerçant vérifié" title="Commerçant vérifié">
+                                        <i class="fas fa-check-circle text-[10px]"></i>
+                                    </span>
+                                </p>
+                                <p class="text-xs text-[var(--espace-gris)] mb-1">
+                                    {{ produit.commercant.bio || 'Aucune description disponible' }}
+                                </p>
+                                <p class="text-xs text-[var(--espace-gris)] mb-1">
+                                    <strong>Ville :</strong> {{ produit.commercant.ville || 'Non spécifiée' }}
+                                </p>
+                                <p class="text-xs text-[var(--espace-gris)] mb-2">
+                                    <strong>Note :</strong> {{ produit.commercant.rating || 'Non évalué' }} / 5
+                                </p>
+                                <RouterLink :to="`/commercant/${produit.commercant_id}`"
+                                    class="text-[var(--espace-vert)] hover:text-[var(--espace-or)] hover:underline text-xs font-poppins"
+                                    aria-label="Voir le profil du commerçant">
+                                    Voir le profil du commerçant
+                                </RouterLink>
+                            </div>
+                            <!-- Actions -->
+                            <div class="flex flex-col sm:flex-row gap-3 mt-4">
+                                <button v-if="authStore.user?.commercant?.id !== produit.commercant_id"
+                                    @click="addToCart"
+                                    class="flex-1 bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold px-4 py-2 rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-all duration-200 active:scale-95 text-sm"
+                                    aria-label="Ajouter au panier">
+                                    <i class="fas fa-shopping-cart mr-2 text-sm"></i> Ajouter au panier
+                                </button>
+                                <button
+                                    v-if="produit.collaboratif && authStore.user?.commercant?.id !== produit.commercant_id"
+                                    @click="openCollaborationModal"
+                                    class="flex-1 bg-[var(--espace-vert)] text-[var(--espace-blanc)] font-semibold px-4 py-2 rounded-lg hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)] transition-all duration-200 active:scale-95 text-sm"
+                                    aria-label="Collaborer sur ce produit">
+                                    <i class="fas fa-handshake mr-2 text-sm"></i> Collaborer
+                                </button>
+                                <button v-if="authStore.user?.commercant?.id === produit.commercant_id"
+                                    @click="editProduit"
+                                    class="flex-1 bg-[var(--espace-vert)] text-[var(--espace-blanc)] font-semibold px-4 py-2 rounded-lg hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)] transition-all duration-200 active:scale-95 text-sm"
+                                    aria-label="Modifier le produit">
+                                    <i class="fas fa-edit mr-2 text-sm"></i> Modifier le produit
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <!-- Détails du produit -->
-                    <div class="w-full lg:w-1/2">
-                        <h1
-                            class="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--espace-vert)] mb-4 font-poppins">
-                            {{ produit.nom }}
-                        </h1>
-                        <p class="text-md text-[var(--espace-gris)] mb-4">{{ produit.description || 'Aucune description'
-                            }}</p>
-                        <p class="text-xl sm:text-2xl font-semibold text-[var(--espace-or)] mb-4">{{ produit.prix }} XAF
-                        </p>
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <p class="text-sm text-[var(--espace-gris)]">
-                                <strong>Catégorie :</strong> {{ produit.category?.nom || 'Non spécifiée' }}
-                            </p>
-                            <p class="text-sm text-[var(--espace-gris)]">
-                                <strong>Stock :</strong> {{ produit.stock }}
-                            </p>
-                            <p class="text-sm text-[var(--espace-gris)]">
-                                <strong>Ville :</strong> {{ produit.commercant?.ville || 'Non spécifiée' }}
-                            </p>
-                            <p class="text-sm text-[var(--espace-gris)]">
-                                <strong>Ajouté le :</strong> {{ new Date(produit.created_at).toLocaleDateString('fr-FR')
-                                }}
-                            </p>
-                        </div>
-                        <!-- Détails du commerçant -->
-                        <div class="border-t pt-4 mt-4">
-                            <h2 class="text-lg font-semibold text-[var(--espace-vert)] mb-2 font-poppins">
-                                À propos du commerçant
-                            </h2>
-                            <p class="text-sm text-[var(--espace-gris)] mb-2">
-                                <strong>{{ produit.commercant.nom }}</strong>
-                                <span v-if="produit.commercant.verified" class="ml-2 text-[var(--espace-or)]"
-                                    aria-label="Commerçant vérifié" title="Commerçant vérifié">
-                                    <i class="fas fa-check-circle"></i>
-                                </span>
-                            </p>
-                            <p class="text-sm text-[var(--espace-gris)] mb-2">
-                                {{ produit.commercant.bio || 'Aucune description disponible' }}
-                            </p>
-                            <p class="text-sm text-[var(--espace-gris)] mb-2">
-                                <strong>Ville :</strong> {{ produit.commercant.ville || 'Non spécifiée' }}
-                            </p>
-                            <p class="text-sm text-[var(--espace-gris)] mb-4">
-                                <strong>Note :</strong> {{ produit.commercant.rating || 'Non évalué' }} / 5
-                            </p>
-                            <RouterLink :to="`/commercant/${produit.commercant_id}`"
-                                class="text-[var(--espace-vert)] hover:text-[var(--espace-or)] hover:underline text-sm font-poppins"
-                                aria-label="Voir le profil du commerçant">
-                                Voir le profil du commerçant
-                            </RouterLink>
-                        </div>
-                        <!-- Actions -->
-                        <div class="flex flex-col sm:flex-row gap-4 mt-6">
-                            <button v-if="authStore.user?.commercant?.id !== produit.commercant_id" @click="addToCart"
-                                class="bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold px-4 py-2 rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-transform hover:scale-105"
-                                aria-label="Ajouter au panier">
-                                <i class="fas fa-shopping-cart mr-2"></i> Ajouter au panier
-                            </button>
-                            <button
-                                v-if="produit.collaboratif && authStore.user?.commercant?.id !== produit.commercant_id"
-                                @click="openCollaborationModal"
-                                class="bg-[var(--espace-vert)] text-[var(--espace-blanc)] font-semibold px-4 py-2 rounded-lg hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)] transition-transform hover:scale-105"
-                                aria-label="Collaborer sur ce produit">
-                                <i class="fas fa-handshake mr-2"></i> Collaborer
-                            </button>
-                            <button v-if="authStore.user?.commercant?.id === produit.commercant_id" @click="editProduit"
-                                class="bg-[var(--espace-vert)] text-[var(--espace-blanc)] font-semibold px-4 py-2 rounded-lg hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)] transition-transform hover:scale-105"
-                                aria-label="Modifier le produit">
-                                <i class="fas fa-edit mr-2"></i> Modifier le produit
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                </Transition>
                 <!-- Produits similaires -->
-                <div v-if="relatedProducts.length" class="mt-8">
-                    <h2 class="text-xl sm:text-2xl font-bold text-[var(--espace-vert)] mb-4 font-poppins">
+                <div v-if="relatedProducts.length" class="mt-6">
+                    <h2 class="text-lg sm:text-xl font-bold text-[var(--espace-vert)] mb-3 font-poppins">
                         Produits similaires
                     </h2>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                        <ProductCard v-for="related in relatedProducts" :key="related.id" :produit="related" />
-                    </div>
+                    <TransitionGroup name="fade" tag="div"
+                        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                        <ProductCard v-for="related in relatedProducts" :key="related.id" :produit="related"
+                            @toggle-favorite="productStore.toggleFavorite(related.id)" />
+                    </TransitionGroup>
                 </div>
             </div>
-            <div v-else class="text-center text-[var(--espace-gris)]">
+            <div v-else class="text-center text-[var(--espace-gris)] text-sm font-poppins">
                 Produit non trouvé.
             </div>
 
@@ -232,32 +240,32 @@ onMounted(() => {
                     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
                     @click.self="closeCollaborationModal" role="dialog" aria-modal="true"
                     aria-label="Proposer un prix de revente">
-                    <div class="bg-[var(--espace-blanc)] rounded-lg p-6 sm:p-8 w-full max-w-md mx-4 shadow-lg">
-                        <h2 class="text-lg sm:text-xl font-semibold text-[var(--espace-vert)] mb-4 font-poppins">
+                    <div class="bg-[var(--espace-blanc)] rounded-lg p-4 sm:p-6 w-full max-w-md mx-4 shadow-lg">
+                        <h2 class="text-base sm:text-lg font-semibold text-[var(--espace-vert)] mb-3 font-poppins">
                             Collaborer sur {{ produit.nom }}
                         </h2>
-                        <p class="text-sm text-[var(--espace-gris)] mb-4">
+                        <p class="text-xs text-[var(--espace-gris)] mb-3">
                             Proposez un prix de revente (minimum : {{ produit.prix + (produit.marge_min || 0) }} XAF)
                         </p>
-                        <form @submit.prevent="submitCollaboration" class="space-y-4">
+                        <form @submit.prevent="submitCollaboration" class="space-y-3">
                             <div>
-                                <label for="prix_revente" class="text-sm text-[var(--espace-vert)]">Prix de revente
-                                    (XAF)</label>
+                                <label for="prix_revente" class="text-xs text-[var(--espace-vert)] font-medium">Prix de
+                                    revente (XAF)</label>
                                 <input id="prix_revente" v-model.number="prixRevente" type="number" min="0"
-                                    class="w-full h-10 p-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)] transition"
+                                    class="w-full h-10 p-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--espace-or)] transition"
                                     :aria-label="`Prix de revente pour ${produit.nom}`" required />
-                                <p v-if="prixRevente" class="text-sm text-[var(--espace-gris)] mt-1">
+                                <p v-if="prixRevente" class="text-xs text-[var(--espace-gris)] mt-1">
                                     Marge potentielle : {{ prixRevente - produit.prix }} XAF
                                 </p>
                             </div>
-                            <div class="flex gap-4">
+                            <div class="flex gap-3">
                                 <button type="submit"
-                                    class="flex-1 bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold px-4 py-2 rounded hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition"
+                                    class="flex-1 bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold px-4 py-2 rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-all duration-200 active:scale-95 text-xs"
                                     aria-label="Envoyer la demande de collaboration">
                                     Envoyer
                                 </button>
                                 <button type="button" @click="closeCollaborationModal"
-                                    class="flex-1 bg-[var(--espace-gris)] text-[var(--espace-blanc)] font-semibold px-4 py-2 rounded hover:bg-gray-700 transition"
+                                    class="flex-1 bg-[var(--espace-gris)] text-[var(--espace-blanc)] font-semibold px-4 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 active:scale-95 text-xs"
                                     aria-label="Annuler">
                                     Annuler
                                 </button>
@@ -282,35 +290,29 @@ onMounted(() => {
     font-family: 'Poppins', sans-serif;
 }
 
+.slide-up-enter-active,
+.slide-up-leave-active {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+    transform: translateY(10px);
+    opacity: 0;
+}
+
 .fade-enter-active,
 .fade-leave-active {
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .fade-enter-from,
 .fade-leave-to {
     opacity: 0;
+    transform: translateY(10px);
 }
 
-.cart-badge {
-    transition: transform 0.2s ease, background-color 0.3s ease;
-}
-
-.cart-badge.animate-scale {
-    animation: scaleBadge 0.3s ease-in-out;
-}
-
-@keyframes scaleBadge {
-    0% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.2);
-    }
-
-    100% {
-        transform: scale(1);
-    }
+button:active {
+    transform: scale(0.95);
 }
 </style>

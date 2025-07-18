@@ -1,53 +1,67 @@
+<!-- src/components/ProductCard.vue -->
 <script setup lang="ts">
-import { defineProps } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '../stores/Auth';
+import { defineProps, defineEmits } from 'vue';
+import { useToast } from 'vue-toastification';
+import { useProductStore } from '../stores/product';
 
-const props = defineProps<{
-  produit: {
-    id: string;
-    nom: string;
-    description?: string;
-    prix: number;
-    photo_url?: string;
-    collaboratif: boolean;
-    marge_min?: number;
-  };
-}>();
+const produit = defineProps({
+  id: {
+    type: String,
+    required: true,
+  },
+  nom: String,
+  description: String,
+  prix: Number,
+  photo_url: String,
+  view_count: Number,
+  favorites_count: Number,
+  is_favorited_by: Boolean,
+  quantite: Number,
+});
 
-const router = useRouter();
-const authStore = useAuthStore();
-const user = authStore.user;
+const emit = defineEmits(['toggle-favorite']);
+const toast = useToast();
+const productStore = useProductStore();
 
-const viewProduit = () => {
-  console.log(props.produit.id);
-  router.push({ path: `/produits/${props.produit.id}` });
+const handleFavorite = async () => {
+  console.log(produit);
+  try {
+    
+    await productStore.toggleFavorite(produit.id);
+    emit('toggle-favorite');
+  } catch (error: any) {
+    toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour des favoris.');
+  }
 };
-console.log(props.produit.collaboratif);
-
-
 </script>
 
 <template>
-  <div @click="viewProduit"
-    class="border rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition bg-[var(--espace-blanc)] max-w-xs w-full cursor-pointer relative"
-    :aria-label="`Voir les détails de ${props.produit.nom}`" role="button" tabindex="0" @keydown.enter="viewProduit">
-    <!-- Indicateur collaboratif -->
-
-    <img src='/src/assets/images/selphie.jpg' :alt=" `Image de
-      ${props.produit.nom}`" class="w-full h-32 sm:h-36 object-cover rounded mb-2" />
-    <h3 class="text-base sm:text-lg flex justify-between font-semibold text-[var(--espace-vert)] truncate font-poppins">
-      {{ props.produit.nom }}
-      <span v-if="props.produit.collaboratif" class=" top-2 right-2 text-[var(--espace-or)]"
-        :title="user?.commercant?.id === props.produit.commercant_id ? 'Vous ne pouvez pas collaborer sur votre produit' : 'Produit ouvert à la collaboration'"
-        aria-label="Produit collaboratif">
-        <i class="fas fa-handshake text-lg"></i>
-      </span>
-    </h3>
-    <p class="text-[var(--espace-gris)] text-xs sm:text-sm truncate">
-      {{ props.produit.description || 'Aucune description' }}
-    </p>
-    <p class="text-[var(--espace-or)] font-bold text-sm sm:text-base">{{ props.produit.prix }} FCFA</p>
+  <div
+    class="bg-[var(--espace-blanc)] border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-all duration-200">
+    <router-link :to="`/produits/${produit.id}`" class="block">
+      <img :src="produit.photo_url || 'https://via.placeholder.com/150'" :alt="`Image de ${produit.nom}`"
+        class="w-full h-32 object-cover rounded-lg mb-2" />
+      <h3 class="text-sm font-semibold text-[var(--espace-vert)] font-poppins truncate">
+        {{ produit.nom }}
+      </h3>
+      <p class="text-xs text-[var(--espace-gris)] truncate">{{ produit.description || 'Aucune description' }}</p>
+      <p class="text-sm font-medium text-[var(--espace-or)]">{{ produit.prix }} XAF</p>
+    </router-link>
+    <div class="flex items-center justify-between mt-2 text-xs text-[var(--espace-gris)]">
+      <div class="flex items-center gap-1">
+        <i class="fas fa-eye text-[10px]"></i>
+        <span>{{ produit.view_count }} vues</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <i class="fas fa-heart text-[10px]"></i>
+        <span>{{ produit.favorites_count }} favoris</span>
+      </div>
+      <button @click="handleFavorite"
+        class="text-[var(--espace-vert)] hover:text-[var(--espace-or)] transition active:scale-95"
+        :aria-label="produit.is_favorited_by ? 'Retirer des favoris' : 'Ajouter aux favoris'">
+        <i class="fas fa-heart text-sm" :class="{ 'text-[var(--espace-or)]': produit.is_favorited_by }"></i>
+      </button>
+    </div>
   </div>
 </template>
 
