@@ -8,6 +8,18 @@ import Loader from '../components/Loader.vue';
 import apiClient from '../api';
 import { useProductStore } from '../stores/product';
 
+
+// interface Produit {
+//     id: string;
+//     nom: string;
+//     description?: string | null;
+//     prix: number;
+//     photo_url?: string | null;
+//     view_count: number;
+//     favorites_count: number;
+//     is_favorited_by: boolean;
+//     quantite: number;
+// }
 const productStore = useProductStore();
 const categories = ref<any[]>([]);
 const toast = useToast();
@@ -57,14 +69,15 @@ const activeFiltersCount = () => {
     return Object.values(filterForm.value).filter(val => val !== '').length;
 };
 
-onMounted(() => {
-    fetchCategories();
-    productStore.fetchProducts();
+onMounted(async() => {
+    await  productStore.fetchProducts();
+   fetchCategories();
+// console.log(products);
 
     observer.value = new IntersectionObserver(
         (entries) => {
             if (entries[0].isIntersecting && !productStore.isLoading && productStore.hasMore) {
-                productStore.fetchProducts(filterForm.value);
+                // productStore.fetchProducts(filterForm.value);
             }
         },
         { threshold: 0.1 }
@@ -180,6 +193,7 @@ onUnmounted(() => {
             <!-- Liste des produits -->
             <TransitionGroup name="fade" tag="div"
                 class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+
                 <ProductCard v-for="produit in productStore.products" :key="produit.id" :produit="produit"
                     @toggle-favorite="productStore.toggleFavorite(produit.id)" />
             </TransitionGroup>

@@ -23,11 +23,14 @@ const prixRevente = ref<number | null>(null);
 
 const fetchProduit = async () => {
     try {
+        productStore.isLoading = true;
         produit.value = await productStore.viewProduct(route.params.id);
-        await fetchRelatedProducts();
+        // await fetchRelatedProducts();
     } catch (error: any) {
         toast.error(error || 'Erreur lors du chargement du produit');
-        router.push({ name: 'dashboard' });
+        router.push({ name: 'home' });
+    }finally{
+        productStore.isLoading = false;
     }
 };
 
@@ -151,10 +154,11 @@ onMounted(() => {
                                 <div class="flex items-center gap-3">
                                     <div class="flex items-center gap-1">
                                         <i class="fas fa-eye text-[10px]"></i>
-                                        <span>{{ produit.view_count }} vues</span>
+                                        <span>{{ produit.views_count }} vues</span>
                                     </div>
                                     <div class="flex items-center gap-1">
-                                        <i class="fas fa-heart text-[10px]"></i>
+                                        <i class="fas fa-heart text-[10px]"
+                                            :class="{ 'text-[var(--espace-or)]': produit.is_favorited_by }"></i>
                                         <span>{{ produit.favorites_count }} favoris</span>
                                     </div>
                                 </div>

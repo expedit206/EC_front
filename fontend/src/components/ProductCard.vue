@@ -4,31 +4,31 @@ import { defineProps, defineEmits } from 'vue';
 import { useToast } from 'vue-toastification';
 import { useProductStore } from '../stores/product';
 
-const produit = defineProps({
-  id: {
-    type: String,
-    required: true,
-  },
-  nom: String,
-  description: String,
-  prix: Number,
-  photo_url: String,
-  view_count: Number,
-  favorites_count: Number,
-  is_favorited_by: Boolean,
-  quantite: Number,
-});
+const props = defineProps<{
+  produit: {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    image_url: string;
+    view_count: number;
+    favorite_count: number;
+    is_favorited_by: boolean;
+  };
+}>();
+
+// console.log(props.produit);
 
 const emit = defineEmits(['toggle-favorite']);
 const toast = useToast();
 const productStore = useProductStore();
 
 const handleFavorite = async () => {
-  console.log(produit);
   try {
     
-    await productStore.toggleFavorite(produit.id);
-    emit('toggle-favorite');
+    await productStore.toggleFavorite(props.produit.id);
+    // emit('toggle-favorite');
+    // console.log(props.produit.id);
   } catch (error: any) {
     toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour des favoris.');
   }
@@ -50,7 +50,7 @@ const handleFavorite = async () => {
     <div class="flex items-center justify-between mt-2 text-xs text-[var(--espace-gris)]">
       <div class="flex items-center gap-1">
         <i class="fas fa-eye text-[10px]"></i>
-        <span>{{ produit.view_count }} vues</span>
+        <span>{{ produit.views_count }} vues</span>
       </div>
       <div class="flex items-center gap-1">
         <i class="fas fa-heart text-[10px]"></i>
