@@ -1,3 +1,4 @@
+<!-- src/views/CommercantDetails.vue -->
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
@@ -147,39 +148,58 @@ onMounted(() => {
             </h1>
 
             <button @click="openAddModal"
-                class="mb-4 bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold px-4 py-2 rounded hover:bg-[var(--espace-vert)] hover:text-white transition">
+                class="mb-6 bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold px-4 py-2 rounded hover:bg-[var(--espace-vert)] hover:text-white transition inline-flex items-center">
                 <i class="fas fa-plus mr-2"></i> Ajouter un produit
             </button>
-<div v-if="isLoading"></div>
-            <div v-else-if="produits.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div v-for="produit in produits" :key="produit.id"
-                    class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition">
-                    <img :src="produit.photo_url || 'https://via.placeholder.com/150'"
-                        class="w-full h-32 object-cover rounded mb-2" />
-                    <h2 class="text-lg font-semibold text-[var(--espace-vert)] truncate">{{ produit.nom }}</h2>
-                    <p class="text-sm text-[var(--espace-gris)]">{{ produit.description || 'Aucune description' }}</p>
-                    <p class="text-md font-bold text-[var(--espace-or)]">{{ produit.prix }} FCFA</p>
-                    <p class="text-sm text-[var(--espace-gris)]">Stock: {{ produit.stock }}</p>
-                    <button @click="openEditModal(produit)"
-                        class="mt-2 w-full bg-[var(--espace-vert)] text-white font-semibold px-3 py-1.5 rounded hover:bg-[var(--espace-or)] transition">
-                        <i class="fas fa-edit mr-2"></i> Modifier
-                    </button>
-                    <button @click.stop="deleteProduit(produit.id)"
-                        class="mt-2 w-full bg-red-500 text-white font-semibold px-3 py-1.5 rounded hover:bg-red-600 transition">
-                        <i class="fas fa-trash mr-2"></i> Supprimer
-                    </button>
+
+            <div v-if="isLoading">
+                <div class="flex items-center justify-center py-10">
+                    <i class="fas fa-spinner animate-spin text-2xl text-[var(--espace-vert)]"></i>
                 </div>
             </div>
-
+            <div v-else-if="produits.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div v-for="produit in produits" :key="produit.id"
+                    class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition relative">
+                    <img :src="produit.photo_url || 'https://via.placeholder.com/150'"
+                        class="w-full h-40 object-cover rounded-t-lg mb-2" />
+                    <div class="p-2">
+                        <h2 class="text-lg font-semibold flex justify-between text-[var(--espace-vert)] truncate">{{
+                            produit.nom }} <button @click="openEditModal(produit)"
+                                class="text-[var(--espace-vert)] hover:text-[var(--espace-or)] p-1 rounded-full hover:bg-gray-100 transition">
+                                <i class="fas fa-pencil text-sm"></i>
+                            </button></h2>
+                        <p class="text-sm text-[var(--espace-gris)] line-clamp-2">{{ produit.description || 'Aucune' }}
+                        </p>
+                        <p class="text-md font-bold text-[var(--espace-or)] mt-2">{{ produit.prix }} FCFA</p>
+                        <p class="text-sm text-[var(--espace-gris)]">Stock: {{ produit.stock }}</p>
+                        <div class="text-sm text-[var(--espace-gris)] mt-2">
+                            <span><i class="fas fa-eye mr-1"></i> {{ produit.views_count || 0 }} vues</span>
+                            <span class="ml-4"><i class="fas fa-heart mr-1"></i> {{ produit.favorites_count || 0 }}
+                                favoris</span>
+                        </div>
+                    </div>
+                    <!-- Actions discrètes sous forme d'icônes -->
+                    <div class="absolute bottom-5 right-2 flex gap-2">
+                        <!-- <button @click="openEditModal(produit)"
+                            class="text-[var(--espace-vert)] hover:text-[var(--espace-or)] p-1 rounded-full hover:bg-gray-100 transition">
+                            <i class="fas fa-edit"></i>
+                        </button> -->
+                        <!-- <button @click.stop="deleteProduit(produit.id)"
+                            class="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-gray-100 transition">
+                            <i class="fas fa-trash"></i>
+                        </button> -->
+                    </div>
+                </div>
+            </div>
             <p v-else class="text-center text-[var(--espace-gris)]">Aucun produit pour le moment.</p>
         </div>
 
         <!-- MODALE AJOUT / MODIF -->
         <Transition name="fade">
             <div v-if="showAddModal || showEditModal"
-                class="fixed overflow-scroll pt-12 inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
                 @click.self="closeModal">
-                <div class="bg-white rounded-lg p-6 sm:p-8 w-full max-w-md mx-4 shadow-lg mt-28">
+                <div class="bg-white rounded-lg p-6 sm:p-8 w-full max-w-md mx-4 shadow-lg">
                     <h2 class="text-lg font-semibold text-[var(--espace-vert)] mb-4">
                         {{ showAddModal ? 'Ajouter un produit' : 'Modifier le produit' }}
                     </h2>
@@ -248,6 +268,13 @@ onMounted(() => {
     font-family: 'Poppins', sans-serif;
 }
 
+.input-style {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 14px;
+}
 
 .fade-enter-active,
 .fade-leave-active {
@@ -257,5 +284,45 @@ onMounted(() => {
 .fade-enter-from,
 .fade-leave-to {
     opacity: 0;
+}
+
+.product-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.product-card .actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.product-card:hover .actions {
+    opacity: 1;
+}
+
+.product-card button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 </style>

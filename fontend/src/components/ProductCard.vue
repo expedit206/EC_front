@@ -7,28 +7,23 @@ import { useProductStore } from '../stores/product';
 const props = defineProps<{
   produit: {
     id: string;
-    name: string;
+    nom: string; // Corrige "name" en "nom" pour correspondre au backend
     description: string;
-    price: number;
-    image_url: string;
+    prix: number; // Corrige "price" en "prix" pour correspondre au backend
+    photo_url: string; // Corrige "image_url" en "photo_url" pour correspondre au backend
     view_count: number;
-    favorite_count: number;
+    favorites_count: number;
     is_favorited_by: boolean;
   };
 }>();
 
-// console.log(props.produit);
-
-const emit = defineEmits(['toggle-favorite']);
+const emit = defineEmits(['toggle-favorite','handleToggleFavorite']);
 const toast = useToast();
 const productStore = useProductStore();
 
 const handleFavorite = async () => {
   try {
-    
     await productStore.toggleFavorite(props.produit.id);
-    // emit('toggle-favorite');
-    // console.log(props.produit.id);
   } catch (error: any) {
     toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour des favoris.');
   }
@@ -53,14 +48,13 @@ const handleFavorite = async () => {
         <span>{{ produit.views_count }} vues</span>
       </div>
       <div class="flex items-center gap-1">
-        <i class="fas fa-heart text-[10px]"></i>
-        <span>{{ produit.favorites_count }} favoris</span>
+        <button @click="handleFavorite"
+          class="text-[var(--espace-vert)] hover:text-[var(--espace-or)] transition active:scale-95 focus:outline-none"
+          :aria-label="produit.is_favorited_by ? 'Retirer des favoris' : 'Ajouter aux favoris'">
+          <i class="fas fa-bookmark text-sm" :class="{ 'text-[var(--espace-or)]': produit.is_favorited_by }"></i>
+        </button>
+        <span>{{ produit.favorites_count }} favoris</span> <!-- Déplacé à côté du bouton -->
       </div>
-      <button @click="handleFavorite"
-        class="text-[var(--espace-vert)] hover:text-[var(--espace-or)] transition active:scale-95"
-        :aria-label="produit.is_favorited_by ? 'Retirer des favoris' : 'Ajouter aux favoris'">
-        <i class="fas fa-heart text-sm" :class="{ 'text-[var(--espace-or)]': produit.is_favorited_by }"></i>
-      </button>
     </div>
   </div>
 </template>

@@ -9,6 +9,7 @@ import { useProductStore } from '../stores/product';
 import ProductCard from '../components/ProductCard.vue';
 import Loader from '../components/Loader.vue';
 import AppHeader from '../components/AppHeader.vue';
+import apiClient from '../api';
 
 const productStore = useProductStore();
 const route = useRoute();
@@ -108,6 +109,12 @@ const editProduit = () => {
     router.push({ path: `/commercant/produits/${produit.value.id}/edit` });
 };
 
+
+const viewCommercant = () => {
+    router.push(`/commercants/${produit.value.commercant_id}`);
+};
+
+
 onMounted(() => {
     fetchProduit();
     userStateStore.initializeState();
@@ -164,7 +171,7 @@ onMounted(() => {
                                 </div>
                             </div>
                             <button @click="productStore.toggleFavorite(produit.id)"
-                                class="w-full bg-gradient-to-r from-[var(--espace-or)] to-[var(--espace-vert)] text-[var(--espace-blanc)] font-semibold py-2 rounded-lg hover:from-[var(--espace-vert)] hover:to-[var(--espace-or)] transition-all duration-200 active:scale-95 text-sm mb-3"
+                                class="w-full bg-[var(--espace-vert)]  text-[var(--espace-blanc)] font-semibold py-2 rounded-lg hover:from-[var(--espace-vert)] hover:to-[var(--espace-or)] transition-all duration-200 active:scale-95 text-sm mb-3"
                                 :aria-label="produit.is_favorited_by ? 'Retirer des favoris' : 'Ajouter aux favoris'">
                                 <i class="fas fa-heart mr-2 text-sm"
                                     :class="{ 'text-[var(--espace-or)]': produit.is_favorited_by }"></i>
@@ -191,17 +198,24 @@ onMounted(() => {
                                 <p class="text-xs text-[var(--espace-gris)] mb-2">
                                     <strong>Note :</strong> {{ produit.commercant.rating || 'Non évalué' }} / 5
                                 </p>
-                                <RouterLink :to="`/commercant/${produit.commercant_id}`"
+                                <router-link :to="`/commercants/${produit.commercant_id}`"
                                     class="text-[var(--espace-vert)] hover:text-[var(--espace-or)] hover:underline text-xs font-poppins"
                                     aria-label="Voir le profil du commerçant">
                                     Voir le profil du commerçant
-                                </RouterLink>
+                                </router-link>
+                                <button @click="viewCommercant"
+                                    class="text-[var(--espace-vert)] hover:text-[var(--espace-or)] underline transition active:scale-95 text-xs"
+                                    aria-label="Voir le commerçant">
+                                    Voir le commerçant
+                                </button>
+                                <!-- <router-link :to="`/produits/${produit.id}`" class="block"> -->
+
                             </div>
                             <!-- Actions -->
                             <div class="flex flex-col sm:flex-row gap-3 mt-4">
                                 <button v-if="authStore.user?.commercant?.id !== produit.commercant_id"
                                     @click="addToCart"
-                                    class="flex-1 bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold px-4 py-2 rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-all duration-200 active:scale-95 text-sm"
+                                    class="flex-1 bg-[var(--espace-vert)] font-semibold px-4 py-2 rounded-lg hover:bg-[var(--espace-vert)] text-white hover:text-[var(--espace-blanc)] transition-all duration-200 active:scale-95 text-sm"
                                     aria-label="Ajouter au panier">
                                     <i class="fas fa-shopping-cart mr-2 text-sm"></i> Ajouter au panier
                                 </button>

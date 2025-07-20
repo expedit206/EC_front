@@ -15,6 +15,7 @@ import Collaborations from "../views/Collaborations.vue"; // À créer si non ex
 import Panier from "../views/Panier.vue"; // À créer si non existant
 
 import { useAuthStore } from "../stores/Auth"; // Assurez-vous que le chemin est correct
+import CommercantDetails from "../views/CommercantDetails.vue";
 
 const routes = [
   { path: "/login", component: Login, name: "login" },
@@ -25,7 +26,12 @@ const routes = [
     name: "profil",
     meta: { requiresAuth: true },
   },
-  { path: "/home", component: Home, name: "home" },
+  {
+    path: "/home",
+    component: Home,
+    name: "home",
+    meta: { requiresAuth: true },
+  },
   { path: "/", redirect: "/home" },
 
   {
@@ -34,18 +40,33 @@ const routes = [
     component: CommercantProduits,
     meta: { requiresAuth: true, requiresCommercant: true },
   },
+
   {
-    path: "/commercant",
+    path: "/commercants/:commercantId",
+    component: CommercantDetails,
+    meta: {
+      requiresAuth: true,
+    },
+  },
+
+  {
+    path: "/commercant/monProfil",
     component: CommercantDashboard,
     meta: {
       requiresAuth: true,
     },
+  },
+    
+
+  {
+
     path: "/parametres",
     component: Parametres,
     meta: {
       requiresAuth: true,
     },
   },
+
   {
     path: "/panier",
     name: "panier",

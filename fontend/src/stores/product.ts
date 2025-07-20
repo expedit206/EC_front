@@ -1,6 +1,7 @@
 // src/stores/product.js
 import { defineStore } from 'pinia';
 import apiClient from '../api';
+import { log } from 'console';
 
 export const useProductStore = defineStore('product', {
   state: () => ({
@@ -14,33 +15,35 @@ export const useProductStore = defineStore('product', {
   actions: {
     async fetchProducts(params = {}, reset = false) {
       if (this.isLoading || (!reset && !this.hasMore)) return;
-
+      
       this.isLoading = true;
       if (reset) {
         this.products = [];
         this.page = 1;
         this.hasMore = true;
       }
-
+      console.log(params)
       try {
-        const response = await apiClient.get('/produits', {
-          params: {
-            page: this.page,
-            sort: this.sort,
-            search: params.search || undefined,
-            category: params.category || undefined,
-            prix_min: params.prix_min || undefined,
-            prix_max: params.prix_max || undefined,
-            ville: params.ville || undefined,
-            collaboratif: params.collaboratif || undefined,
-          },
-        });
-
-        console.log(response.data);
         
-        this.products = reset ? response.data.data : [...this.products, ...response.data.data];
-        this.hasMore = response.data.current_page < response.data.last_page;
-        this.page = response.data.current_page + 1;
+        const response = await apiClient.get('/produits', 
+          {
+            params: {
+              ...params,
+              page: this.page,
+              sort: this.sort,
+            },
+          }
+        );
+        console.log(response.data);
+        if (params.per_page === 'all') {
+          this.products = reset ? response.data : [...this.products, ...response.data];
+        } else {
+          
+          this.products = reset ? response.data.data : [...this.products, ...response.data.data];
+          this.hasMore = response.data.current_page < response.data.last_page;
+          this.page = response.data.current_page + 1;
+        };
+        
       } catch (error) {
         throw error.response?.data?.message || 'Erreur lors du chargement des produits';
       } finally {

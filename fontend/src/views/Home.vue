@@ -8,18 +8,6 @@ import Loader from '../components/Loader.vue';
 import apiClient from '../api';
 import { useProductStore } from '../stores/product';
 
-
-// interface Produit {
-//     id: string;
-//     nom: string;
-//     description?: string | null;
-//     prix: number;
-//     photo_url?: string | null;
-//     view_count: number;
-//     favorites_count: number;
-//     is_favorited_by: boolean;
-//     quantite: number;
-// }
 const productStore = useProductStore();
 const categories = ref<any[]>([]);
 const toast = useToast();
@@ -41,6 +29,7 @@ const fetchCategories = async () => {
         const response = await apiClient.get('/categories');
         categories.value = response.data.categories;
     } catch (error) {
+        console.error('Erreur lors du chargement des catégories:', error);
         toast.error('Erreur lors du chargement des catégories.');
     }
 };
@@ -69,15 +58,19 @@ const activeFiltersCount = () => {
     return Object.values(filterForm.value).filter(val => val !== '').length;
 };
 
-onMounted(async() => {
-    await  productStore.fetchProducts();
-   fetchCategories();
-// console.log(products);
+onMounted(async () => {
+    try {
+        await productStore.fetchProducts(); // Appel avec gestion d'erreur
+        await fetchCategories();
+    } catch (error) {
+        console.error('Erreur lors du chargement des produits ou catégories:', error);
+        toast.error('Erreur lors du chargement des produits. Veuillez réessayer.');
+    }
 
     observer.value = new IntersectionObserver(
         (entries) => {
             if (entries[0].isIntersecting && !productStore.isLoading && productStore.hasMore) {
-                // productStore.fetchProducts(filterForm.value);
+                productStore.fetchProducts(filterForm.value);
             }
         },
         { threshold: 0.1 }
@@ -103,7 +96,6 @@ onUnmounted(() => {
             <!-- Tri -->
             <div class="flex overflow-x-auto space-x-2 mb-3 snap-x snap-mandatory">
                 <button v-for="option in [
-                    { id: 'random', label: 'Aléatoire', icon: 'fa-random' },
                     { id: 'popular', label: 'Populaire', icon: 'fa-fire' },
                     { id: 'favorites', label: 'Favoris', icon: 'fa-heart' },
                 ]" :key="option.id" @click="changeSort(option.id)"
@@ -193,7 +185,6 @@ onUnmounted(() => {
             <!-- Liste des produits -->
             <TransitionGroup name="fade" tag="div"
                 class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-
                 <ProductCard v-for="produit in productStore.products" :key="produit.id" :produit="produit"
                     @toggle-favorite="productStore.toggleFavorite(produit.id)" />
             </TransitionGroup>
