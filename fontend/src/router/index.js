@@ -16,6 +16,7 @@ import Panier from "../views/Panier.vue"; // À créer si non existant
 
 import { useAuthStore } from "../stores/Auth"; // Assurez-vous que le chemin est correct
 import CommercantDetails from "../views/CommercantDetails.vue";
+import Parrainage from "../views/Parrainage.vue";
 
 const routes = [
   { path: "/login", component: Login, name: "login" },
@@ -56,10 +57,8 @@ const routes = [
       requiresAuth: true,
     },
   },
-    
 
   {
-
     path: "/parametres",
     component: Parametres,
     meta: {
@@ -95,6 +94,13 @@ const routes = [
     name: "collaborations",
     component: Collaborations,
     meta: { requiresAuth: true },
+  },
+  
+  {
+    path: "/parrainage", component: Parrainage, name: "Parrainage",
+    
+    meta: { requiresAuth: true },
+
   },
 ];
 
@@ -143,7 +149,7 @@ router.beforeEach(async (to, from, next) => {
     to.meta.requiresCommercant &&
     (!isAuthenticated || !authStore.user?.commercant)
   ) {
-    next({ name: "dashboard" });
+    next({ name: "home" });
   } else {
     next();
   }

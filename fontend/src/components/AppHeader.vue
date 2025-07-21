@@ -4,40 +4,40 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/Auth';
 import { useUserStateStore } from '../stores/userState';
 import apiClient from '../api';
-// ref//
 import { ref } from 'vue';
+
 const authStore = useAuthStore();
 const userStateStore = useUserStateStore();
 const router = useRouter();
-const user = authStore.user;
 const animateCartBadge = ref(false);
 const animateCollaborationBadge = ref(false);
 const animateOrdersBadge = ref(false);
 
-const navLinks = computed(() => [
-    { to: '/', label: 'Accueil', icon: 'fa-home', badge: 0 },
-    ...(user
-        ? [
-            { to: '/profil', label: 'Profil', icon: 'fa-user', badge: 0 },
-            ...(user.commercant
-                ? [{ to: '/commercant/produits', label: 'Mes Produits', icon: 'fa-box-open', badge: 0 }]
-                : []),
-            { to: '/commandes', label: 'Commandes', icon: 'fa-shopping-cart', badge: userStateStore.ordersPending },
-            { to: '/panier', label: 'Panier', icon: 'fa-shopping-basket', badge: userStateStore.cartCount },
-            { to: '/collaborations', label: 'Collaborations', icon: 'fa-handshake', badge: userStateStore.collaborationsPending },
-        ]
-        : [
-            { to: '/login', label: 'Connexion', icon: 'fa-sign-in-alt', badge: 0 },
-            { to: '/register', label: 'Inscription', icon: 'fa-user-plus', badge: 0 },
-        ]),
-]);
+const navLinks = computed(() => {
+    return [
+        { to: '/', label: 'Accueil', icon: 'fa-home', badge: 0 },
+        ...(authStore.user
+            ? [
+                { to: '/profil', label: 'Profil', icon: 'fa-user', badge: 0 },
+                ...(authStore.user.commercant
+                    ? [{ to: '/commercant/produits', label: 'Mes Produits', icon: 'fa-box-open', badge: 0 }]
+                    : []),
+                { to: '/commandes', label: 'Commandes', icon: 'fa-shopping-cart', badge: userStateStore.ordersPending },
+                { to: '/panier', label: 'Panier', icon: 'fa-shopping-basket', badge: userStateStore.cartCount },
+                { to: '/collaborations', label: 'Collaborations', icon: 'fa-handshake', badge: userStateStore.collaborationsPending },
+                { to: '/parrainage', label: 'Mon Parrainage', icon: 'fa-users', badge: 0 }, // Nouveau lien
+            ]
+            : [
+                { to: '/login', label: 'Connexion', icon: 'fa-sign-in-alt', badge: 0 },
+                { to: '/register', label: 'Inscription', icon: 'fa-user-plus', badge: 0 },
+            ]),
+    ];
+});
 
 const fetchBadges = async () => {
-    if (!user) return;
+    if (!authStore.user) return;
     try {
-        console.log('ghj');
         const response = await apiClient.get('/user/badges');
-        
         userStateStore.saveCollaborationsToLocalStorage(
             response.data.collaborations_pending.map((item: any) => ({
                 produit_id: item.produit_id,
@@ -60,6 +60,17 @@ const fetchBadges = async () => {
     }
 };
 
+// Réagir aux changements de l'état de connexion
+watch(
+    () => authStore.user,
+    (newUser) => {
+        if (newUser) {
+            fetchBadges(); // Mettre à jour les badges lorsque l'utilisateur se connecte
+            userStateStore.initializeState(); // Réinitialiser l'état si nécessaire
+        }
+    },
+    { immediate: true } // Exécuter immédiatement au montage
+);
 
 // Animation pour le badge du panier
 watch(
@@ -95,8 +106,10 @@ watch(
 );
 
 onMounted(() => {
-    userStateStore.initializeState();
-    fetchBadges();
+    if (authStore.user) {
+        fetchBadges();
+        userStateStore.initializeState();
+    }
 });
 </script>
 
@@ -113,13 +126,13 @@ onMounted(() => {
                 <h1 class="text-lg sm:text-xl font-bold font-poppins text-[var(--espace-blanc)]">
                     Espace Cameroun
                 </h1>
-                <RouterLink v-if="user" to="/parametres" aria-label="Paramètres"
+                <RouterLink v-if="authStore.user" to="/parametres" aria-label="Paramètres"
                     class="flex items-center justify-center w-10 h-10 hover:text-[var(--espace-or)] transition-colors duration-300">
                     <i class="fas fa-cog text-lg"></i>
                 </RouterLink>
             </div>
 
-            <nav class="hidden sm:flex items-center space-x-4 sm:space-x-6 font-poppins text-sm sm:text-base">
+            <nav class=" hidden lg:flex items-center space-x-4 sm:space-x-6 font-poppins text-sm sm:text-base">
                 <RouterLink v-for="link in navLinks" :key="link.to" :to="link.to"
                     class="hover:text-[var(--espace-or)] flex items-center gap-1 sm:gap-2 transition-colors duration-300"
                     active-class="text-[var(--espace-or)]">
@@ -141,14 +154,13 @@ onMounted(() => {
                         {{ typeof link.badge === 'object' ? link.badge.value : link.badge }}
                     </span>
                 </RouterLink>
-          
             </nav>
         </div>
     </header>
 
     <Transition name="slide-up">
         <nav
-            class="sm:hidden fixed bottom-0 left-0 w-full bg-[var(--espace-vert)] text-[var(--espace-blanc)] shadow-md z-50">
+            class="lg:hidden fixed bottom-0 left-0 w-full bg-[var(--espace-vert)] text-[var(--espace-blanc)] shadow-md z-50">
             <div class="flex justify-around items-center py-2">
                 <RouterLink v-for="link in navLinks" :key="link.to" :to="link.to" :aria-label="link.label"
                     class="relative flex items-center justify-center w-10 h-10 hover:text-[var(--espace-or)] transition-colors duration-300"
@@ -170,7 +182,6 @@ onMounted(() => {
                         {{ typeof link.badge === 'object' ? link.badge.value : link.badge }}
                     </span>
                 </RouterLink>
-             
             </div>
         </nav>
     </Transition>
