@@ -22,8 +22,6 @@ const navLinks = computed(() => {
                 ...(authStore.user.commercant
                     ? [{ to: '/commercant/produits', label: 'Mes Produits', icon: 'fa-box-open', badge: 0 }]
                     : []),
-                { to: '/commandes', label: 'Commandes', icon: 'fa-shopping-cart', badge: userStateStore.ordersPending },
-                { to: '/panier', label: 'Panier', icon: 'fa-shopping-basket', badge: userStateStore.cartCount },
                 { to: '/collaborations', label: 'Collaborations', icon: 'fa-handshake', badge: userStateStore.collaborationsPending },
                 { to: '/parrainage', label: 'Mon Parrainage', icon: 'fa-users', badge: 0 }, // Nouveau lien
             ]

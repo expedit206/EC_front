@@ -1,4 +1,3 @@
-<!-- src/views/Produit.vue -->
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -26,11 +25,11 @@ const fetchProduit = async () => {
     try {
         productStore.isLoading = true;
         produit.value = await productStore.viewProduct(route.params.id);
-        // await fetchRelatedProducts();
+        await fetchRelatedProducts();
     } catch (error: any) {
         toast.error(error || 'Erreur lors du chargement du produit');
         router.push({ name: 'home' });
-    }finally{
+    } finally {
         productStore.isLoading = false;
     }
 };
@@ -46,24 +45,15 @@ const fetchRelatedProducts = async () => {
     }
 };
 
-const addToCart = async () => {
+const contactCommercant = () => {
     if (!authStore.user) {
-        toast.error('Veuillez vous connecter pour ajouter au panier');
+        toast.error('Veuillez vous connecter pour contacter le commerçant');
         router.push({ name: 'login' });
         return;
     }
-    if (authStore.user.commercant?.id === produit.value.commercant_id) {
-        toast.error('Vous ne pouvez pas ajouter votre propre produit au panier');
-        return;
-    }
-    const success = await userStateStore.addToCart({
-        id: produit.value.id,
-        nom: produit.value.nom,
-        prix: produit.value.prix,
-    });
-    if (success) {
-        toast.success('Produit ajouté au panier', { timeout: 3000 });
-    }
+    const commerçantPhone = produit.value.commercant.telephone;
+    const message = encodeURIComponent(`Bonjour ${produit.value.commercant.nom}, je suis intéressé par ${produit.value.nom}. Pouvez-vous me contacter ?`);
+    window.open(`https://wa.me/${commerçantPhone}?text=${message}`, '_blank');
 };
 
 const openCollaborationModal = () => {
@@ -109,11 +99,40 @@ const editProduit = () => {
     router.push({ path: `/commercant/produits/${produit.value.id}/edit` });
 };
 
-
 const viewCommercant = () => {
     router.push(`/commercants/${produit.value.commercant_id}`);
 };
 
+// Nouvelle méthode pour booster le produit
+const boostProduit = async () => {
+    if (!authStore.user || authStore.user.commercant?.id !== produit.value.commercant_id) {
+        toast.error('Seul le commerçant propriétaire peut booster ce produit');
+        return;
+    }
+
+    const cost = 50;
+    // console.log(authStore.user.jetons)
+    // Coût en Jetons (à ajuster selon votre logique)
+    if (authStore.user.jetons < cost) {
+        toast.error(`Pas assez de Jetons. Il vous faut ${cost} Jetons pour booster ce produit.`);
+        return;
+    }
+
+    try {
+        const response = await apiClient.post(`/produits/${produit.value.id}/boost`);
+// console.log(response.data)
+
+// Mettre à jour les Jetons localement (optionnel, à synchroniser avec le backend)
+authStore.user.jetons -= cost;
+produit.value.boosted_until = response.data.data.end_date;
+// console.log(response.data.data.end_date);
+toast.success(response.data.message || 'Produit boosté avec succès !');
+        
+        // Mettre à jour le statut boosté
+    } catch (error: any) {
+        toast.error(error.response?.data?.message || 'Erreur lors du boostage du produit');
+    }
+};
 
 onMounted(() => {
     fetchProduit();
@@ -137,10 +156,25 @@ onMounted(() => {
                             <img :src="produit.photo_url || 'https://via.placeholder.com/300'"
                                 :alt="`Image de ${produit.nom}`"
                                 class="w-full h-64 sm:h-80 lg:h-96 object-cover rounded-lg shadow-sm hover:scale-[1.02] transition-transform duration-300" />
-                            <span v-if="produit.collaboratif"
+                                <span v-if="produit.boosted_until && new Date(produit.boosted_until) > new Date()"
                                 class="absolute top-3 left-3 bg-[var(--espace-or)] text-[var(--espace-vert)] text-[10px] font-semibold px-2 py-1 rounded-full font-poppins"
+                                aria-label="Produit boosté">
+                                Boosté
+                            </span>
+                            <span v-if="produit.collaboratif"
+                                class="absolute top-3 right-3 bg-[var(--espace-or)] text-[var(--espace-vert)] text-[10px] font-semibold px-2 py-1 rounded-full font-poppins"
                                 aria-label="Produit collaboratif">
                                 Collaboratif
+                            </span>
+                            <span v-if="produit.commercant.abonnement_type === 'premium'"
+                                class="absolute bottom-3 left-3 bg-[var(--espace-bleu)] text-[var(--espace-blanc)] text-[10px] font-semibold px-2 py-1 rounded-full font-poppins"
+                                aria-label="Commerçant Premium">
+                                Premium
+                            </span>
+                            <span v-if="produit.commercant.abonnement_type === 'pro'"
+                                class="absolute bottom-3 left-3 bg-[var(--espace-bleu)] text-[var(--espace-blanc)] text-[10px] font-semibold px-2 py-1 rounded-full font-poppins"
+                                aria-label="Commerçant Pro">
+                                Pro
                             </span>
                         </div>
                         <!-- Détails du produit -->
@@ -171,7 +205,7 @@ onMounted(() => {
                                 </div>
                             </div>
                             <button @click="productStore.toggleFavorite(produit.id)"
-                                class="w-full bg-[var(--espace-vert)]  text-[var(--espace-blanc)] font-semibold py-2 rounded-lg hover:from-[var(--espace-vert)] hover:to-[var(--espace-or)] transition-all duration-200 active:scale-95 text-sm mb-3"
+                                class="w-full bg-[var(--espace-vert)] text-[var(--espace-blanc)] font-semibold py-2 rounded-lg hover:from-[var(--espace-vert)] hover:to-[var(--espace-or)] transition-all duration-200 active:scale-95 text-sm mb-3"
                                 :aria-label="produit.is_favorited_by ? 'Retirer des favoris' : 'Ajouter aux favoris'">
                                 <i class="fas fa-heart mr-2 text-sm"
                                     :class="{ 'text-[var(--espace-or)]': produit.is_favorited_by }"></i>
@@ -208,16 +242,14 @@ onMounted(() => {
                                     aria-label="Voir le commerçant">
                                     Voir le commerçant
                                 </button>
-                                <!-- <router-link :to="`/produits/${produit.id}`" class="block"> -->
-
                             </div>
                             <!-- Actions -->
                             <div class="flex flex-col sm:flex-row gap-3 mt-4">
                                 <button v-if="authStore.user?.commercant?.id !== produit.commercant_id"
-                                    @click="addToCart"
+                                    @click="contactCommercant"
                                     class="flex-1 bg-[var(--espace-vert)] font-semibold px-4 py-2 rounded-lg hover:bg-[var(--espace-vert)] text-white hover:text-[var(--espace-blanc)] transition-all duration-200 active:scale-95 text-sm"
-                                    aria-label="Ajouter au panier">
-                                    <i class="fas fa-shopping-cart mr-2 text-sm"></i> Ajouter au panier
+                                    aria-label="Contacter le commerçant">
+                                    <i class="fas fa-phone mr-2 text-sm"></i> Contacter le commerçant
                                 </button>
                                 <button
                                     v-if="produit.collaboratif && authStore.user?.commercant?.id !== produit.commercant_id"
@@ -231,6 +263,14 @@ onMounted(() => {
                                     class="flex-1 bg-[var(--espace-vert)] text-[var(--espace-blanc)] font-semibold px-4 py-2 rounded-lg hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)] transition-all duration-200 active:scale-95 text-sm"
                                     aria-label="Modifier le produit">
                                     <i class="fas fa-edit mr-2 text-sm"></i> Modifier le produit
+                                </button>
+                                <button v-if="authStore.user?.commercant?.id === produit.commercant_id"
+                                    @click="boostProduit"
+                                    class="flex-1 bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold px-4 py-2 rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-all duration-200 active:scale-95 text-sm"
+                                    :disabled="produit.boosted_until && new Date(produit.boosted_until) > new Date()"
+                                    :aria-label="produit.boosted_until && new Date(produit.boosted_until) > new Date() ? 'Boost déjà actif' : 'Booster ce produit'">
+                                    <i class="fas fa-rocket mr-2 text-sm"></i>
+                                    {{ produit.boosted_until && new Date(produit.boosted_until) > new Date() ? 'Boost' : 'Booster (50 Jetons)' }}
                                 </button>
                             </div>
                         </div>
@@ -302,6 +342,8 @@ onMounted(() => {
     --espace-or: #facc15;
     --espace-blanc: #ffffff;
     --espace-gris: #6b7280;
+    --espace-bleu: #3b82f6;
+    /* Ajout pour les badges Premium/Pro */
 }
 
 .font-poppins {
@@ -332,5 +374,11 @@ onMounted(() => {
 
 button:active {
     transform: scale(0.95);
+}
+
+button:disabled {
+    background-color: #a3bffa;
+    color: #6b7280;
+    cursor: not-allowed;
 }
 </style>

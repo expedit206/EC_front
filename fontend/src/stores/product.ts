@@ -1,7 +1,6 @@
 // src/stores/product.js
 import { defineStore } from 'pinia';
 import apiClient from '../api';
-import { log } from 'console';
 
 export const useProductStore = defineStore('product', {
   state: () => ({
@@ -34,7 +33,7 @@ export const useProductStore = defineStore('product', {
             },
           }
         );
-        console.log(response.data);
+        console.log(response.data.data);
         if (params.per_page === 'all') {
           this.products = reset ? response.data : [...this.products, ...response.data];
         } else {

@@ -5,73 +5,17 @@ import type { User } from "../types";
 import apiClient from "../api/index.js";
 import router from "../router";
 
-// export const useAuthStore = defineStore("auth", () => {
-//   const user = ref<User | null>(null);
-
-//   const register = async (form: {
-//     nom: string;
-//     telephone: string;
-//     email: string;
-//     ville: string;
-//     mot_de_passe: string;
-//     parrain_id: string;
-//   }) => {
-//     const response = await apiClient.post("/register", {
-//       ...form,
-//       mot_de_passe: form.mot_de_passe, // Assurer la cohérence
-//     });
-//     user.value = response.data.user;
-//     localStorage.setItem("user", JSON.stringify(user.value)); // Toujours LocalStorage pour register
-//     return response.data;
-//   };
-
-//   const login = async (form: {
-//     login: string;
-//     mot_de_passe: string;
-//     remember?: boolean;
-//   }) => {
-//     const response = await apiClient.post("/login", form);
-    // console.log(response.data.user);
-
-//     user.value = response.data.user;
-//     // const storage = form.remember ? localStorage : sessionStorage;
-//     localStorage.setItem("user", JSON.stringify(user.value));
-//     return response.data;
-//   };
-
-//   const logout = () => {
-//     user.value = null;
-//     localStorage.removeItem("user");
-//     sessionStorage.removeItem("user");
-//   };
-
-//     const loadUserFromStorage = () => {
-//       const storedUser =
-//         localStorage.getItem("user");
-    // // console.log(storedUser);
-
-//     if (storedUser) {
-//       user.value =  JSON.parse(storedUser);
-
-//     } else {
-      // console.log('ok');
-//       user.value = null;
-//       // router.push("login");
-//     }
-//   };
-
-//   return { user, register, login, logout, loadUserFromStorage };
-// });
 
 export const useAuthStore = defineStore("auth", {
   state: () => {
     const rawUser = localStorage.getItem("user");
     // console.log(rawUser=='undefined');
-    
-    const user = rawUser && rawUser !== "undefined" ? JSON.parse(rawUser) : null;
+
+    const user =
+      rawUser && rawUser !== "undefined" ? JSON.parse(rawUser) : null;
 
     const token = localStorage.getItem("token") || null;
-// console.log(token);
+    // console.log(token);
 
     return {
       user,
@@ -79,18 +23,15 @@ export const useAuthStore = defineStore("auth", {
     };
   },
   actions: {
-
-
-    async   login(credentials: { login: string; mot_de_passe: string }) {
+    async login(credentials: { login: string; mot_de_passe: string }) {
       const response = await apiClient.post("/login", credentials);
       // console.log(response.data);
-      
+
       this.user = response.data.user;
       this.token = response.data.token;
       // localStorage.setItem("user", JSON.stringify(this.user));
       localStorage.setItem("token", this.token);
     },
-
 
     async register(data: {
       nom: string;
@@ -101,7 +42,7 @@ export const useAuthStore = defineStore("auth", {
       parrain_id?: string;
     }) {
       // console.log(data);
-      
+
       const response = await apiClient.post("/register", {
         nom: data.nom,
         telephone: data.telephone,
@@ -110,7 +51,7 @@ export const useAuthStore = defineStore("auth", {
         mot_de_passe: data.mot_de_passe,
         parrain_id: data.parrain_id || null,
       });
-// console.log(response.data);
+      // console.log(response.data);
 
       this.user = response.data.user;
       this.token = response.data.token;
@@ -124,8 +65,8 @@ export const useAuthStore = defineStore("auth", {
       }
       try {
         const response = await apiClient.get("/user");
-      // console.log(response.data);
-        
+        // console.log(response.data);
+
         this.user = response.data.user;
         localStorage.setItem("user", JSON.stringify(this.user));
         return true;
@@ -134,6 +75,12 @@ export const useAuthStore = defineStore("auth", {
         return false;
       }
     },
+
+    async updateJetons() {
+      const response = await apiClient.get("/user");
+      this.user = response.data;
+    },
+
     logout() {
       apiClient.post("/logout").catch(() => {}); // Ignorer les erreurs réseau
       this.user = null;

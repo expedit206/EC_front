@@ -186,7 +186,7 @@ onUnmounted(() => {
             <TransitionGroup name="fade" tag="div"
                 class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <ProductCard v-for="produit in productStore.products" :key="produit.id" :produit="produit"
-                    @toggle-favorite="productStore.toggleFavorite(produit.id)" />
+                     />
             </TransitionGroup>
             <div ref="loadMoreTrigger" class="h-10 flex items-center justify-center" aria-live="polite"
                 :aria-busy="productStore.isLoading">
