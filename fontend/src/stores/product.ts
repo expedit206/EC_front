@@ -34,10 +34,10 @@ export const useProductStore = defineStore('product', {
           }
         );
         console.log(response.data.data);
+        console.log(response.data);
         if (params.per_page === 'all') {
           this.products = reset ? response.data : [...this.products, ...response.data];
         } else {
-          
           this.products = reset ? response.data.data : [...this.products, ...response.data.data];
           this.hasMore = response.data.current_page < response.data.last_page;
           this.page = response.data.current_page + 1;
