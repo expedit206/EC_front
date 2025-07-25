@@ -1,4 +1,3 @@
-<!-- src/views/ProductList.vue -->
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useToast } from 'vue-toastification';
@@ -23,6 +22,7 @@ const filterForm = ref({
 const villes = ref(['Douala', 'Yaoundé', 'Bamenda', 'Buea', 'Garoua']);
 const observer = ref<IntersectionObserver | null>(null);
 const loadMoreTrigger = ref<HTMLElement | null>(null);
+const hoverTimeouts = ref<Record<string, number>>({});
 
 const fetchCategories = async () => {
     try {
@@ -58,9 +58,38 @@ const activeFiltersCount = () => {
     return Object.values(filterForm.value).filter(val => val !== '').length;
 };
 
+const handleMouseOver = (productId: string) => {
+    if (!hoverTimeouts.value[productId]) {
+        hoverTimeouts.value[productId] = setTimeout(() => {
+            recordView(productId);
+            delete hoverTimeouts.value[productId];
+        }, 1000); // 1 seconde
+    }
+};
+
+const handleTouchStart = (productId: string) => {
+    recordView(productId);
+};
+
+const recordView = async (productId: string) => {
+    const userId = localStorage.getItem('userId'); // Ajustez selon votre stockage d'auth
+    if (userId && !localStorage.getItem(`viewed_${productId}`)) {
+        try {
+            await apiClient.post(`/produits/${productId}/view`, {
+                product_id: productId,
+                user_id: userId,
+            });
+            localStorage.setItem(`viewed_${productId}`, 'true');
+        } catch (error) {
+            console.error('Erreur lors de l\'enregistrement de la vue:', error);
+            toast.error('Erreur lors de l\'enregistrement de la vue.');
+        }
+    }
+};
+
 onMounted(async () => {
     try {
-        await productStore.fetchProducts(); // Charge les produits et enregistre les vues
+        await productStore.fetchProducts(); // Charge les produits
         await fetchCategories();
     } catch (error) {
         console.error('Erreur lors du chargement des produits ou catégories:', error);
@@ -86,6 +115,8 @@ onUnmounted(() => {
     if (observer.value && loadMoreTrigger.value) {
         observer.value.unobserve(loadMoreTrigger.value);
     }
+    // Nettoyer les timeouts au démontage
+    Object.values(hoverTimeouts.value).forEach(clearTimeout);
 });
 </script>
 
@@ -186,7 +217,8 @@ onUnmounted(() => {
             <!-- Liste des produits -->
             <TransitionGroup name="fade" tag="div"
                 class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                <ProductCard v-for="produit in productStore.products" :key="produit.id" :produit="produit" />
+                <ProductCard v-for="produit in productStore.products" :key="produit.id" :produit="produit"
+                    @mouseover="handleMouseOver(produit.id)" @touchstart="handleTouchStart(produit.id)" />
             </TransitionGroup>
             <div ref="loadMoreTrigger" class="h-10 flex items-center justify-center" aria-live="polite"
                 :aria-busy="productStore.isLoading">

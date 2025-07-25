@@ -29,9 +29,10 @@ export const useProductStore = defineStore("product", {
             ...params,
             page: this.page,
             sort: this.sort,
-            per_page: params.per_page || 10,
           },
         });
+        console.log(response.data.data);
+        
         if (params.per_page === "all") {
           this.products = reset
             ? response.data
@@ -66,6 +67,8 @@ export const useProductStore = defineStore("product", {
         const response = await apiClient.post(
           `/produits/${produitId}/favorite`
         );
+        console.log(response.data.message);
+        
         return response.data.message;
       } catch (error) {
         throw (

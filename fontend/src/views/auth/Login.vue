@@ -40,7 +40,7 @@ const login = async () => {
 
 <template>
     <div class="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-8"
-        :style="{ background: 'url(/src/assets/images/bginsc.jpg) center/cover' }">
+        >
         <div class="w-full max-w-lg bg-[rgba(255,255,255,0.85)] rounded-2xl shadow-xl p-6 sm:p-10">
             <h1 class="text-3xl sm:text-4xl font-bold text-center text-[var(--espace-vert)] mb-6">
                 <i class="fas fa-sign-in-alt mr-2 text-[var(--espace-or)]"></i> Connexion
