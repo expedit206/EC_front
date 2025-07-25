@@ -60,7 +60,7 @@ const handleFavorite = async () => {
     <div class="flex items-center justify-between mt-2 text-xs text-[var(--espace-gris)]">
       <div class="flex items-center gap-1">
         <i class="fas fa-eye text-[10px]"></i>
-        <span>{{ produit.views_count }} vues</span>
+        <span>{{ produit.raw_views_count }} vues</span>
       </div>
       <div class="flex items-center gap-1">
         <button @click="handleFavorite"

@@ -4,8 +4,21 @@ import { ref } from "vue";
 import type { User } from "../types";
 import apiClient from "../api/index.js";
 import router from "../router";
+//productstore et appel de setUserId
+import { useProductStore } from "./product.js";
 
 
+// stores/useSafeProductStore.ts
+import { getActivePinia } from 'pinia';
+
+export const productstore = () => {
+  if (!getActivePinia()) {
+    throw new Error("Pinia n’est pas encore actif");
+  }
+  return useProductStore();
+};
+
+// const productstore = useProductStore();
 export const useAuthStore = defineStore("auth", {
   state: () => {
     const rawUser = localStorage.getItem("user");
@@ -69,6 +82,7 @@ export const useAuthStore = defineStore("auth", {
 
         this.user = response.data.user;
         localStorage.setItem("user", JSON.stringify(this.user));
+        productstore().setUserId(this.user.id);
         return true;
       } catch (error) {
         this.logout();

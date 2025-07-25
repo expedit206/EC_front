@@ -116,9 +116,9 @@ onMounted(() => {
         <div class="container mx-auto px-4 sm:px-6 py-2 flex justify-between items-center gap-4">
             <div class="flex items-center gap-2 sm:gap-3">
                 <RouterLink to="/" aria-label="Retour à l'accueil">
-                    <div class="bg-[var(--espace-blanc)] rounded-full p-1">
-                        <img src="/src/assets/images/logo.png" alt="Logo Espace Cameroun"
-                            class="h-8 w-8 sm:h-10 sm:w-10 object-contain transition-transform duration-300 hover:scale-105 shadow-sm hover:shadow-md" />
+                    <div class=" rounded-full pb-1 pt-1">
+                        <img src="/src/assets/images/logo/logoOrangeweb.webp" alt="Logo Espace Cameroun"
+                            class="h-10 w-10  object-contain transition-transform duration-300 hover:scale-105 shadow-sm hover:shadow-md" />
                     </div>
                 </RouterLink>
                 <h1 class="text-lg sm:text-xl font-bold font-poppins text-[var(--espace-blanc)]">
