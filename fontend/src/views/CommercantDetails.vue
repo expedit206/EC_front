@@ -33,6 +33,15 @@ const fetchCommercantDetails = async () => {
     }
 };
 
+const handleFavorite = async () => {
+    try {
+        // console.log(productStore.product.id);
+        await productStore.toggleFavorite(productStore.product.id);
+    } catch (error: any) {
+        toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour des favoris.');
+    }
+};
+
 // Filtrer les produits du commerçant depuis le store
 
 const commerçantProduits = computed( () => {

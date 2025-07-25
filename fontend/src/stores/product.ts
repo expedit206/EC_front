@@ -5,17 +5,18 @@ import apiClient from "../api";
 export const useProductStore = defineStore("product", {
   state: () => ({
     products: [],
+    product: [],
     isLoading: false,
     hasMore: true,
     page: 1,
     sort: "random",
-    userId: null, // À initialiser avec l'ID de l'utilisateur connecté
+    userId: null,
+    relatedProducts: [],
   }),
 
   actions: {
     async fetchProducts(params = {}, reset = false) {
       if (this.isLoading || (!reset && !this.hasMore)) return;
-
       this.isLoading = true;
       if (reset) {
         this.products = [];
@@ -32,7 +33,8 @@ export const useProductStore = defineStore("product", {
           },
         });
         console.log(response.data.data);
-        
+        console.log(response.data);
+
         if (params.per_page === "all") {
           this.products = reset
             ? response.data
@@ -54,44 +56,71 @@ export const useProductStore = defineStore("product", {
         this.isLoading = false;
       }
     },
+async toggleFavorite(produitId) {
+  try {
+    // Mettre à jour dans la liste des produits
+    const product = this.products.find((p) => p.id === produitId);
+    if (product) {
+      product.is_favorited_by = !product.is_favorited_by;
+      product.favorites_count = product.is_favorited_by
+        ? product.favorites_count + 1
+        : product.favorites_count - 1;
+    }
 
-    async toggleFavorite(produitId) {
-      try {
-        const product = this.products.find((p) => p.id === produitId);
-        if (product) {
-          product.is_favorited_by = !product.is_favorited_by;
-          product.favorites_count = product.is_favorited_by
-            ? product.favorites_count + 1
-            : product.favorites_count - 1;
-        }
-        const response = await apiClient.post(
-          `/produits/${produitId}/favorite`
-        );
-        console.log(response.data.message);
-        
-        return response.data.message;
-      } catch (error) {
-        throw (
-          error.response?.data?.message ||
-          "Erreur lors de la mise à jour des favoris"
-        );
-      }
-    },
+    // Mettre à jour le produit unique affiché
+    if (this.product && this.product.id === produitId) {
+      this.product.is_favorited_by = !this.product.is_favorited_by;
+      this.product.favorites_count = this.product.is_favorited_by
+        ? this.product.favorites_count + 1
+        : this.product.favorites_count - 1;
+    }
+
+    const response = await apiClient.post(`/produits/${produitId}/favorite`);
+    return response.data.message;
+  } catch (error) {
+    throw (
+      error.response?.data?.message ||
+      "Erreur lors de la mise à jour des favoris"
+    );
+  }
+},
+
+
+    // async viewProduct(produitId) {
+    //   try {
+    //      const response = await apiClient.get(`/produits/${produitId}`);
+    //      this.product = response.data.produit;
+    //     const productIndex = this.products.findIndex((p) => p.id === produitId);
+    //     if (productIndex !== -1) {
+    //       this.products[productIndex] = {
+    //         ...this.products[productIndex],
+    //         ...this.product,
+    //       };
+    //     } else {
+    //       this.products.push(this.product);
+    //     }
+    //   } catch (error) {
+    //     throw (
+    //       error.response?.data?.message ||
+    //       "Erreur lors du chargement du produit"
+    //     );
+    //   }
+    // },
 
     async viewProduct(produitId) {
       try {
+        console.log('jjj')
         const response = await apiClient.get(`/produits/${produitId}`);
-        const productData = response.data.produit;
+        this.product = response.data.produit; // Stocker le produit unique
         const productIndex = this.products.findIndex((p) => p.id === produitId);
         if (productIndex !== -1) {
           this.products[productIndex] = {
             ...this.products[productIndex],
-            ...productData,
+            ...this.product,
           };
         } else {
-          this.products.push(productData);
+          this.products.push(this.product);
         }
-        return productData;
       } catch (error) {
         throw (
           error.response?.data?.message ||

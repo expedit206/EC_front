@@ -26,7 +26,7 @@ console.log(props.produit);
 const handleFavorite = async () => {
   try {
     await productStore.toggleFavorite(props.produit.id);
-    // emit('toggle-favorite', props.produit.id); // Émettre l'événement si nécessaire
+    emit('toggle-favorite', props.produit.id); // Émettre l'événement si nécessaire
   } catch (error: any) {
     toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour des favoris.');
   }

@@ -6,8 +6,10 @@ import AppHeader from '../components/AppHeader.vue';
 import Loader from '../components/Loader.vue';
 import apiClient from '../api';
 import { useProductStore } from '../stores/product';
+import { useAuthStore } from '../stores/auth';
 
 const productStore = useProductStore();
+const authStore = useAuthStore();
 const categories = ref<any[]>([]);
 const toast = useToast();
 const showFilters = ref(false);
@@ -22,7 +24,7 @@ const filterForm = ref({
 const villes = ref(['Douala', 'Yaoundé', 'Bamenda', 'Buea', 'Garoua']);
 const observer = ref<IntersectionObserver | null>(null);
 const loadMoreTrigger = ref<HTMLElement | null>(null);
-const hoverTimeouts = ref<Record<string, number>>({});
+
 
 const fetchCategories = async () => {
     try {
@@ -59,12 +61,7 @@ const activeFiltersCount = () => {
 };
 
 const handleMouseOver = (productId: string) => {
-    if (!hoverTimeouts.value[productId]) {
-        hoverTimeouts.value[productId] = setTimeout(() => {
-            recordView(productId);
-            delete hoverTimeouts.value[productId];
-        }, 1000); // 1 seconde
-    }
+    recordView(productId);
 };
 
 const handleTouchStart = (productId: string) => {
@@ -72,31 +69,59 @@ const handleTouchStart = (productId: string) => {
 };
 
 const recordView = async (productId: string) => {
-    const userId = localStorage.getItem('userId'); // Ajustez selon votre stockage d'auth
-    if (userId && !localStorage.getItem(`viewed_${productId}`)) {
-        try {
-            await apiClient.post(`/produits/${productId}/view`, {
+    const userId = authStore.user?.id;
+    if (!userId) {
+        toast.error('Connexion requise pour enregistrer la vue.');
+        return;
+    }
+
+    // Récupérer les vues stockées
+    const viewedProducts = JSON.parse(localStorage.getItem('viewedProducts') || '{}');
+    const today = new Date().toISOString().split('T')[0]; // Date au format YYYY-MM-DD
+    const lastResetDate = localStorage.getItem('lastResetDate');
+
+    // Vider les vues si c'est un nouveau jour
+    if (!lastResetDate || lastResetDate !== today) {
+        localStorage.removeItem('viewedProducts');
+        localStorage.setItem('lastResetDate', today);
+    }
+
+    // Vérifier si le produit est déjà dans les vues du jour
+    if (await viewedProducts[productId]) {
+        
+        return; // Pas d'appel API si déjà vu aujourd'hui
+    }
+    
+    console.log(viewedProducts);
+    try {
+        setTimeout(async() => {
+            
+            const response = await apiClient.post(`/record_view`, {
                 product_id: productId,
                 user_id: userId,
             });
-            localStorage.setItem(`viewed_${productId}`, 'true');
-        } catch (error) {
-            console.error('Erreur lors de l\'enregistrement de la vue:', error);
-            toast.error('Erreur lors de l\'enregistrement de la vue.');
-        }
+            toast.success(response.data.message);
+        }, 1000);
+
+
+        // Mettre à jour localStorage avec le produit vu
+        viewedProducts[productId] = true;
+         localStorage.setItem('viewedProducts', JSON.stringify(viewedProducts));
+    } catch (error) {
+        console.error('Erreur lors de l\'enregistrement de la vue:', error);
+        toast.error(error.response?.data?.message || 'Erreur lors de l\'enregistrement de la vue.');
     }
 };
 
 onMounted(async () => {
     try {
-        await productStore.fetchProducts(); // Charge les produits
+        await productStore.fetchProducts();
         await fetchCategories();
     } catch (error) {
         console.error('Erreur lors du chargement des produits ou catégories:', error);
         toast.error('Erreur lors du chargement des produits. Veuillez réessayer.');
     }
 
-    // Observer pour charger plus de produits
     observer.value = new IntersectionObserver(
         (entries) => {
             if (entries[0].isIntersecting && !productStore.isLoading && productStore.hasMore) {
@@ -115,14 +140,12 @@ onUnmounted(() => {
     if (observer.value && loadMoreTrigger.value) {
         observer.value.unobserve(loadMoreTrigger.value);
     }
-    // Nettoyer les timeouts au démontage
-    Object.values(hoverTimeouts.value).forEach(clearTimeout);
 });
 </script>
 
 <template>
+    <!-- Template inchangé -->
     <div class="min-h-screen bg-[var(--espace-blanc)]">
-        <AppHeader />
         <Loader :isLoading="productStore.isLoading" />
         <div class="container mx-auto px-4 sm:px-6 py-4">
             <!-- Tri -->
