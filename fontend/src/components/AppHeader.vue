@@ -1,19 +1,24 @@
 <script setup lang="ts">
-import { computed, onMounted, watch, ref } from 'vue';
+import { computed, onMounted, onUnmounted, watch, ref, nextTick } from 'vue'; // Added nextTick
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/Auth';
 import { useUserStateStore } from '../stores/userState';
 import apiClient from '../api';
+import { useProductStore } from '../stores/product';
 
 const authStore = useAuthStore();
 const userStateStore = useUserStateStore();
 const router = useRouter();
+const user = authStore.user
 const route = useRoute();
 const animateCartBadge = ref(false);
 const animateCollaborationBadge = ref(false);
 const animateOrdersBadge = ref(false);
 const searchQuery = ref('');
+const productStore = useProductStore();
 const showSearch = ref(false); // Toggle for search bar visibility
+const searchOverlayRef = ref<HTMLElement | null>(null); // Ref for the overlay element
+const ignoreNextClick = ref(false); // Flag to ignore the initial click
 
 const navLinks = computed(() => {
     return [
@@ -105,8 +110,7 @@ watch(
 const performSearch = async () => {
     if (searchQuery.value.trim()) {
         try {
-            const response = await apiClient.get('/products', { params: { search: searchQuery.value.trim() } });
-            console.log('Search results:', response.data); // Handle the API response as needed
+            await productStore.fetchProducts({ search: searchQuery.value.trim() }, true);
             searchQuery.value = ''; // Clear input after search
             showSearch.value = false; // Hide search bar
         } catch (error) {
@@ -115,11 +119,35 @@ const performSearch = async () => {
     }
 };
 
+// Handle clicks outside the search overlay
+const handleClickOutside = (event: MouseEvent) => {
+    if (ignoreNextClick.value) {
+        ignoreNextClick.value = false; // Reset flag after ignoring the first click
+        return;
+    }
+    if (searchOverlayRef.value && !searchOverlayRef.value.contains(event.target as Node)) {
+        showSearch.value = false;
+    }
+};
+
+const toggleSearch = async () => {
+    showSearch.value = !showSearch.value;
+    if (showSearch.value) {
+        ignoreNextClick.value = true; // Set flag to ignore the next click
+        await nextTick(); // Wait for DOM to update
+    }
+};
+
 onMounted(() => {
     if (authStore.user) {
         fetchBadges();
         userStateStore.initializeState();
     }
+    document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
 });
 </script>
 
@@ -163,7 +191,7 @@ onMounted(() => {
             </nav>
 
             <div class="flex items-center gap-4">
-                <button @click="showSearch = !showSearch"
+                <button @click="toggleSearch"
                     class="text-[var(--espace-blanc)] hover:text-[var(--espace-or)] transition-colors duration-300"
                     aria-label="Ouvrir la recherche">
                     <i class="fas fa-search text-2xl"></i>
@@ -172,11 +200,20 @@ onMounted(() => {
                     class="text-[var(--espace-blanc)] hover:text-[var(--espace-or)] transition-colors duration-300">
                     <i class="fas fa-cog text-2xl"></i>
                 </RouterLink>
+                <!-- </button> -->
+                
                 <RouterLink
-                    v-for="link in navLinks.filter(link => authStore.user ? link.to === '/profil' : ['/login', '/register'].includes(link.to))"
-                    :key="link.to" :to="link.to" class="relative flex items-center justify-center"
-                    :aria-label="link.label">
-                    <i :class="`fas ${link.icon}`" class="text-2xl"></i>
+                v-for="link in navLinks.filter(link => authStore.user ? link.to === '/profil' : ['/login', '/register'].includes(link.to))"
+                :key="link.to" :to="link.to" class="relative flex items-center justify-center"
+                :aria-label="link.label">
+                <!-- {{ user.photo }} -->
+                <img v-if="user.photo" :src="`http://localhost:8000/storage/${user.photo}`" alt="Photo de profil"
+                    class="w-10 h-10 rounded-full object-cover border-2 border-[var(--espace-vert)]" />
+                <div v-else
+                    class="w-10 h-10 rounded-full  flex items-center justify-center text-[var(--espace-gris)]">
+                    <!-- Pas de photo -->
+                    <i :class="`fas ${link.icon}`" class="text-2xl text-gray-100"></i>
+                </div>
                     <span
                         v-if="(typeof link.badge === 'object' ? link.badge.value : link.badge) > 0 && link.to === '/collaborations'"
                         class="cart-badge absolute top-0 right-0 bg-[var(--espace-or)] text-[var(--espace-vert)] text-xs rounded-full h-5 w-5 flex items-center justify-center"
@@ -189,8 +226,8 @@ onMounted(() => {
         </div>
 
         <!-- Search Overlay -->
-        <div v-if="showSearch"
-            class="fixed   bg-opacity-50 flex items-center top-10 w-full justify-center z-50 p-4">
+        <div v-if="showSearch" ref="searchOverlayRef"
+            class="fixed bg-[var(--espace-vert)] bg-opacity-50 flex items-center top-10 w-full justify-center z-50 p-4">
             <div class="relative w-full max-w-md bg-[var(--espace-blanc)] rounded-lg p-4 shadow-lg">
                 <input v-model="searchQuery" type="text" placeholder="Rechercher un produit..."
                     class="w-full px-4 py-2 rounded-full text-[var(--espace-vert)] focus:outline-none focus:ring-2 focus:ring-[var(--espace-or)] text-base"
