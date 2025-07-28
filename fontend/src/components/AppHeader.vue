@@ -5,6 +5,9 @@ import { useAuthStore } from '../stores/Auth';
 import { useUserStateStore } from '../stores/userState';
 import apiClient from '../api';
 import { useProductStore } from '../stores/product';
+// /soldeUser/
+import SoldeUser from './SoldeUser.vue';
+
 
 const authStore = useAuthStore();
 const userStateStore = useUserStateStore();
@@ -19,6 +22,8 @@ const productStore = useProductStore();
 const showSearch = ref(false); // Toggle for search bar visibility
 const searchOverlayRef = ref<HTMLElement | null>(null); // Ref for the overlay element
 const ignoreNextClick = ref(false); // Flag to ignore the initial click
+
+
 
 const navLinks = computed(() => {
     return [
@@ -152,7 +157,9 @@ onUnmounted(() => {
 </script>
 
 <template>
+    <!-- <SoldeUser /> -->
     <header class="bg-[var(--espace-vert)] text-[var(--espace-blanc)] fixed top-0 left-0 w-full z-50 shadow-md">
+
         <div class="container mx-auto px-2 sm:px-3 py-2 flex justify-between items-center gap-4">
             <div class="flex items-center gap-2 sm:gap-3">
                 <RouterLink to="/" aria-label="Retour à l'accueil">
@@ -190,6 +197,7 @@ onUnmounted(() => {
                 </RouterLink>
             </nav>
 
+
             <div class="flex items-center gap-4">
                 <button @click="toggleSearch"
                     class="text-[var(--espace-blanc)] hover:text-[var(--espace-or)] transition-colors duration-300"
@@ -201,19 +209,19 @@ onUnmounted(() => {
                     <i class="fas fa-cog text-2xl"></i>
                 </RouterLink>
                 <!-- </button> -->
-                
+
                 <RouterLink
-                v-for="link in navLinks.filter(link => authStore.user ? link.to === '/profil' : ['/login', '/register'].includes(link.to))"
-                :key="link.to" :to="link.to" class="relative flex items-center justify-center"
-                :aria-label="link.label">
-                <!-- {{ user.photo }} -->
-                <img v-if="user.photo" :src="`http://localhost:8000/storage/${user.photo}`" alt="Photo de profil"
-                    class="w-10 h-10 rounded-full object-cover border-2 border-[var(--espace-vert)]" />
-                <div v-else
-                    class="w-10 h-10 rounded-full  flex items-center justify-center text-[var(--espace-gris)]">
-                    <!-- Pas de photo -->
-                    <i :class="`fas ${link.icon}`" class="text-2xl text-gray-100"></i>
-                </div>
+                    v-for="link in navLinks.filter(link => authStore.user ? link.to === '/profil' : ['/login', '/register'].includes(link.to))"
+                    :key="link.to" :to="link.to" class="relative flex items-center justify-center"
+                    :aria-label="link.label">
+                    <!-- {{ user.photo }} -->
+                    <img v-if="user?.photo" :src="`http://localhost:8000/storage/${user.photo}`" alt="Photo de profil"
+                        class="w-10 h-10 rounded-full object-cover border-2 border-[var(--espace-vert)]" />
+                    <div v-else
+                        class="w-10 h-10 rounded-full  flex items-center justify-center text-[var(--espace-gris)]">
+                        <!-- Pas de photo -->
+                        <i :class="`fas ${link.icon}`" class="text-2xl text-gray-100"></i>
+                    </div>
                     <span
                         v-if="(typeof link.badge === 'object' ? link.badge.value : link.badge) > 0 && link.to === '/collaborations'"
                         class="cart-badge absolute top-0 right-0 bg-[var(--espace-or)] text-[var(--espace-vert)] text-xs rounded-full h-5 w-5 flex items-center justify-center"
@@ -244,6 +252,8 @@ onUnmounted(() => {
             </div>
         </div>
     </header>
+    <SoldeUser />
+
 
     <Transition name="slide-up">
         <nav

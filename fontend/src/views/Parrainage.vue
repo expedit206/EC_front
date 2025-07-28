@@ -1,23 +1,26 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'; // Ajout de computed pour flexibilité future
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuthStore } from '../stores/Auth'; // Vérifiez le chemin
+import { useAuthStore } from '../stores/Auth';
 import apiClient from '../api';
 import { useToast } from 'vue-toastification';
 
-const authStore = useAuthStore(); // Initialisation du store
-// const router = useRouter();
+const authStore = useAuthStore();
+const router = useRouter();
 const toast = useToast();
 
 // Données réactives
 const code = ref('');
 const link = ref('');
 const parrainages = ref([]);
-const totalGains = ref(0);
+const totalGains = ref(0); // Total en jetons
 const suggestedCode = ref('');
 const customCode = ref('');
 const isGenerating = ref(false);
 const isCreating = ref(false);
+const niveauActuel = ref<any>({});
+const niveauSuivant = ref<any>(null);
+const progression = ref(0);
 
 // Récupérer les données de parrainage
 const fetchParrainageData = async () => {
@@ -30,10 +33,13 @@ const fetchParrainageData = async () => {
     try {
         const response = await apiClient.get('/parrainages/dashboard');
         const data = response.data;
-        code.value = data.code;
-        link.value = `https://espacecameroun.cm/invite/${data.code}`;
+        code.value = data.code || '';
+        link.value = data.code ? `https://espacecameroun.cm/invite/${data.code}` : '';
         parrainages.value = data.parrainages || [];
-        totalGains.value = data.total_gains || 0;
+        totalGains.value = data.total_gains || 0; // Total en jetons
+        niveauActuel.value = data.niveau_actuel;
+        niveauSuivant.value = data.niveau_suivant;
+        progression.value = data.progression;
     } catch (error) {
         toast.error('Erreur lors de la récupération des données de parrainage');
         console.error(error);
@@ -49,8 +55,7 @@ const generateCodeSuggestion = async () => {
 
     isGenerating.value = true;
     try {
-        const response = await apiClient.post('/parrainages/generateCode');
-        console.log(response.data)
+        const response = await apiClient.post('/parrainages/generate-code');
         suggestedCode.value = response.data.suggested_code;
         customCode.value = suggestedCode.value;
         toast.success('Nouveau code suggéré avec succès !');
@@ -75,12 +80,12 @@ const createCode = async () => {
 
     isCreating.value = true;
     try {
-        const response = await apiClient.post('/parrainages/createCode', { code: customCode.value.trim() });
+        const response = await apiClient.post('/parrainages/create-code', { code: customCode.value.trim() });
         code.value = response.data.code;
         link.value = response.data.link || `https://espacecameroun.cm/invite/${response.data.code}`;
         toast.success(response.data.message || 'Code créé avec succès !');
         await fetchParrainageData();
-    } catch (error) {
+    } catch (error: any) {
         toast.error(error.response?.data?.message || 'Erreur lors de la création du code');
         console.error(error);
     } finally {
@@ -118,37 +123,59 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-100 pt-16 pb-20 px-4 sm:px-6">
+    <div class="min-h-screen bg-gray-100 pt-2 pb-12 px-4 sm:px-6">
         <div class="container mx-auto max-w-4xl">
-            <!-- Titre -->
-            <h1 class="text-2xl sm:text-3xl font-bold text-[var(--espace-vert)] mb-6 font-poppins">
-                <i class="fas fa-users mr-2 text-[var(--espace-or)]"></i> Mon Parrainage
-            </h1>
+            <!-- Section des Niveaux de Parrainage -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-lg font-semibold text-[var(--espace-vert)] mb-4">Niveaux de Parrainage</h2>
+                <p class="text-[var(--espace-gris)] text-sm mb-2">
+                    Votre niveau actuel : <strong>{{ niveauActuel.nom }} {{ niveauActuel.emoji }} ({{ parrainages.length
+                        }}/{{ niveauSuivant ? niveauSuivant.filleuls_requis : niveauActuel.filleuls_requis }})</strong>
+                    <span v-if="niveauActuel.jetons_bonus > 0" class="ml-2">+{{ niveauActuel.jetons_bonus }} jetons
+                        bonus</span>
+                </p>
+                <div class="w-full bg-gray-200 rounded-full h-4">
+                    <div class="h-4 rounded-full bg-[var(--espace-or)] transition-all duration-300"
+                        :style="{ width: `${progression}%` }"></div>
+                </div>
+                <p class="text-[var(--espace-gris)] text-xs mt-2">
+                    Prochain niveau : {{ niveauSuivant ? niveauSuivant.nom : 'Légende 🛡️' }} à {{ niveauSuivant ?
+                        niveauSuivant.filleuls_requis : '1000+' }} parrainages
+                </p>
+                <p v-if="niveauActuel.avantages?.length" class="text-[var(--espace-gris)] text-xs mt-1">
+                    Avantages : {{ niveauActuel.avantages.join(', ') }}
+                </p>
+                <button @click="router.push('/parrainage/info')"
+                    class="mt-4 bg-[var(--espace-vert)] text-white px-4 py-2 rounded hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)] transition">
+                    <i class="fas fa-info-circle mr-2"></i> En savoir plus
+                </button>
+            </div>
 
             <!-- Bloc Explicatif -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-6">
                 <p class="text-[var(--espace-gris)] text-sm sm:text-base">
-                    Invitez des utilisateurs avec votre lien ou code unique et gagnez des récompenses ! Pour chaque
-                    commerçant actif, recevez <strong>500 FCFA</strong> de bonus et <strong>10%</strong> sur ses 3
-                    premières ventes.
+                    Invitez des amis avec votre lien ou code unique et gagnez des récompenses ! Recevez <strong>1
+                        jeton</strong> pour chaque commerçant actif parrainé.
                 </p>
             </div>
 
             <!-- Générer ou Créer le Code -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h2 class="text-lg font-semibold text-[var(--espace-vert)] mb-4">Votre Parrainage</h2>
+                <h2 class="text-lg font-semibold text-[var(--espace-vert)] mb-4">Votre Code de Parrainage</h2>
                 <div v-if="code" class="mb-4">
                     <p class="text-sm text-[var(--espace-gris)]">
                         Code : <span class="font-bold text-[var(--espace-or)]">{{ code }}</span>
                     </p>
                     <p class="text-sm text-[var(--espace-gris)] truncate">
-                        Lien : <a :href="link" class="text-blue-500 underline hover:text-blue-700">{{ link }}</a>
+                        Lien : <a :href="link" target="_blank" class="text-blue-500 underline hover:text-blue-700">{{
+                            link }}</a>
                     </p>
                 </div>
                 <div v-else class="mb-4">
                     <input v-model="customCode" type="text"
                         :placeholder="suggestedCode || 'Entrez ou générez un code (ex: DOM2025)'"
-                        class="w-full p-2 border rounded mb-2 focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]" />
+                        class="w-full p-2 border rounded mb-2 focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]"
+                        maxlength="10" />
                     <div class="flex flex-col sm:flex-row gap-2">
                         <button @click="generateCodeSuggestion" :disabled="isGenerating"
                             class="bg-[var(--espace-or)] text-[var(--espace-vert)] px-4 py-2 rounded hover:bg-[var(--espace-vert)] hover:text-white transition flex-1 disabled:opacity-50">
@@ -192,7 +219,6 @@ onMounted(() => {
                                 <th class="px-4 py-2">Nom</th>
                                 <th class="px-4 py-2">Date d'inscription</th>
                                 <th class="px-4 py-2">Est commerçant</th>
-                                <th class="px-4 py-2">Ventes générées (FCFA)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -201,8 +227,6 @@ onMounted(() => {
                                 <td class="px-4 py-2">{{ new Date(p.date_inscription).toLocaleDateString('fr-FR') }}
                                 </td>
                                 <td class="px-4 py-2">{{ p.est_commercant ? 'Oui' : 'Non' }}</td>
-                                <td class="px-4 py-2">{{ p.est_commercant && p.ventes_generees ?
-                                    p.ventes_generees.toLocaleString() : '-' }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -216,14 +240,14 @@ onMounted(() => {
             <div class="bg-white rounded-lg shadow-md p-6 text-center">
                 <h2 class="text-lg font-semibold text-[var(--espace-vert)] mb-2">Vos Gains</h2>
                 <p class="text-2xl sm:text-3xl font-bold text-[var(--espace-or)]">
-                    {{ totalGains.toLocaleString() }} FCFA
+                    {{ totalGains }} jetons
                 </p>
                 <p class="text-[var(--espace-gris)] mt-2">
                     🎉 Vous avez invité <strong>{{ parrainages.length }}</strong> utilisateurs, dont <strong>{{
                         parrainages.filter(p => p.est_commercant).length }}</strong> sont commerçants !
                 </p>
                 <p class="text-[var(--espace-gris)]">
-                    ⬇️ Continuez à gagner 10% sur les ventes des commerçants.
+                    ⬇️ Gagnez <strong>1 jeton</strong> par commerçant actif parrainé.
                 </p>
             </div>
         </div>

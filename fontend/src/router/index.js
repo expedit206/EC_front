@@ -12,6 +12,8 @@ import Parrainage from "../views/Parrainage.vue";
 import Collaborations from "../views/Collaborations.vue";
 import { useAuthStore } from "../stores/Auth";
 import CommercantDetails from "../views/CommercantDetails.vue";
+import CommercantCreate from "../views/CommercantCreate.vue";
+import ParrainageInfo from "../views/ParrainageInfo.vue";
 
 const routes = [
   { path: "/login", component: Login, name: "login" },
@@ -44,6 +46,12 @@ const routes = [
   },
 
   {
+    path: "/commercant/create",
+    component: CommercantCreate,
+    meta: { requiresAuth: true },
+  },
+
+  {
     path: "/commercant/monProfil",
     component: CommercantDashboard,
     meta: { requiresAuth: true },
@@ -61,6 +69,8 @@ const routes = [
     name: "parrainage",
     meta: { requiresAuth: true },
   },
+
+  { path: "/parrainage/info", component: ParrainageInfo },
 
   // {
   //   path: "/abonnements",
