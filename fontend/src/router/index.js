@@ -14,6 +14,7 @@ import { useAuthStore } from "../stores/Auth";
 import CommercantDetails from "../views/CommercantDetails.vue";
 import CommercantCreate from "../views/CommercantCreate.vue";
 import ParrainageInfo from "../views/ParrainageInfo.vue";
+import Messages from "../views/Messages.vue";
 
 const routes = [
   { path: "/login", component: Login, name: "login" },
@@ -72,6 +73,7 @@ const routes = [
 
   { path: "/parrainage/info", component: ParrainageInfo },
 
+  { path: "/messages", component: Messages }, // Route simplifiée
   // {
   //   path: "/abonnements",
   //   component: Abonnements,

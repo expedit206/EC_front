@@ -142,7 +142,9 @@ const toggleSearch = async () => {
         await nextTick(); // Wait for DOM to update
     }
 };
-
+const goToMessages = () => {
+    router.push('/messages');
+};
 onMounted(() => {
     if (authStore.user) {
         fetchBadges();
@@ -161,7 +163,7 @@ onUnmounted(() => {
     <header class="bg-[var(--espace-vert)] text-[var(--espace-blanc)] fixed top-0 left-0 w-full z-50 shadow-md">
 
         <div class="container mx-auto px-2 sm:px-3 py-2 flex justify-between items-center gap-4">
-            <div class="flex items-center gap-2 sm:gap-3">
+            <div class="flex items-center gap-1 sm:gap-3">
                 <RouterLink to="/" aria-label="Retour à l'accueil">
                     <div class="rounded-full pb-1 pt-1">
                         <img src="/src/assets/images/logo/logoOrangeweb.webp" alt="Logo Espace Cameroun"
@@ -172,6 +174,7 @@ onUnmounted(() => {
                     Espace Cameroun
                 </h1>
             </div>
+
 
             <nav class="hidden lg:flex items-center space-x-4 sm:space-x-6 font-poppins text-sm sm:text-base">
                 <RouterLink v-for="link in navLinks" :key="link.to" :to="link.to"
@@ -196,18 +199,25 @@ onUnmounted(() => {
                     </span>
                 </RouterLink>
             </nav>
+            <SoldeUser />
 
 
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
+                <button @click="goToMessages"
+                    class=" text-[var(--espace-white)] px-1 rounded hover:bg-white transition">
+                    <i class="fas fa-comment-dots text-2xl"></i>
+
+                </button>
                 <button @click="toggleSearch"
                     class="text-[var(--espace-blanc)] hover:text-[var(--espace-or)] transition-colors duration-300"
                     aria-label="Ouvrir la recherche">
                     <i class="fas fa-search text-2xl"></i>
                 </button>
-                <RouterLink v-if="authStore.user" to="/parametres" aria-label="Paramètres"
+                <!-- //parametre -->
+                <!-- <RouterLink v-if="authStore.user" to="/parametres" aria-label="Paramètres"
                     class="text-[var(--espace-blanc)] hover:text-[var(--espace-or)] transition-colors duration-300">
                     <i class="fas fa-cog text-2xl"></i>
-                </RouterLink>
+                </RouterLink> -->
                 <!-- </button> -->
 
                 <RouterLink
@@ -252,8 +262,6 @@ onUnmounted(() => {
             </div>
         </div>
     </header>
-    <SoldeUser />
-
 
     <Transition name="slide-up">
         <nav

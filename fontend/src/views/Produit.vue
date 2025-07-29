@@ -216,6 +216,14 @@ watch(productStore.product, (newProduit) => {
     }
 });
 
+const openChat = (receiverId: number) => {
+    if (productStore.product) {
+        router.push(`/messages/${productStore.product.id}/${receiverId}`);
+    } else {
+        toast.error('Vendeur non disponible');
+    }
+};
+
 </script>
 
 <template>
@@ -357,9 +365,27 @@ watch(productStore.product, (newProduit) => {
                                     :aria-label="productStore.product.boosted_until && new Date(productStore.product.boosted_until) > new Date() ? 'Boost déjà actif' : 'Booster ce produit'">
                                     <i class="fas fa-rocket mr-2 text-sm"></i>
                                     {{ productStore.product.boosted_until && new
-                                        Date(productStore.product.boosted_until) > new Date() ? 'Boost' :
+                                    Date(productStore.product.boosted_until) > new Date() ? 'Boost' :
                                     'Booster (50 Jetons)' }}
                                 </button>
+
+                                <div class="container mx-auto max-w-4xl mt-16">
+                                    <div v-if="productStore.product" class="bg-white rounded-lg shadow-md p-6">
+                                        <h1 class="text-2xl font-bold text-[var(--espace-vert)] mb-4">{{ productStore.nom }}
+                                        </h1>
+                                        <p class="text-[var(--espace-gris)] mb-4">{{ productStore.description }}</p>
+                                        <!-- Remplacez 2 par lID du destinataire dynamique -->
+                                         <!-- {{ productStore.product.commercant.user.id }} -->
+                                        <button @click="openChat(productStore.product.commercant.user.id)"
+                                           
+                                            class="bg-[var(--espace-vert)] text-white px-4 py-2 rounded
+                                            hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)] transition"
+                                            >
+                                            <i class="fas fa-comments mr-2"></i> Discuter sur ce produit
+                                        </button>
+                                    </div>
+                                    <div v-else class="text-center text-[var(--espace-gris)]">Chargement...</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -383,7 +409,7 @@ watch(productStore.product, (newProduit) => {
                         </h2>
                         <p class="text-xs text-[var(--espace-gris)] mb-3">
                             Proposez un prix de revente (minimum : {{ productStore.product.prix +
-                                (productStore.product.marge_min || 0) }} XAF)
+                            (productStore.product.marge_min || 0) }} XAF)
                         </p>
                         <form @submit.prevent="submitCollaboration" class="space-y-3">
                             <div>
