@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/Auth';
 import apiClient from '../api';
 import { useToast } from 'vue-toastification';
+import Echo from 'laravel-echo';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -61,7 +62,8 @@ const fetchMessages = async (receiverId: number, resetOffset = false) => {
         const response = await apiClient.get(`/chat/${receiverId}?offset=${offset.value}`);
         console.log(response.data.messages);
         
-        messages.value = [...messages.value, ...response.data.messages]; // Ajoute les nouveaux 
+        messages.value = [ ...response.data.messages]; // Ajoute les nouveaux 
+        console.log(messages.value);
         hasMore.value = response.data.hasMore;
         setTimeout(() => scrollToBottom(), 10); // Défilement après rendu
         selectedConversation.value = conversations.value.find(c => c.user_id === receiverId);
@@ -78,6 +80,17 @@ const fetchMessages = async (receiverId: number, resetOffset = false) => {
 
 const selectConversation = (receiverId: number) => {
     fetchMessages(receiverId, true); // Réinitialise l'offset
+    if (window.Echo) {
+    // if (window.Echo && selectedConversation.value) {
+        console.log(`Conversation sélectionnée : ok`);
+        window.Echo.private(`chat.${receiverId}`)
+            .listen('MessageSent', (e) => {
+                if (e.message.sender_id !== authStore.user.id) { // Éviter les doublons
+                    messages.value.push(e.message);
+                    scrollToBottom();
+                }
+            });
+    }
 };
 
 const sendMessage = async () => {
@@ -102,7 +115,23 @@ const sendMessage = async () => {
         newMessage.value = '';
         scrollToBottom();
 
+
+        if (window.Echo) {
+            // if (window.Echo && selectedConversation.value) {
+                window.Echo.private(`chat.${tempMessage.receiver_id}`)
+                .listen('MessageSent', (e) => {
+                    console.log(`Conversation sélectionnée : ok`);
+                    if (e.message.sender_id !== authStore.user.id) { // Éviter les doublons
+                        messages.value.push(e.message);
+                        scrollToBottom();
+                    }
+                });
+        }
+
+
+
         const res = await apiClient.post(`/chat/${parseInt(selectedConversation.value.user_id)}`, { content });
+        console.log(res.data);
         await fetchMessages(selectedConversation.value.user_id); // Recharge pour mettre à jour avec l'ID réel
         toast.success('Message envoyé avec succès');
     } catch (error) {
@@ -140,6 +169,10 @@ onMounted(() => {
 
 onUnmounted(() => {
     window.removeEventListener('resize', handleResize);
+
+    if (window.Echo && selectedConversation.value) {
+        window.Echo.leave(`chat.${selectedConversation.value.user_id}`);
+    }
 });
 </script>
 

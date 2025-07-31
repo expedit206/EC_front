@@ -203,15 +203,16 @@ onUnmounted(() => {
 
 
             <div class="flex items-center gap-2">
-                <button @click="goToMessages"
-                    class=" text-[var(--espace-white)] px-1 rounded hover:bg-white transition">
-                    <i class="fas fa-comment-dots text-2xl"></i>
 
-                </button>
                 <button @click="toggleSearch"
                     class="text-[var(--espace-blanc)] hover:text-[var(--espace-or)] transition-colors duration-300"
                     aria-label="Ouvrir la recherche">
                     <i class="fas fa-search text-2xl"></i>
+                </button>
+                <button @click="goToMessages"
+                    class=" text-[var(--espace-white)] px-1 rounded hover:bg-white transition">
+                    <i class="fas fa-comment-dots text-2xl"></i>
+
                 </button>
                 <!-- //parametre -->
                 <!-- <RouterLink v-if="authStore.user" to="/parametres" aria-label="Paramètres"
