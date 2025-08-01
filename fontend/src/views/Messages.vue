@@ -80,17 +80,15 @@ const fetchMessages = async (receiverId: number, resetOffset = false) => {
 
 const selectConversation = (receiverId: number) => {
     fetchMessages(receiverId, true); // Réinitialise l'offset
-    if (window.Echo) {
-    // if (window.Echo && selectedConversation.value) {
-        console.log(`Conversation sélectionnée : ok`);
+    // if (Echo && selectedConversation.value) {
         window.Echo.private(`chat.${receiverId}`)
-            .listen('MessageSent', (e) => {
+        .listen('MessageSent', (e) => {
+                console.log(`Conversation sélectionnée : ok`);
                 if (e.message.sender_id !== authStore.user.id) { // Éviter les doublons
                     messages.value.push(e.message);
                     scrollToBottom();
                 }
             });
-    }
 };
 
 const sendMessage = async () => {
@@ -116,17 +114,14 @@ const sendMessage = async () => {
         scrollToBottom();
 
 
-        if (window.Echo) {
-            // if (window.Echo && selectedConversation.value) {
-                window.Echo.private(`chat.${tempMessage.receiver_id}`)
-                .listen('MessageSent', (e) => {
-                    console.log(`Conversation sélectionnée : ok`);
-                    if (e.message.sender_id !== authStore.user.id) { // Éviter les doublons
-                        messages.value.push(e.message);
-                        scrollToBottom();
-                    }
-                });
-        }
+        window.Echo.private(`chat.${tempMessage.receiver_id}`)
+        .listen('MessageSent', (e) => {
+            console.log(`Conversation sélectionnée : ok`);
+            if (e.message.sender_id !== authStore.user.id) { // Éviter les doublons
+                messages.value.push(e.message);
+                scrollToBottom();
+            }
+        });
 
 
 
@@ -139,6 +134,12 @@ const sendMessage = async () => {
         console.error(error);
     }
 };
+
+setInterval(() => {
+    if (selectedConversation.value) {
+        fetchMessages(selectedConversation.value.user_id);
+    }
+}, 2000); // Rafraîchit les messages toutes les 5 secondes
 
 const handleScroll = () => {
     if (messagesContainer.value && !isLoading.value && hasMore.value) {
@@ -164,7 +165,19 @@ const handleResize = () => {
 
 onMounted(() => {
     fetchConversations();
+
+    
     window.addEventListener('resize', handleResize);
+
+
+    // Echo.private(`chat.${tempMessage.receiver_id}`)
+    //     .listen('MessageSent', (e) => {
+    //         console.log(`Conversation sélectionnée : ok`);
+    //         if (e.message.sender_id !== authStore.user.id) { // Éviter les doublons
+    //             messages.value.push(e.message);
+    //             scrollToBottom();
+    //         }
+    //     });
 });
 
 onUnmounted(() => {
