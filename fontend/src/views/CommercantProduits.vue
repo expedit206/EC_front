@@ -141,25 +141,30 @@ onMounted(() => {
 <template>
     <Loader :isLoading="isLoading" />
 
-    <div class="min-h-screen bg-gray-100 pt-16 pb-20 px-4 sm:px-6">
-        <div class="container mx-auto max-w-4xl">
-            <h1 class="text-2xl sm:text-3xl font-bold text-[var(--espace-vert)] mb-6 font-poppins">
-                <i class="fas fa-box-open mr-2 text-[var(--espace-or)]"></i> Mes Produits
-            </h1>
+    <div class="h-full bg-gray-100  px-4 sm:px-2 ">
+        <div class="  h-full  w-full   ">
 
-            <button @click="openAddModal"
-                class="mb-6 bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold px-4 py-2 rounded hover:bg-[var(--espace-vert)] hover:text-white transition inline-flex items-center">
-                <i class="fas fa-plus mr-2"></i> Ajouter un produit
-            </button>
+            <div class="flex justify-between items-center">
+
+                <h1 class="text-1xl md:text-2xl font-bold text-[var(--espace-vert)] text-md mb-2 font-poppins">
+                    <i class="fas fa-box-open mr-1 text-[var(--espace-or)] text-md!important"></i> Mes Produits
+                </h1>
+
+                <button @click="openAddModal"
+                    class="mb-2  md:text-xl text-[var(--espace-vert)] font-semibold px-2 py-1 rounded hover:bg-[var(--espace-vert)] hover:text-white transition inline-flex items-center">
+                    <i class="fas fa-plus mr-2"></i> Ajouter un produit
+                </button>
+            </div>
 
             <div v-if="isLoading">
                 <div class="flex items-center justify-center py-10">
                     <i class="fas fa-spinner animate-spin text-2xl text-[var(--espace-vert)]"></i>
                 </div>
             </div>
-            <div v-else-if="produits.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div v-else-if="produits.length"
+                class="grid  grid-cols-1  pt-4 pb-16 lg:pb-12   md:grid-cols-3 sm:grid-cols-2 overflow-y-scroll  pt-4 h-full lg:grid-cols-4 gap-6 ">
                 <div v-for="produit in produits" :key="produit.id"
-                    class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition relative">
+                    class=" bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition relative">
                     <img :src="produit.photo_url || 'https://via.placeholder.com/150'"
                         class="w-full h-40 object-cover rounded-t-lg mb-2" />
                     <div class="p-2">
@@ -286,31 +291,6 @@ onMounted(() => {
     opacity: 0;
 }
 
-.product-card {
-    position: relative;
-    overflow: hidden;
-}
-
-.product-card .actions {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    display: flex;
-    gap: 4px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.product-card:hover .actions {
-    opacity: 1;
-}
-
-.product-card button {
-    background: none;
-    border: none;
-    font-size: 16px;
-    cursor: pointer;
-}
 
 .animate-spin {
     animation: spin 1s linear infinite;

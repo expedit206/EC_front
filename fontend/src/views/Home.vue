@@ -239,7 +239,7 @@ onUnmounted(() => {
 
             <!-- Liste des produits -->
             <TransitionGroup name="fade" tag="div"
-                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 overflow-y-scroll">
                 <ProductCard v-for="produit in productStore.products" :key="produit.id" :produit="produit"
                     @mouseover="handleMouseOver(produit.id)" @touchstart="handleTouchStart(produit.id)" />
             </TransitionGroup>

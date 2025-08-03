@@ -35,7 +35,7 @@ const handleFavorite = async () => {
 
 <template>
   <div 
-    class="bg-[var(--espace-blanc)] border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-all duration-200">
+    class="overflow-scroll bg-[var(--espace-blanc)] border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-all duration-200">
     <router-link :to="`/produits/${produit.id}`" class="block relative">
       <img :src="produit.photo_url || 'https://via.placeholder.com/150'" :alt="`Image de ${produit.nom}`"
         class="w-full h-32 object-cover rounded-lg mb-2" />
