@@ -216,14 +216,19 @@ watch(productStore.product, (newProduit) => {
     }
 });
 
-const openChat = (receiverId: number) => {
-    if (productStore.product) {
-        router.push(`/messages/${productStore.product.id}/${receiverId}`);
-    } else {
-        toast.error('Vendeur non disponible');
-    }
-};
+// const openChat = (receiverId: number) => {
+//     if (productStore.product) {
+//         router.push(`/messages/${productStore.product.id}/${receiverId}`);
+//     } else {
+//         toast.error('Vendeur non disponible');
+//     }
+// };
 
+const initChatFromProduct = (productId: number, productName: string, receiverId: number) => {
+    const productData = { id: productId, name: productName };
+    localStorage.setItem('chatProduct', JSON.stringify(productData));
+    router.push(`/messages/${receiverId}`);
+};
 </script>
 
 <template>
@@ -371,17 +376,18 @@ const openChat = (receiverId: number) => {
 
                                 <div class="container mx-auto max-w-4xl mt-16">
                                     <div v-if="productStore.product" class="bg-white rounded-lg shadow-md p-6">
-                                        <h1 class="text-2xl font-bold text-[var(--espace-vert)] mb-4">{{ productStore.nom }}
+                                        <h1 class="text-2xl font-bold text-[var(--espace-vert)] mb-4">{{
+                                            productStore.product.nom }}
                                         </h1>
-                                        <p class="text-[var(--espace-gris)] mb-4">{{ productStore.description }}</p>
+                                        <p class="text-[var(--espace-gris)] mb-4">{{ productStore.product.description }}
+                                        </p>
                                         <!-- Remplacez 2 par lID du destinataire dynamique -->
-                                         <!-- {{ productStore.product.commercant.user.id }} -->
-                                        <button @click="openChat(productStore.product.commercant.user.id)"
-                                           
-                                            class="bg-[var(--espace-vert)] text-white px-4 py-2 rounded
-                                            hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)] transition"
-                                            >
-                                            <i class="fas fa-comments mr-2"></i> Discuter sur ce produit
+                                      
+
+                                        <button
+                                            @click="initChatFromProduct(productStore.product.id, productStore.product.nom, productStore.product.commercant.user.id)"
+                                            class="p-2 bg-green-500 text-white rounded">
+                                            Contacter le vendeur
                                         </button>
                                     </div>
                                     <div v-else class="text-center text-[var(--espace-gris)]">Chargement...</div>

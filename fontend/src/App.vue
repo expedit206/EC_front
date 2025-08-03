@@ -1,19 +1,19 @@
-<!-- src/App.vue -->
 <template>
-
-  <div class="min-h-screen mt-16 mb-8 ">
-    <AppHeader />
+  <div class=" relative overflow-hidden grid  lg:grid-rows-[8%_90%]  grid-rows-[10%_83%_7%] h-full   
+  ">
+    <HeaderBar />
     <router-view />
+    <FooterBar />
   </div>
 </template>
-
 
 <script setup>
 import { onMounted } from 'vue';
 import { useAuthStore } from './stores/Auth';
-import AppHeader from './components/AppHeader.vue';
-const authStore = useAuthStore();
+import HeaderBar from './components/HeaderBar.vue';
+import FooterBar from './components/FooterBar.vue';
 
+const authStore = useAuthStore();
 onMounted(async () => {
   await authStore.checkAuth();
 });

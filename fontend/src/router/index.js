@@ -74,6 +74,8 @@ const routes = [
   { path: "/parrainage/info", component: ParrainageInfo },
 
   { path: "/messages", component: Messages }, // Route simplifiée
+  { path: "/messages/:receiverId", component: Messages,name:'messages' }, // Route simplifiée
+
   // {
   //   path: "/abonnements",
   //   component: Abonnements,
@@ -90,6 +92,7 @@ const routes = [
     meta: { requiresAuth: true },
   },
 ];
+
 
 const router = createRouter({
   history: createWebHistory(),

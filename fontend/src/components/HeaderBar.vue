@@ -1,29 +1,25 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, watch, ref, nextTick } from 'vue'; // Added nextTick
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/Auth';
 import { useUserStateStore } from '../stores/userState';
 import apiClient from '../api';
 import { useProductStore } from '../stores/product';
-// /soldeUser/
 import SoldeUser from './SoldeUser.vue';
-
 
 const authStore = useAuthStore();
 const userStateStore = useUserStateStore();
 const router = useRouter();
-const user = authStore.user
+const user = authStore.user;
 const route = useRoute();
 const animateCartBadge = ref(false);
 const animateCollaborationBadge = ref(false);
 const animateOrdersBadge = ref(false);
 const searchQuery = ref('');
 const productStore = useProductStore();
-const showSearch = ref(false); // Toggle for search bar visibility
-const searchOverlayRef = ref<HTMLElement | null>(null); // Ref for the overlay element
-const ignoreNextClick = ref(false); // Flag to ignore the initial click
-
-
+const showSearch = ref(false);
+const searchOverlayRef = ref<HTMLElement | null>(null);
+const ignoreNextClick = ref(false);
 
 const navLinks = computed(() => {
     return [
@@ -111,23 +107,21 @@ watch(
     }
 );
 
-// Call products API with search query
 const performSearch = async () => {
     if (searchQuery.value.trim()) {
         try {
             await productStore.fetchProducts({ search: searchQuery.value.trim() }, true);
-            searchQuery.value = ''; // Clear input after search
-            showSearch.value = false; // Hide search bar
+            searchQuery.value = '';
+            showSearch.value = false;
         } catch (error) {
             console.error('Erreur lors de la recherche:', error);
         }
     }
 };
 
-// Handle clicks outside the search overlay
 const handleClickOutside = (event: MouseEvent) => {
     if (ignoreNextClick.value) {
-        ignoreNextClick.value = false; // Reset flag after ignoring the first click
+        ignoreNextClick.value = false;
         return;
     }
     if (searchOverlayRef.value && !searchOverlayRef.value.contains(event.target as Node)) {
@@ -138,8 +132,8 @@ const handleClickOutside = (event: MouseEvent) => {
 const toggleSearch = async () => {
     showSearch.value = !showSearch.value;
     if (showSearch.value) {
-        ignoreNextClick.value = true; // Set flag to ignore the next click
-        await nextTick(); // Wait for DOM to update
+        ignoreNextClick.value = true;
+        await nextTick();
     }
 };
 const goToMessages = () => {
@@ -152,18 +146,15 @@ onMounted(() => {
     }
     document.addEventListener('click', handleClickOutside);
 });
-
 onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside);
 });
 </script>
 
 <template>
-    <div class="relative bg-green-500">
+    <div class="relative ">
 
-        <!-- <SoldeUser /> -->
-        <header class="bg-[var(--espace-vert)] text-[var(--espace-blanc)] fixed top-0 left-0 w-full z-50 shadow-md">
-
+        <header class="bg-[var(--espace-vert)] text-[var(--espace-blanc)]  top-0 left-0 w-full z-50 shadow-md">
             <div class="container mx-auto px-2 sm:px-3 py-2 flex justify-between items-center gap-4">
                 <div class="flex items-center gap-1 sm:gap-3">
                     <RouterLink to="/" aria-label="Retour à l'accueil">
@@ -176,8 +167,6 @@ onUnmounted(() => {
                         Espace Cameroun
                     </h1>
                 </div>
-
-
                 <nav class="hidden lg:flex items-center space-x-4 sm:space-x-6 font-poppins text-sm sm:text-base">
                     <RouterLink v-for="link in navLinks" :key="link.to" :to="link.to"
                         class="hover:text-[var(--espace-or)] flex items-center gap-1 sm:gap-2 transition-colors duration-300"
@@ -192,20 +181,17 @@ onUnmounted(() => {
                                 (link.to === '/collaborations' && animateCollaborationBadge) ||
                                 (link.to === '/commandes' && animateOrdersBadge),
                         }" :aria-label="link.to === '/panier'
-                            ? 'Nombre d\'articles dans le panier'
-                            : link.to === '/collaborations'
-                                ? 'Collaborations en attente'
-                                : 'Commandes en attente'
-                            ">
+                        ? 'Nombre d\'articles dans le panier'
+                        : link.to === '/collaborations'
+                            ? 'Collaborations en attente'
+                            : 'Commandes en attente'
+                        ">
                             {{ typeof link.badge === 'object' ? link.badge.value : link.badge }}
                         </span>
                     </RouterLink>
                 </nav>
                 <SoldeUser />
-
-
                 <div class="flex items-center gap-2">
-
                     <button @click="toggleSearch"
                         class="text-[var(--espace-blanc)] hover:text-[var(--espace-or)] transition-colors duration-300"
                         aria-label="Ouvrir la recherche">
@@ -214,26 +200,16 @@ onUnmounted(() => {
                     <button @click="goToMessages"
                         class=" text-[var(--espace-white)] px-1 rounded hover:bg-white transition">
                         <i class="fas fa-comment-dots text-2xl"></i>
-
                     </button>
-                    <!-- //parametre -->
-                    <!-- <RouterLink v-if="authStore.user" to="/parametres" aria-label="Paramètres"
-                    class="text-[var(--espace-blanc)] hover:text-[var(--espace-or)] transition-colors duration-300">
-                    <i class="fas fa-cog text-2xl"></i>
-                </RouterLink> -->
-                    <!-- </button> -->
-
                     <RouterLink
                         v-for="link in navLinks.filter(link => authStore.user ? link.to === '/profil' : ['/login', '/register'].includes(link.to))"
                         :key="link.to" :to="link.to" class="relative flex items-center justify-center"
                         :aria-label="link.label">
-                        <!-- {{ user.photo }} -->
                         <img v-if="user?.photo" :src="`http://localhost:8000/storage/${user.photo}`"
                             alt="Photo de profil"
                             class="w-10 h-10 rounded-full object-cover border-2 border-[var(--espace-vert)]" />
                         <div v-else
                             class="w-10 h-10 rounded-full  flex items-center justify-center text-[var(--espace-gris)]">
-                            <!-- Pas de photo -->
                             <i :class="`fas ${link.icon}`" class="text-2xl text-gray-100"></i>
                         </div>
                         <span
@@ -246,7 +222,6 @@ onUnmounted(() => {
                     </RouterLink>
                 </div>
             </div>
-
             <!-- Search Overlay -->
             <div v-if="showSearch" ref="searchOverlayRef"
                 class="fixed bg-[var(--espace-vert)] bg-opacity-50 flex items-center top-10 w-full justify-center z-50 p-4">
@@ -266,34 +241,6 @@ onUnmounted(() => {
                 </div>
             </div>
         </header>
-
-        <Transition name="slide-up">
-            <nav
-                class="lg:hidden fixed bottom-0 left-0 w-full bg-[var(--espace-vert)] text-[var(--espace-blanc)] shadow-md z-40">
-                <div class="flex justify-around items-center py-2">
-                    <RouterLink v-for="link in navLinks" :key="link.to" :to="link.to" :aria-label="link.label"
-                        class="relative flex items-center justify-center w-10 h-10 hover:text-[var(--espace-or)] transition-colors duration-300"
-                        active-class="text-[var(--espace-or)]">
-                        <i class="fas text-lg" :class="link.icon"></i>
-                        <span v-if="(typeof link.badge === 'object' ? link.badge.value : link.badge) > 0"
-                            class="cart-badge absolute top-0 right-0 bg-[var(--espace-or)] text-[var(--espace-vert)] text-xs rounded-full h-5 w-5 flex items-center justify-center"
-                            :class="{
-                            'animate-scale':
-                                (link.to === '/panier' && animateCartBadge) ||
-                                (link.to === '/collaborations' && animateCollaborationBadge) ||
-                                (link.to === '/commandes' && animateOrdersBadge),
-                        }" :aria-label="link.to === '/panier'
-                            ? 'Nombre d\'articles dans le panier'
-                            : link.to === '/collaborations'
-                                ? 'Collaborations en attente'
-                                : 'Commandes en attente'
-                            ">
-                            {{ typeof link.badge === 'object' ? link.badge.value : link.badge }}
-                        </span>
-                    </RouterLink>
-                </div>
-            </nav>
-        </Transition>
     </div>
 
 </template>
@@ -308,17 +255,6 @@ onUnmounted(() => {
 
 .font-poppins {
     font-family: 'Poppins', sans-serif;
-}
-
-.slide-up-enter-active,
-.slide-up-leave-active {
-    transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-.slide-up-enter-from,
-.slide-up-leave-to {
-    transform: translateY(100%);
-    opacity: 0;
 }
 
 .cart-badge {
