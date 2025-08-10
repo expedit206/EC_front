@@ -15,6 +15,7 @@ import CommercantDetails from "../views/CommercantDetails.vue";
 import CommercantCreate from "../views/CommercantCreate.vue";
 import ParrainageInfo from "../views/ParrainageInfo.vue";
 import Messages from "../views/Messages.vue";
+import JetonHistory from "../views/JetonHistory.vue";
 
 const routes = [
   { path: "/login", component: Login, name: "login" },
@@ -74,7 +75,7 @@ const routes = [
   { path: "/parrainage/info", component: ParrainageInfo },
 
   { path: "/messages", component: Messages }, // Route simplifiée
-  { path: "/messages/:receiverId", component: Messages,name:'messages' }, // Route simplifiée
+  { path: "/messages/:receiverId", component: Messages, name: "messages" }, // Route simplifiée
 
   // {
   //   path: "/abonnements",
@@ -91,6 +92,11 @@ const routes = [
     component: Collaborations,
     meta: { requiresAuth: true },
   },
+
+  {
+    path: "/jeton-history", name: "jeton-history", component: JetonHistory,
+    meta: { requiresAuth: true },
+   },
 ];
 
 

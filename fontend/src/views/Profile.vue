@@ -1,10 +1,10 @@
 <template>
-  <div class="overflow-y-auto min-h-screen relative bg-gray-100 py-8  sm:px-6">
+  <div class="overflow-y-auto min-h-screen relative bg-gray-100 py-8 sm:px-6">
     <!-- Header Profil -->
-    <div class="  flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
+    <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
       <div class="flex items-center space-x-4 relative w-full gap-1 px-3">
         <!-- Photo utilisateur -->
-        <div class="relative ">
+        <div class="relative">
           <img v-if="user.photo" :src="`http://localhost:8000/storage/${user.photo}`" alt="Photo de profil"
             class="w-16 h-16 rounded-full object-cover border-2 border-[var(--espace-vert)]" />
           <div v-else class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
@@ -13,7 +13,7 @@
 
           <!-- Couronne -->
           <i v-if="user.premium"
-            class="fas fa-crown text-yellow-400 absolute -top-2 -right-2 text-lg p-1 rounded-full "></i>
+            class="fas fa-crown text-yellow-400 absolute -top-2 -right-2 text-lg p-1 rounded-full"></i>
 
           <!-- Bouton modifier -->
           <button @click="showEditMenu = !showEditMenu"
@@ -24,8 +24,12 @@
           <!-- Menu édition -->
           <div v-if="showEditMenu"
             class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-36 bg-white border rounded-md shadow z-10">
-            <button @click="openCamera" class="w-full text-left px-4 py-2 hover:bg-gray-100">Caméra</button>
-            <button @click="openGallery" class="w-full text-left px-4 py-2 hover:bg-gray-100">Galerie</button>
+            <button @click="openCamera" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+              Caméra
+            </button>
+            <button @click="openGallery" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+              Galerie
+            </button>
           </div>
         </div>
 
@@ -37,7 +41,9 @@
           <h1 class="text-2xl sm:text-3xl font-bold text-[var(--espace-vert)] flex items-center gap-2">
             Mon Profil
             <span v-if="user.premium"
-              class="bg-yellow-400 text-yellow-900 text-xs px-3 py-1 rounded-full uppercase font-bold">Premium</span>
+              class="bg-yellow-400 text-yellow-900 text-xs px-3 py-1 rounded-full uppercase font-bold">
+              Premium
+            </span>
           </h1>
           <span v-if="user.subscription_ends_at" class="text-sm text-gray-500">
             Jusqu'au {{ new Date(user.subscription_ends_at).toLocaleDateString() }}
@@ -50,9 +56,11 @@
           <button @click="uploadProfilePicture" :disabled="uploading"
             class="bg-[var(--espace-vert)] text-white px-3 py-1 rounded hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)]"
             :class="{ 'opacity-50 cursor-not-allowed': uploading }">
-            {{ uploading ? 'Upload...' : 'Confirmer' }}
+            {{ uploading ? "Upload..." : "Confirmer" }}
           </button>
-          <button @click="cancelUpload" class="text-red-500 hover:text-red-700">Annuler</button>
+          <button @click="cancelUpload" class="text-red-500 hover:text-red-700">
+            Annuler
+          </button>
         </div>
       </div>
 
@@ -70,6 +78,10 @@
           class="bg-[var(--espace-vert)] text-white px-4 py-2 rounded-md font-semibold hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)]">
           Passer Premium
         </button>
+        <button @click="showAchatJetonModal = true"
+          class="bg-[var(--espace-vert)] text-white px-4 py-2 rounded-md font-semibold hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)]">
+          Acheter des Jetons
+        </button>
       </div>
     </div>
 
@@ -82,14 +94,21 @@
     <SubscriptionModal v-if="showSubscriptionModal" :is-open="showSubscriptionModal"
       @close="showSubscriptionModal = false" @upgraded="handleUpgraded" />
 
+    <!-- Modal achat de jetons -->
+    <AchatJetonModal v-if="showAchatJetonModal" :is-open="showAchatJetonModal" @close="showAchatJetonModal = false"
+      @purchased="handleJetonPurchase" />
+
     <!-- Zone vidéo caméra (si ouverte) -->
-    <div v-if="showCameraModal" class="fixed inset-0 bg-black  bg-opacity-0 flex items-center justify-center z-50">
+    <div v-if="showCameraModal" class="fixed inset-0 bg-black bg-opacity-0 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg p-4 relative w-full max-w-md">
         <video ref="videoRef" autoplay playsinline class="rounded w-full" />
         <div class="mt-2 flex justify-between">
-          <button @click="capturePhoto"
-            class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Capturer</button>
-          <button @click="closeCamera" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Annuler</button>
+          <button @click="capturePhoto" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+            Capturer
+          </button>
+          <button @click="closeCamera" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+            Annuler
+          </button>
         </div>
       </div>
     </div>
@@ -97,14 +116,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
-import { useRouter } from 'vue-router';
-import { useToast } from 'vue-toastification';
-import { useAuthStore } from '../stores/Auth';
-import apiClient from '../api';
-import SubscriptionModal from '../components/SubscriptionModal.vue';
-import UserProfile from './UserProfile.vue';
-import MerchantProfile from './MerchantProfile.vue';
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+import { useRouter } from "vue-router";
+import { useToast } from "vue-toastification";
+import { useAuthStore } from "../stores/Auth";
+import apiClient from "../api";
+import SubscriptionModal from "../components/SubscriptionModal.vue";
+import AchatJetonModal from "../components/AchatJetonModal.vue"; // Importer le nouveau composant
+import UserProfile from "./UserProfile.vue";
+import MerchantProfile from "./MerchantProfile.vue";
 
 const router = useRouter();
 const toast = useToast();
@@ -117,6 +137,7 @@ const previewUrl = ref<string | null>(null);
 const selectedFile = ref<File | null>(null);
 const showSubscriptionModal = ref(false);
 const isMerchantProfile = ref(false);
+const showAchatJetonModal = ref(false); // Nouvelle variable pour le modal achat jetons
 
 const currentProfileComponent = computed(() =>
   isMerchantProfile.value ? MerchantProfile : UserProfile
@@ -138,12 +159,12 @@ const handleFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
   if (input.files && input.files[0]) {
     const file = input.files[0];
-    if (!file.type.startsWith('image/')) {
-      toast.error('Veuillez sélectionner une image.');
+    if (!file.type.startsWith("image/")) {
+      toast.error("Veuillez sélectionner une image.");
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      toast.error('Image trop volumineuse (max 2Mo).');
+      toast.error("Image trop volumineuse (max 2Mo).");
       return;
     }
     selectedFile.value = file;
@@ -157,14 +178,11 @@ const openCamera = async () => {
     cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
     showCameraModal.value = true;
     showEditMenu.value = false;
-    // 🟢 On affiche d'abord la modale
-
-    // ⏳ Laisse un court délai pour que la vidéo soit rendue dans le DOM
     setTimeout(() => {
       if (videoRef.value) {
         videoRef.value.srcObject = cameraStream;
       }
-    }, 100); // Petit délai pour s'assurer que videoRef existe
+    }, 100);
   } catch (err) {
     toast.error("Impossible d'accéder à la caméra.");
     console.error(err);
@@ -174,19 +192,21 @@ const openCamera = async () => {
 const capturePhoto = () => {
   if (!videoRef.value) return;
   const video = videoRef.value;
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext("2d");
   if (!ctx) return;
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   canvas.toBlob((blob) => {
     if (blob) {
-      selectedFile.value = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
+      selectedFile.value = new File([blob], "photo.jpg", {
+        type: "image/jpeg",
+      });
       previewUrl.value = URL.createObjectURL(selectedFile.value);
       closeCamera();
     }
-  }, 'image/jpeg');
+  }, "image/jpeg");
 };
 
 const closeCamera = () => {
@@ -208,14 +228,14 @@ const uploadProfilePicture = async () => {
   uploading.value = true;
   try {
     const formData = new FormData();
-    formData.append('photo', selectedFile.value);
-    const response = await apiClient.post('/profile/photo', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    formData.append("photo", selectedFile.value);
+    const response = await apiClient.post("/profile/photo", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
     if (response.data.photo) {
       user.value.photo = response.data.photo;
       authStore.user = user.value;
-      toast.success('Photo mise à jour.');
+      toast.success("Photo mise à jour.");
       cancelUpload();
     }
   } catch (err: any) {
@@ -225,21 +245,27 @@ const uploadProfilePicture = async () => {
   }
 };
 
-
+// === Gestion Abonnement ===
 const handleUpgraded = async () => {
   showSubscriptionModal.value = false;
+};
+
+// === Gestion Achat Jetons ===
+const handleJetonPurchase = (nombreJetons: number) => {
+  toast.success(`Vous avez acheté ${nombreJetons} jetons !`);
+  // Ajoutez ici la logique pour mettre à jour le solde si nécessaire
+  // Exemple : user.value.jetons = (user.value.jetons || 0) + nombreJetons;
 };
 
 watch(() => authStore.user, (newUser) => {
   user.value = newUser || {};
 }, { immediate: true });
 
-onMounted(() => {
-});
+onMounted(() => { });
 
 onUnmounted(() => {
   if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
-  if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
+  if (cameraStream) cameraStream.getTracks().forEach((track) => track.stop());
 });
 </script>
 
