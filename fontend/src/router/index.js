@@ -74,8 +74,17 @@ const routes = [
 
   { path: "/parrainage/info", component: ParrainageInfo },
 
-  { path: "/messages", component: Messages }, // Route simplifiée
-  { path: "/messages/:receiverId", component: Messages, name: "messages" }, // Route simplifiée
+  {
+    path: "/messages",
+    component: Messages,
+    meta: { requiresAuth: true },
+  }, // Route simplifiée
+  {
+    path: "/messages/:receiverId",
+    component: Messages,
+    name: "messages",
+    meta: { requiresAuth: true },
+  }, // Route simplifiée
 
   // {
   //   path: "/abonnements",
@@ -94,9 +103,17 @@ const routes = [
   },
 
   {
-    path: "/jeton-history", name: "jeton-history", component: JetonHistory,
+    path: "/jeton-history",
+    name: "jeton-history",
+    component: JetonHistory,
     meta: { requiresAuth: true },
-   },
+  },
+  {
+    path: "/acheter-jetons",
+    name: "acheter-jetons",
+    component: () => import("../components/AchatJetonModal.vue"),
+    meta: { requiresAuth: true },
+  }, // Temporaire, à adapter
 ];
 
 

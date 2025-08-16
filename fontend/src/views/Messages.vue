@@ -1,14 +1,17 @@
+<!-- src/components/MessageComponent.vue (ou équivalent) -->
 <script setup lang="ts">
 import { ref, onMounted, computed, onUnmounted, nextTick, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/Auth';
 import apiClient from '../api';
 import { useToast } from 'vue-toastification';
+import { useUserStateStore } from '../stores/userState'; // Importer le store
 
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const toast = useToast();
+const userStateStore = useUserStateStore(); // Utiliser le store
 
 const conversations = ref<any[]>([]);
 const messages = ref<any[]>([]);
@@ -21,8 +24,7 @@ const isLoading = ref(false);
 const messagesContainer = ref<HTMLElement | null>(null);
 const productId = ref<number | null>(null);
 
-const isMobile = ref(true);
-
+const isMobile = ref(window.innerWidth < 768);
 
 const scrollToBottom = () => {
     nextTick(() => {
@@ -68,10 +70,10 @@ const fetchMessages = async (receiverId: number, resetOffset = true) => {
             productId.value = parseInt(storedProductId);
         }
 
+        // Marquer tous les messages comme lus pour cette conversation
+        await markAllMessagesAsRead(receiverId);
+
         scrollToBottom();
-
-        isMobile.value = window.innerWidth < 768;
-
     } catch (e) {
         toast.error('Erreur lors du chargement des messages');
         console.error(e);
@@ -82,8 +84,7 @@ const fetchMessages = async (receiverId: number, resetOffset = true) => {
 
 const selectConversation = (receiverId: number) => {
     router.push({ name: 'messages', params: { receiverId } });
-    if (isMobile) {
-        
+    if (isMobile.value) {
         isSidebarOpen.value = false;
     }
 };
@@ -136,12 +137,6 @@ const handleScroll = () => {
 };
 
 const handleResize = () => {
-    console.log(window.innerWidth);
-    console.log(isMobile.value);
-    if (window.innerWidth > 768){
-        isMobile.value = false
-    }
-
     isMobile.value = window.innerWidth < 768;
     isSidebarOpen.value = window.innerWidth > 768;
 };
@@ -150,14 +145,22 @@ const toggleSidebar = () => {
     isSidebarOpen.value = !isSidebarOpen.value;
 };
 
-if (route.params.receiverId){
-    
-// toggleSidebar();
-}
-// Lors du changement d'URL : charger automatiquement la conversation
+// Nouvelle méthode pour marquer tous les messages comme lus
+const markAllMessagesAsRead = async (receiverId: number) => {
+    try {
+
+        console.log(receiverId)
+        const response = await apiClient.put('/messages/mark-all-as-read');
+        console.log(response.data)
+        userStateStore.saveUnreadMessagesToLocalStorage(response.data.unread_messages);
+    } catch (error) {
+        console.error('Erreur lors du marquage des messages comme lus:', error);
+        toast.error('Erreur lors de la mise à jour des messages lus');
+    }
+};
+
 watch(() => route.params.receiverId, async (receiverId) => {
     if (receiverId) {
-        // await fetchConversations();
         await fetchMessages(parseInt(receiverId as string));
     }
 });
@@ -175,15 +178,12 @@ onUnmounted(() => {
 });
 </script>
 
-// ...existing code...
 <template>
-
-
-    <div class=" w-full  flex relative px-0  ">
+    <div class="w-full flex relative px-0">
         <!-- Sidebar -->
         <transition name="slide-fade">
-            <div v-if="isSidebarOpen || !isMobile" class="bg-white  pt-8 shadow-md p-4 overflow-y-auto transition-all "
-                :class="isMobile ? 'absolute top-0 left-0 h-full  z-30 w-full' : ' w-[400px]'">
+            <div v-if="isSidebarOpen || !isMobile" class="bg-white pt-8 shadow-md p-4 overflow-y-auto transition-all"
+                :class="isMobile ? 'absolute top-0 left-0 h-full z-30 w-full' : 'w-[400px]'">
                 <h2 class="text-lg font-semibold text-[var(--espace-vert)] mb-4">Conversations</h2>
                 <div v-for="conv in conversations" :key="conv.user_id" @click="selectConversation(conv.user_id)"
                     class="p-2 hover:bg-gray-100 cursor-pointer rounded flex items-center transition-colors">
@@ -198,48 +198,41 @@ onUnmounted(() => {
             </div>
         </transition>
 
-
-        <div class=" w-full   grid grid-rows-[10%_86%] ">
-            <div class="flex border-b    ">
-
-
+        <div class="w-full grid grid-rows-[10%_86%]">
+            <div class="flex border-b">
                 <!-- Bouton retour mobile -->
                 <button v-if="!isSidebarOpen && isMobile && selectedConversation" @click="toggleSidebar"
-                    class=" text-green-900 p-2 rounded-full hover:bg-[var(--espace-or)] transition  text-start md:hidden">
-                    <i class="fas fa-arrow-left text-2xl "></i>
+                    class="text-green-900 p-2 rounded-full hover:bg-[var(--espace-or)] transition text-start md:hidden">
+                    <i class="fas fa-arrow-left text-2xl"></i>
                 </button>
                 <h2 v-if="selectedConversation"
-                    class="text-xl h-[10%]   font-semibold text-[var(--espace-vert)] p-4   md:z-0">
+                    class="text-xl h-[10%] font-semibold text-[var(--espace-vert)] p-4 md:z-0">
                     {{ selectedConversation.name }}
                 </h2>
-
             </div>
 
             <!-- Zone des messages -->
             <div :class="[
-                    'bg-white shadow-md transition-all duration-300 flex  flex-col flex-1  h-full  overflow-hidden w-full',
-    isSidebarOpen && !isMobile ? '' : 'rounded-r-lg    '
-                ]" @scroll="handleScroll">
-                <div v-if="selectedConversation"
-                    class=" h-full flex flex-col ">
+                'bg-white shadow-md transition-all duration-300 flex flex-col flex-1 h-full overflow-hidden w-full',
+                isSidebarOpen && !isMobile ? '' : 'rounded-r-lg'
+            ]" @scroll="handleScroll">
+                <div v-if="selectedConversation" class="h-full flex flex-col">
                     <!-- Zone scrollable des messages -->
                     <div ref="messagesContainer"
-                        class=" h-full flex-1 overflow-y-auto p-2 md:p-4 space-y-3 bg-gray-50 messages-container">
+                        class="h-full flex-1 overflow-y-auto p-2 md:p-4 space-y-3 bg-gray-50 messages-container">
                         <div v-for="message in messages" :key="message.id" class="p-3 rounded-lg break-words" :class="{
-                        'bg-blue-200 ml-auto max-w-[85%] md:max-w-[70%]': message.sender_id === authStore.user.id,
-                        'bg-gray-200 max-w-[85%] md:max-w-[70%]': message.sender_id !== authStore.user.id
-                    }">
+                            'bg-blue-200 ml-auto max-w-[85%] md:max-w-[70%]': message.sender_id === authStore.user.id,
+                            'bg-gray-200 max-w-[85%] md:max-w-[70%]': message.sender_id !== authStore.user.id
+                        }">
                             <strong class="block text-[var(--espace-vert)]">{{ message.sender.nom }} :</strong>
-
                             <p class="text-gray-800">
                                 <router-link v-if="message.product?.id"
                                     :to="{ name: 'produit', params: { id: message.product.id } }"
                                     class="text-blue-500 underline hover:text-blue-700 ml-1">[Produit {{
-                                    message.product.nom
+                                        message.product.nom
                                     }}]</router-link>
                                 {{ message.content }}
                             </p>
-
                             <p class="text-xs text-[var(--espace-gris)] text-right">
                                 {{ new Date(message.created_at).toLocaleTimeString() }}
                             </p>
@@ -248,7 +241,7 @@ onUnmounted(() => {
                     </div>
 
                     <!-- Zone d’écriture -->
-                    <div class=" left-0  px-2 md:px-4 z-20">
+                    <div class="px-2 md:px-4 z-20">
                         <div
                             class="bg-white shadow-lg rounded-full flex items-center flex-wrap p-2 border max-w-3xl mx-auto gap-2">
                             <!-- Tag du produit -->
@@ -256,7 +249,7 @@ onUnmounted(() => {
                                 class="bg-yellow-200 text-yellow-800 text-xs px-3 py-1 rounded-full flex items-center gap-2 ml-4">
                                 Produit {{ product.name }}
                                 <button
-                                    @click="() => { product = { id: null, name: null }; localStorage.removeItem('chatProductId'); }"
+                                    @click="() => { productId.value = null; localStorage.removeItem('chatProductId'); }"
                                     class="ml-2 text-yellow-800 hover:text-red-600 font-bold" title="Retirer le tag">
                                     &times;
                                 </button>
@@ -279,9 +272,7 @@ onUnmounted(() => {
                     <p class="text-[var(--espace-gris)] text-lg">Sélectionnez une conversation pour commencer.</p>
                 </div>
             </div>
-
         </div>
-
     </div>
 </template>
 
@@ -294,48 +285,11 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
-    /* .messages-container {
-        min-height: 60vh;
-        max-height: 60vh;
-    } */
-
     .container {
         padding-left: 0 !important;
         padding-right: 0 !important;
     }
 }
-
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-    transition: all 0.4s ease;
-}
-
-.slide-fade-enter-from {
-    opacity: 0;
-    transform: translateX(-100%);
-}
-
-.slide-fade-enter-to {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.slide-fade-leave-from {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.slide-fade-leave-to {
-    opacity: 0;
-    transform: translateX(-100%);
-}
-
-button:active {
-    transform: scale(0.95);
-    transition: transform 0.1s ease-in-out;
-}
-
-
 
 .slide-fade-enter-active,
 .slide-fade-leave-active {

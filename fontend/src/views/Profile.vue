@@ -4,20 +4,25 @@
     <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
       <div class="flex items-center space-x-4 relative w-full gap-1 px-3">
         <!-- Photo utilisateur -->
-        <div class="relative">
+        <div class="relative ">
           <img v-if="user.photo" :src="`http://localhost:8000/storage/${user.photo}`" alt="Photo de profil"
-            class="w-16 h-16 rounded-full object-cover border-2 border-[var(--espace-vert)]" />
+            class=" w-16 h-16 rounded-full object-cover border-2 border-[var(--espace-vert)]" />
           <div v-else class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
             <i class="fas fa-user-circle text-4xl"></i>
           </div>
 
           <!-- Couronne -->
-          <i v-if="user.premium"
-            class="fas fa-crown text-yellow-400 absolute -top-2 -right-2 text-lg p-1 rounded-full"></i>
+          <i v-if="user.premium" class="fas fa-crown text-yellow-400 absolute -top-2 -right-2 text-lg p-1 rounded-full"
+            :style="{
+  color : `${user.niveaux_users[0]?.parrainage_niveau?.couleur}`  
+                             }"></i>
 
           <!-- Bouton modifier -->
           <button @click="showEditMenu = !showEditMenu"
-            class="absolute bottom-0 right-0 w-6 h-6 bg-[var(--espace-or)] text-[var(--espace-vert)] rounded-full flex items-center justify-center hover:bg-[var(--espace-vert)] hover:text-white">
+            class="absolute bottom-0 right-0 w-6 h-6 bg-[var(--espace-or)] text-[var(--espace-vert)] rounded-full flex items-center justify-center hover:bg-[var(--espace-vert)] hover:text-white"
+            :style="{
+              background: `${user.niveaux_users[0]?.parrainage_niveau?.couleur}`
+            }">
             <i class="fas fa-pencil-alt text-xs"></i>
           </button>
 
@@ -37,11 +42,16 @@
         <input ref="galleryInput" type="file" accept="image/*" class="hidden" @change="handleFileChange" />
 
         <!-- Infos utilisateur -->
-        <div class="space-y-1">
-          <h1 class="text-2xl sm:text-3xl font-bold text-[var(--espace-vert)] flex items-center gap-2">
-            Mon Profil
-            <span v-if="user.premium"
-              class="bg-yellow-400 text-yellow-900 text-xs px-3 py-1 rounded-full uppercase font-bold">
+        <div class="space-y-1">rr
+          <h1 class="text-2xl sm:text-3xl font-bold flex items-center gap-2 text-blue-500"
+            :style="{
+  color: `${user.niveaux_users[0]?.parrainage_niveau?.couleur}`  
+                             }">
+                             
+            {{ user.nom }}
+            <span v-if="user.premium" class="text-black  text-xs px-3 py-1 rounded-full uppercase font-bold" :style="{
+                background: `${user.niveaux_users[0]?.parrainage_niveau?.couleur}`
+              }">
               Premium
             </span>
           </h1>
@@ -78,10 +88,7 @@
           class="bg-[var(--espace-vert)] text-white px-4 py-2 rounded-md font-semibold hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)]">
           Passer Premium
         </button>
-        <button @click="showAchatJetonModal = true"
-          class="bg-[var(--espace-vert)] text-white px-4 py-2 rounded-md font-semibold hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)]">
-          Acheter des Jetons
-        </button>
+
       </div>
     </div>
 

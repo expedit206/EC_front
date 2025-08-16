@@ -1,5 +1,6 @@
+<!-- src/components/ProductCard.vue -->
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits, ref } from 'vue';
 import { useToast } from 'vue-toastification';
 import { useProductStore } from '../stores/product';
 
@@ -10,11 +11,13 @@ const props = defineProps<{
     description: string;
     prix: number;
     photo_url: string;
-    views_count: number; // Correction de "view_count" à "views_count" pour cohérence
+    photos?: string[]; // Ajout pour gérer plusieurs photos
+    views_count: number;
     favorites_count: number;
     is_favorited_by: boolean;
-    collaboratif: boolean; // Ajout pour indiquer si le produit est collaboratif
-    boosted_until: string | null; // Ajout pour gérer les boosts
+    collaboratif: boolean;
+    boosted_until: string | null;
+    raw_views_count?: number; // Optionnel pour compatibilité
   };
 }>();
 
@@ -22,6 +25,16 @@ const emit = defineEmits(['toggle-favorite', 'handleToggleFavorite']);
 const toast = useToast();
 const productStore = useProductStore();
 console.log(props.produit);
+
+// Gestion du slider
+const currentSlideIndex = ref(0);
+const nextSlide = () => {
+  const maxIndex = (props.produit.photos?.length || 1) - 1;
+  currentSlideIndex.value = Math.min(currentSlideIndex.value + 1, maxIndex);
+};
+const prevSlide = () => {
+  currentSlideIndex.value = Math.max(currentSlideIndex.value - 1, 0);
+};
 
 const handleFavorite = async () => {
   try {
@@ -34,11 +47,26 @@ const handleFavorite = async () => {
 </script>
 
 <template>
-  <div 
-    class="overflow-scroll bg-[var(--espace-blanc)] border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-all duration-200">
+  <div
+    class=" bg-[var(--espace-blanc)] border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-all duration-200">
     <router-link :to="`/produits/${produit.id}`" class="block relative">
-      <img :src="produit.photo_url || 'https://via.placeholder.com/150'" :alt="`Image de ${produit.nom}`"
-        class="w-full h-32 object-cover rounded-lg mb-2" />
+      <!-- Slider pour les images du produit -->
+      <div class="relative w-full h-32 overflow-hidden rounded-lg mb-2">
+        <div class="flex w-full h-full slider-container"
+          :style="{ transform: `translateX(-${currentSlideIndex * 100}%)` }">
+          <img v-for="(photo, index) in produit.photos || [produit.photo_url || 'https://via.placeholder.com/150']"
+            :key="index" :src="photo" class="w-full h-full object-contain flex-shrink-0 mx-auto"
+            :alt="`Image de ${produit.nom} - ${index + 1}`" />
+        </div>
+        
+       
+        <!-- Points (dots) pour la navigation -->
+        <div v-if="produit.photos && produit.photos.length > 1"
+          class="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex space-x-1">
+          <span v-for="(photo, index) in produit.photos" :key="index" class="w-1.5 h-1.5 rounded-full bg-gray-400"
+            :class="{ 'bg-[var(--espace-or)]': index === currentSlideIndex }"></span>
+        </div>
+      </div>
       <!-- Badge Collaboratif -->
       <span v-if="produit.collaboratif"
         class="absolute top-2 left-2 bg-[var(--espace-or)] text-[var(--espace-vert)] text-[10px] font-semibold px-2 py-1 rounded-full font-poppins"
@@ -60,7 +88,7 @@ const handleFavorite = async () => {
     <div class="flex items-center justify-between mt-2 text-xs text-[var(--espace-gris)]">
       <div class="flex items-center gap-1">
         <i class="fas fa-eye text-[10px]"></i>
-        <span>{{ produit.raw_views_count }} vues</span>
+        <span>{{ produit.raw_views_count || produit.views_count }} vues</span>
       </div>
       <div class="flex items-center gap-1">
         <button @click="handleFavorite"
@@ -84,5 +112,20 @@ const handleFavorite = async () => {
 
 .font-poppins {
   font-family: 'Poppins', sans-serif;
+}
+
+/* Styles pour le slider */
+.slider-container {
+  display: flex;
+  transition: transform 0.3s ease;
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 768px) {
+  .slider-button {
+    display: none;
+    /* Masquer les flèches sur mobile */
+  }
 }
 </style>

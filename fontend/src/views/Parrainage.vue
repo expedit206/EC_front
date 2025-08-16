@@ -1,47 +1,52 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '../stores/Auth';
-import apiClient from '../api';
-import { useToast } from 'vue-toastification';
+import { ref, onMounted, computed } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/Auth";
+import apiClient from "../api";
+import { useToast } from "vue-toastification";
 
 const authStore = useAuthStore();
 const router = useRouter();
 const toast = useToast();
 
 // Données réactives
-const code = ref('');
-const link = ref('');
+const code = ref("");
+const link = ref("");
 const parrainages = ref([]);
 const totalGains = ref(0); // Total en jetons
-const suggestedCode = ref('');
-const customCode = ref('');
+const suggestedCode = ref("");
+const customCode = ref("");
 const isGenerating = ref(false);
 const isCreating = ref(false);
 const niveauActuel = ref<any>({});
 const niveauSuivant = ref<any>(null);
 const progression = ref(0);
 
+// Calcul de la couleur actuelle
+const currentColor = computed(() => niveauActuel.value?.couleur || "#6b7280"); // Couleur par défaut si non définie
+
 // Récupérer les données de parrainage
 const fetchParrainageData = async () => {
     if (!authStore.user) {
-        toast.error('Veuillez vous connecter pour accéder à cette page');
-        router.push('/login');
+        toast.error("Veuillez vous connecter pour accéder à cette page");
+        router.push("/login");
         return;
     }
 
     try {
-        const response = await apiClient.get('/parrainages/dashboard');
+        const response = await apiClient.get("/parrainages/dashboard");
         const data = response.data;
-        code.value = data.code || '';
-        link.value = data.code ? `https://espacecameroun.cm/invite/${data.code}` : '';
+        code.value = data.code || "";
+        link.value = data.code ? `https://espacecameroun.cm/invite/${data.code}` : "";
         parrainages.value = data.parrainages || [];
         totalGains.value = data.total_gains || 0; // Total en jetons
         niveauActuel.value = data.niveau_actuel;
+        console.log(niveauActuel.value)
+
         niveauSuivant.value = data.niveau_suivant;
         progression.value = data.progression;
     } catch (error) {
-        toast.error('Erreur lors de la récupération des données de parrainage');
+        toast.error("Erreur lors de la récupération des données de parrainage");
         console.error(error);
     }
 };
@@ -49,18 +54,18 @@ const fetchParrainageData = async () => {
 // Générer une suggestion de code
 const generateCodeSuggestion = async () => {
     if (!authStore.user) {
-        toast.error('Veuillez vous connecter');
+        toast.error("Veuillez vous connecter");
         return;
     }
 
     isGenerating.value = true;
     try {
-        const response = await apiClient.post('/parrainages/generate-code');
+        const response = await apiClient.post("/parrainages/generateCode");
         suggestedCode.value = response.data.suggested_code;
         customCode.value = suggestedCode.value;
-        toast.success('Nouveau code suggéré avec succès !');
+        toast.success("Nouveau code suggéré avec succès !");
     } catch (error) {
-        toast.error('Erreur lors de la génération du code');
+        toast.error("Erreur lors de la génération du code");
         console.error(error);
     } finally {
         isGenerating.value = false;
@@ -70,23 +75,23 @@ const generateCodeSuggestion = async () => {
 // Créer un code personnalisé
 const createCode = async () => {
     if (!authStore.user) {
-        toast.error('Veuillez vous connecter');
+        toast.error("Veuillez vous connecter");
         return;
     }
     if (!customCode.value.trim()) {
-        toast.error('Veuillez entrer un code valide');
+        toast.error("Veuillez entrer un code valide");
         return;
     }
 
     isCreating.value = true;
     try {
-        const response = await apiClient.post('/parrainages/create-code', { code: customCode.value.trim() });
+        const response = await apiClient.post("/parrainages/create-code", { code: customCode.value.trim() });
         code.value = response.data.code;
         link.value = response.data.link || `https://espacecameroun.cm/invite/${response.data.code}`;
-        toast.success(response.data.message || 'Code créé avec succès !');
+        toast.success(response.data.message || "Code créé avec succès !");
         await fetchParrainageData();
     } catch (error: any) {
-        toast.error(error.response?.data?.message || 'Erreur lors de la création du code');
+        toast.error(error.response?.data?.message || "Erreur lors de la création du code");
         console.error(error);
     } finally {
         isCreating.value = false;
@@ -96,24 +101,24 @@ const createCode = async () => {
 // Partager le lien sur les réseaux sociaux
 const shareLink = (platform: string) => {
     if (!link.value) {
-        toast.error('Aucun lien disponible pour le partage');
+        toast.error("Aucun lien disponible pour le partage");
         return;
     }
 
-    let url = '';
+    let url = "";
     const message = encodeURIComponent(`Rejoins-moi sur Espace Cameroun avec mon lien : ${link.value}`);
     switch (platform) {
-        case 'whatsapp':
+        case "whatsapp":
             url = `https://api.whatsapp.com/send?text=${message}`;
             break;
-        case 'facebook':
+        case "facebook":
             url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link.value)}`;
             break;
         default:
-            toast.error('Plateforme non prise en charge');
+            toast.error("Plateforme non prise en charge");
             return;
     }
-    window.open(url, '_blank');
+    window.open(url, "_blank");
 };
 
 // Initialisation au montage
@@ -123,27 +128,32 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-100 pt-2 pb-12 px-4 sm:px-6">
+    <div class="overflow-y-scroll bg-gray-100 pt-2 pb-12 px-4 sm:px-6">
         <div class="container mx-auto max-w-4xl">
             <!-- Section des Niveaux de Parrainage -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-6">
                 <h2 class="text-lg font-semibold text-[var(--espace-vert)] mb-4">Niveaux de Parrainage</h2>
-                <p class="text-[var(--espace-gris)] text-sm mb-2">
-                    Votre niveau actuel : <strong>{{ niveauActuel.nom }} {{ niveauActuel.emoji }} ({{ parrainages.length
-                        }}/{{ niveauSuivant ? niveauSuivant.filleuls_requis : niveauActuel.filleuls_requis }})</strong>
-                    <span v-if="niveauActuel.jetons_bonus > 0" class="ml-2">+{{ niveauActuel.jetons_bonus }} jetons
+                <p class="text-[var(--espace-gris)] text-sm mb-2" :style="{ color: currentColor }">
+                    Votre niveau actuel : <strong>{{ niveauActuel ? niveauActuel.nom : "pas niveau" }} {{
+                        niveauActuel?.emoji }}
+                        ({{ parrainages.length }}/{{ niveauSuivant ? niveauSuivant.filleuls_requis :
+                        niveauActuel?.filleuls_requis
+                        }})</strong>
+                    <span v-if="niveauActuel?.jetons_bonus > 0" class="ml-2">+{{ niveauActuel?.jetons_bonus }} jetons
                         bonus</span>
                 </p>
                 <div class="w-full bg-gray-200 rounded-full h-4">
-                    <div class="h-4 rounded-full bg-[var(--espace-or)] transition-all duration-300"
-                        :style="{ width: `${progression}%` }"></div>
+                    <div class="h-4 rounded-full bg-[var(--espace-or)] transition-all duration-300" :style="{
+                            width: `${progression}%`,
+                        background : `${currentColor}`
+                              }"></div>
                 </div>
                 <p class="text-[var(--espace-gris)] text-xs mt-2">
-                    Prochain niveau : {{ niveauSuivant ? niveauSuivant.nom : 'Légende 🛡️' }} à {{ niveauSuivant ?
-                        niveauSuivant.filleuls_requis : '1000+' }} parrainages
+                    Prochain niveau : {{ niveauSuivant ? niveauSuivant.nom : "Légende 🏆" }} à
+                    {{ niveauSuivant ? niveauSuivant.filleuls_requis : "1000+" }} parrainages
                 </p>
                 <p v-if="niveauActuel.avantages?.length" class="text-[var(--espace-gris)] text-xs mt-1">
-                    Avantages : {{ niveauActuel.avantages.join(', ') }}
+                    Avantages : {{ niveauActuel.avantages.join(", ") }}
                 </p>
                 <button @click="router.push('/parrainage/info')"
                     class="mt-4 bg-[var(--espace-vert)] text-white px-4 py-2 rounded hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)] transition">
@@ -154,8 +164,8 @@ onMounted(() => {
             <!-- Bloc Explicatif -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-6">
                 <p class="text-[var(--espace-gris)] text-sm sm:text-base">
-                    Invitez des amis avec votre lien ou code unique et gagnez des récompenses ! Recevez <strong>1
-                        jeton</strong> pour chaque commerçant actif parrainé.
+                    Invitez des amis avec votre lien ou code unique et gagnez des récompenses ! Recevez
+                    <strong>1 jeton</strong> pour chaque commerçant actif parrainé.
                 </p>
             </div>
 
@@ -223,10 +233,11 @@ onMounted(() => {
                         </thead>
                         <tbody>
                             <tr v-for="p in parrainages" :key="p.filleul_nom" class="border-b hover:bg-gray-50">
-                                <td class="px-4 py-2">{{ p.filleul_nom || 'Anonyme' }}</td>
-                                <td class="px-4 py-2">{{ new Date(p.date_inscription).toLocaleDateString('fr-FR') }}
+                                <td class="px-4 py-2">{{ p.filleul_nom || "Anonyme" }}</td>
+                                <td class="px-4 py-2">{{ new Date(p.date_inscription).toLocaleDateString("fr-FR") }}
                                 </td>
-                                <td class="px-4 py-2">{{ p.est_commercant ? 'Oui' : 'Non' }}</td>
+                                <td class="px-4 py-2">{{ p.est_commerçant ? "Oui" : "Non" }}</td>
+                                <!-- Correction de est_commercant -->
                             </tr>
                         </tbody>
                     </table>
@@ -243,11 +254,10 @@ onMounted(() => {
                     {{ totalGains }} jetons
                 </p>
                 <p class="text-[var(--espace-gris)] mt-2">
-                    🎉 Vous avez invité <strong>{{ parrainages.length }}</strong> utilisateurs, dont <strong>{{
-                        parrainages.filter(p => p.est_commercant).length }}</strong> sont commerçants !
+                    🎉 Vous avez invité <strong>{{ parrainages.length }}</strong> utilisateurs, dont
+                    <strong>{{parrainages.filter((p) => p.est_commerçant).length}}</strong> sont commerçants !
                 </p>
-                <p class="text-[var(--espace-gris)]">
-                    ⬇️ Gagnez <strong>1 jeton</strong> par commerçant actif parrainé.
+                <p class="text-[var(--espace-gris)]">⬇️ Gagnez <strong>1 jeton</strong> par commerçant actif parrainé.
                 </p>
             </div>
         </div>
@@ -263,7 +273,7 @@ onMounted(() => {
 }
 
 .font-poppins {
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
 }
 
 table {

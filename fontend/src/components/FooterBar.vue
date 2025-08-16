@@ -1,5 +1,6 @@
+<!-- src/components/FooterNav.vue -->
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/Auth';
 import { useUserStateStore } from '../stores/userState';
@@ -7,9 +8,8 @@ import { useUserStateStore } from '../stores/userState';
 const authStore = useAuthStore();
 const userStateStore = useUserStateStore();
 const router = useRouter();
-const animateCartBadge = ref(false);
-const animateCollaborationBadge = ref(false);
-const animateOrdersBadge = ref(false);
+const animateCollaborationBadge = ref(false); // Badge pour collaborations
+const animateMessagesBadge = ref(false); // Badge pour messages (facultatif)
 
 const navLinks = computed(() => {
     return [
@@ -22,6 +22,8 @@ const navLinks = computed(() => {
                     : []),
                 { to: '/collaborations', label: 'Collaborations', icon: 'fa-handshake', badge: userStateStore.collaborationsPending },
                 { to: '/parrainage', label: 'Mon Parrainage', icon: 'fa-users', badge: 0 },
+                // Ajout optionnel pour messages
+                { to: '/messages', label: 'Messages', icon: 'fa-comment-dots', badge: userStateStore.unreadMessages },
             ]
             : [
                 { to: '/login', label: 'Connexion', icon: 'fa-sign-in-alt', badge: 0 },
@@ -29,43 +31,65 @@ const navLinks = computed(() => {
             ]),
     ];
 });
+
+// Watchers pour animer les badges
+watch(
+    () => userStateStore.collaborationsPending,
+    (newValue) => {
+        if (newValue > 0) {
+            animateCollaborationBadge.value = true;
+            setTimeout(() => (animateCollaborationBadge.value = false), 300);
+        }
+    }
+);
+
+watch(
+    () => userStateStore.unreadMessages,
+    (newValue) => {
+        if (newValue > 0) {
+            animateMessagesBadge.value = true;
+            setTimeout(() => (animateMessagesBadge.value = false), 300);
+        }
+    }
+);
 </script>
 
 <template>
-    <div class='relative bg-yelow-800'>
-    <Transition name="slide-up">
-
+    <div class="relative">
+        <Transition name="slide-up">
             <nav
-                class="lg:hidden absolute bottom-0 left-0 w-full bg-[var(--espace-vert)] text-[var(--espace-blanc)] shadow-md z-40">
+                class="lg:hidden fixed bottom-0 left-0 w-full bg-[var(--espace-vert)] text-[var(--espace-blanc)] shadow-md z-40">
                 <div class="flex justify-around items-center py-2">
                     <RouterLink v-for="link in navLinks" :key="link.to" :to="link.to" :aria-label="link.label"
                         class="relative flex items-center justify-center w-10 h-10 hover:text-[var(--espace-or)] transition-colors duration-300"
                         active-class="text-[var(--espace-or)]">
                         <i class="fas text-lg" :class="link.icon"></i>
-                        <span v-if="(typeof link.badge === 'object' ? link.badge.value : link.badge) > 0"
+                        <span v-if="(typeof link.badge === 'object' ? link.badge.value : link.badge) > -1"
                             class="cart-badge absolute top-0 right-0 bg-[var(--espace-or)] text-[var(--espace-vert)] text-xs rounded-full h-5 w-5 flex items-center justify-center"
                             :class="{
-                            'animate-scale':
-                                (link.to === '/panier' && animateCartBadge) ||
-                                (link.to === '/collaborations' && animateCollaborationBadge) ||
-                                (link.to === '/commandes' && animateOrdersBadge),
-                        }" :aria-label="link.to === '/panier'
-                        ? 'Nombre d\'articles dans le panier'
-                        : link.to === '/collaborations'
+                                'animate-scale': (link.to === '/collaborations' && animateCollaborationBadge) || (link.to === '/messages' && animateMessagesBadge),
+                            }" :aria-label="link.to === '/collaborations'
                             ? 'Collaborations en attente'
-                            : 'Commandes en attente'
-                        ">
+                            : link.to === '/messages'
+                                ? 'Messages non lus'
+                                : ''">
                             {{ typeof link.badge === 'object' ? link.badge.value : link.badge }}
                         </span>
                     </RouterLink>
                 </div>
             </nav>
-            
         </Transition>
     </div>
 </template>
 
 <style scoped>
+:root {
+    --espace-vert: #14532d;
+    --espace-or: #facc15;
+    --espace-blanc: #ffffff;
+    --espace-gris: #6b7280;
+}
+
 .slide-up-enter-active,
 .slide-up-leave-active {
     transition: transform 0.3s ease, opacity 0.3s ease;

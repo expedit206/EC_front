@@ -1,6 +1,5 @@
 <template>
-    <div v-if="isOpen"
-        class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div
             class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 space-y-6 animate-fade-in max-h-[90vh] overflow-auto">
             <h2 class="text-3xl font-extrabold text-[var(--espace-vert)] text-center">
@@ -31,21 +30,28 @@
 
             <!-- Numéro de téléphone -->
             <label class="block text-gray-700 font-semibold mb-1 mt-4" for="phoneNumber">
-                Numéro de téléphone
+                Numéro de téléphone <span class="text-sm text-red-500">*</span>
             </label>
             <input id="phoneNumber" v-model="phoneNumber" type="tel" placeholder="Ex: 696428651"
-                class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)] transition" />
+                @input="validatePhoneNumber" :class="[
+                    'w-full rounded-lg border px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)] transition',
+                    phoneError ? 'border-red-500' : 'border-gray-300',
+                ]" />
+            <p v-if="phoneError" class="text-xs text-red-600 mt-1">
+                Veuillez entrer un numéro valide (9 chiffres, commençant par 6).
+            </p>
 
             <!-- Service de paiement avec logos -->
-            <label class="block text-gray-700 font-semibold mb-2 mt-4">
+            <label class="block text-gray-700 font-semibold mb-2 mt-4" for="paymentService">
                 Service de paiement
             </label>
             <div class="flex gap-4">
-                <label v-for="service in paymentServices" :key="service.value" class="flex items-center gap-3 cursor-pointer rounded-lg border p-3 flex-1 transition
-                hover:border-[var(--espace-vert)]" :class="{
-                    'border-[var(--espace-vert)] bg-[var(--espace-vert)]/10': selectedService === service.value,
-                    'border-gray-300 bg-white': selectedService !== service.value,
-                }">
+                <label v-for="service in paymentServices" :key="service.value"
+                    class="flex items-center gap-3 cursor-pointer rounded-lg border p-3 flex-1 transition hover:border-[var(--espace-vert)]"
+                    :class="{
+                        'border-[var(--espace-vert)] bg-[var(--espace-vert)]/10': selectedService === service.value,
+                        'border-gray-300 bg-white': selectedService !== service.value,
+                    }">
                     <input type="radio" :value="service.value" v-model="selectedService" class="hidden" />
                     <img :src="service.logo" alt="" class="h-8 w-8 object-contain" />
                     <span :class="{
@@ -68,55 +74,55 @@
             <!-- Bouton d'achat avec loading -->
             <button @click="acheterJetons" :disabled="!isFormValid || loading"
                 class="w-full mt-4 bg-[var(--espace-vert)] text-white py-3 rounded-lg font-semibold hover:bg-[var(--espace-or)] transition disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-3">
+
+                <span v-if="!loading">Acheter</span>
+                <span v-else="loading">veuillez patientez</span>
                 <svg v-if="loading" class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
                     fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                 </svg>
-                <span> Acheter </span>
             </button>
 
-            <button @click="$emit('close')"
-                class="w-full mt-2 text-center text-gray-500 hover:text-[var(--espace-vert)] transition">
-                Annuler
+            <button class="w-full mt-2 text-center text-gray-500 hover:text-[var(--espace-vert)] transition">
+                <router-link to="/jeton-history" @click="emit('close')">Annuler</router-link>
             </button>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
-import apiClient from '../api';
-import { useToast } from 'vue-toastification';
+import { ref, computed, watch } from "vue";
+import apiClient from "../api";
+import { useToast } from "vue-toastification";
 
 defineProps<{
     isOpen: boolean;
 }>();
 
-const emit = defineEmits(['close', 'purchased']);
+const emit = defineEmits(["close", "purchased"]);
 
 const toast = useToast();
 
 const jetonQuantity = ref<number>(10);
-const phoneNumber = ref<string>('');
-const selectedService = ref<string>('');
+const phoneNumber = ref<string>("");
+const selectedService = ref<string>("");
 const montant = ref<number>(jetonQuantity.value * 25);
-
 const loading = ref(false);
 const serviceError = ref(false);
+const phoneError = ref(false);
 
 const paymentServices = [
     {
-        value: 'ORANGE',
-        label: 'Orange Money',
-        logo: new URL('../assets/images/logo/orange.png', import.meta.url).href,
+        value: "ORANGE",
+        label: "Orange Money",
+        logo: new URL("../assets/images/logo/orange.png", import.meta.url).href,
     },
     {
-        value: 'MTN',
-        label: 'MTN Mobile Money',
-        logo: new URL('../assets/images/logo/mtn.jpg', import.meta.url).href,
+        value: "MTN",
+        label: "MTN Mobile Money",
+        logo: new URL("../assets/images/logo/mtn.jpg", import.meta.url).href,
     },
-
 ];
 
 const presetQuantities = [10, 20, 50, 100];
@@ -124,8 +130,9 @@ const presetQuantities = [10, 20, 50, 100];
 const isFormValid = computed(() => {
     return (
         jetonQuantity.value >= 10 &&
-        phoneNumber.value.trim().length >= 8 &&
-        selectedService.value !== ''
+        phoneNumber.value.trim().length === 9 &&
+        /^6\d{8}$/.test(phoneNumber.value) && // Validation simple : commence par 6, 9 chiffres
+        selectedService.value !== ""
     );
 });
 
@@ -139,36 +146,39 @@ const setQuantity = (qty: number) => {
 };
 
 const onQuantityInput = () => {
-    // Empêcher valeurs < 10
-    if (jetonQuantity.value < 10) {
-        jetonQuantity.value = 10;
-    }
+    
     updateMontant();
+};
+
+const validatePhoneNumber = () => {
+    phoneError.value = !(
+        phoneNumber.value.trim().length === 9 && /^6\d{8}$/.test(phoneNumber.value)
+    );
 };
 
 const acheterJetons = async () => {
     serviceError.value = !selectedService.value;
 
     if (!isFormValid.value) {
-        toast.error('Veuillez remplir tous les champs correctement.');
+        toast.error("Veuillez remplir tous les champs correctement.");
         return;
     }
 
     loading.value = true;
     try {
-        const res = await apiClient.post('/acheter-jetons', {
+        const res = await apiClient.post("/acheter-jetons", {
             nombre_jetons: jetonQuantity.value,
             payment_service: selectedService.value,
             phone_number: phoneNumber.value,
         });
         toast.success(res.data.message);
-        emit('purchased', jetonQuantity.value);
-        emit('close');
+        emit("purchased", jetonQuantity.value);
+        emit("close");
     } catch (e: any) {
         if (e.response && e.response.data) {
             const errorData = e.response.data;
             toast.error(
-                `Erreur: ${errorData.error_message || 'Achat échoué'}. Détails: ${errorData.details || 'Aucun détail.'
+                `Erreur: ${errorData.error_message || "Achat échoué"}. Détails: ${errorData.details || "Aucun détail."
                 }`
             );
         } else {
@@ -179,6 +189,10 @@ const acheterJetons = async () => {
         loading.value = false;
     }
 };
+
+watch(phoneNumber, () => {
+    validatePhoneNumber();
+});
 </script>
 
 <style scoped>

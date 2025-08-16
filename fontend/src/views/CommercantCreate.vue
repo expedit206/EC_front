@@ -61,7 +61,7 @@ console.log(response.data.message)
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-100 pt-16 pb-20 px-4 sm:px-6">
+    <div class="overflow-y-scroll bg-gray-100 pt-16 pb-20 px-4 sm:px-6">
         <div class="container mx-auto max-w-2xl">
             <!-- Titre -->
             <h1 class="text-2xl sm:text-3xl font-bold text-[var(--espace-vert)] mb-6 font-poppins">

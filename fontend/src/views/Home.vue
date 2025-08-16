@@ -145,11 +145,11 @@ onUnmounted(() => {
 
 <template>
     <!-- Template inchangé -->
-    <div class="min-h-screen bg-[var(--espace-blanc)]">
+    <div class="pt-4 bg-[var(--espace-blanc)]  max-h-full relative">
         <Loader :isLoading="productStore.isLoading" />
-        <div class="container mx-auto px-4 sm:px-6 py-4">
+        <div class="relative  overflow-y-scroll mx-auto px-4 sm:px-6 py-4 max-h-full ">
             <!-- Tri -->
-            <div class="flex overflow-x-auto space-x-2 mb-3 snap-x snap-mandatory">
+            <div class="fixed flex items-center overflow-x-auto space-x-2 mb-3 snap-x snap-mandatory z-5">
                 <button v-for="option in [
                     { id: 'popular', label: 'Populaire', icon: 'fa-fire' },
                     { id: 'favorites', label: 'Favoris', icon: 'fa-heart' },
@@ -166,7 +166,7 @@ onUnmounted(() => {
             </div>
 
             <!-- Bouton toggle filtres -->
-            <div class="flex justify-end items-center mb-3">
+            <div class=" fixed  right-10 z-5 flex justify-end items-center mb-3">
                 <button @click="showFilters = !showFilters"
                     class="relative flex items-center justify-center w-10 h-10 bg-[var(--espace-or)] text-[var(--espace-vert)] rounded-full hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition active:scale-95"
                     :aria-label="showFilters ? 'Masquer les filtres' : 'Afficher les filtres'"
@@ -239,7 +239,7 @@ onUnmounted(() => {
 
             <!-- Liste des produits -->
             <TransitionGroup name="fade" tag="div"
-                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 overflow-y-scroll">
+                class="  grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pt-12 ">
                 <ProductCard v-for="produit in productStore.products" :key="produit.id" :produit="produit"
                     @mouseover="handleMouseOver(produit.id)" @touchstart="handleTouchStart(produit.id)" />
             </TransitionGroup>

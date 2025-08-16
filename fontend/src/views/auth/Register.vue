@@ -45,9 +45,8 @@ const register = async () => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-8"
-        >
-        <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl p-6 sm:p-10">
+    <div class="overflow-y-scroll bg-white flex justify-center px-4 ">
+        <div class=" flex  flex-col w-full max-w-lg  rounded-2xl  pb-16 sm:p-10">
             <h1 class="text-3xl sm:text-4xl font-bold text-center text-[var(--espace-vert)] mb-6">
                 <i class="fas fa-user-plus mr-2 text-[var(--espace-or)]"></i> Créez votre compte
             </h1>
@@ -55,7 +54,7 @@ const register = async () => {
                 Rejoignez <strong>Espace Cameroun</strong> et profitez d’une expérience d’achat unique. Vos informations
                 resteront confidentielles.
             </p>
-            <form @submit.prevent="register" class="space-y-5">
+            <form @submit.prevent="register" class=" space-y-5">
                 <FormField label="Nom" icon="fa-user" v-model="form.nom" type="text" required :error="errors.nom" />
                 <FormField label="Téléphone" icon="fa-phone" v-model="form.telephone" type="tel" required
                     :error="errors.telephone" />
@@ -78,7 +77,7 @@ const register = async () => {
                     Connectez-vous ici
                 </router-link>
             </p>
-            <p class="text-center text-xs text-gray-400 mt-4">
+            <p class="text-center text-xs text-gray-400 mt-2 pb-4">
                 En vous inscrivant, vous acceptez nos
                 <a href="/conditions" class="hover:underline text-[var(--espace-vert)]">conditions d'utilisation</a>
                 et notre

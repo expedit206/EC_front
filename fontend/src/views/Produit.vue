@@ -1,3 +1,4 @@
+<!-- src/views/ProductDetails.vue -->
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -22,15 +23,18 @@ const prixRevente = ref<number | null>(null);
 const observer = ref<IntersectionObserver | null>(null);
 const loadMoreTrigger = ref<HTMLElement | null>(null);
 
+// Méthodes existantes (inchangées sauf fetchProduit pour gérer les photos)
 const fetchProduit = async () => {
     try {
         productStore.isLoading = true;
         await productStore.viewProduct(route.params.id);
         productStore.isLoading = false;
+        // Initialiser le slider avec les photos
+        if (productStore.product.photos && !productStore.product.photo_url) {
+            productStore.product.photo_url = productStore.product.photos[0];
+        }
         await productStore.fetchProducts({ category: productStore.product.category_id, per_page: 8 }, true);
-        console.log(productStore.product)
-
-        // Utiliser fetchProducts pour les produits similaires avec la catégorie
+        console.log(productStore.product);
     } catch (error: any) {
         toast.error(error || 'Erreur lors du chargement du produit');
         router.push({ name: 'home' });
@@ -164,6 +168,30 @@ const recordView = async (productId: string) => {
     }
 };
 
+const handleFavorite = async () => {
+    try {
+        await productStore.toggleFavorite(productStore.product.id);
+    } catch (error: any) {
+        toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour des favoris.');
+    }
+};
+
+const initChatFromProduct = (productId: number, productName: string, receiverId: number) => {
+    const productData = { id: productId, name: productName };
+    localStorage.setItem('chatProduct', JSON.stringify(productData));
+    router.push(`/messages/${receiverId}`);
+};
+
+// Gestion du slider
+const currentSlideIndex = ref(0);
+const nextSlide = () => {
+    const maxIndex = (productStore.product.photos?.length || 1) - 1;
+    currentSlideIndex.value = Math.min(currentSlideIndex.value + 1, maxIndex);
+};
+const prevSlide = () => {
+    currentSlideIndex.value = Math.max(currentSlideIndex.value - 1, 0);
+};
+
 onMounted(() => {
     fetchProduit();
     userStateStore.initializeState();
@@ -183,71 +211,71 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    //recharger le document
-
     if (observer.value && loadMoreTrigger.value) {
         observer.value.unobserve(loadMoreTrigger.value);
     }
 });
 
-const handleFavorite = async () => {
-    try {
-        // console.log(productStore.product.id);
-        await productStore.toggleFavorite(productStore.product.id);
-    } catch (error: any) {
-        toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour des favoris.');
-    }
-};
-// Surveiller les changements de route pour recharger le produit
 watch(
     () => route.params.id,
     (newId) => {
         if (newId) {
             fetchProduit(newId as string);
+            currentSlideIndex.value = 0; // Réinitialiser le slider
         }
     }
 );
-
 
 watch(productStore.product, (newProduit) => {
     if (newProduit) {
         productStore.page = 1; // Réinitialiser la page quand un nouveau produit est chargé
         productStore.fetchProducts({ category: newProduit.category_id, per_page: 4 }, true);
+        currentSlideIndex.value = 0; // Réinitialiser le slider
     }
 });
-
-// const openChat = (receiverId: number) => {
-//     if (productStore.product) {
-//         router.push(`/messages/${productStore.product.id}/${receiverId}`);
-//     } else {
-//         toast.error('Vendeur non disponible');
-//     }
-// };
-
-const initChatFromProduct = (productId: number, productName: string, receiverId: number) => {
-    const productData = { id: productId, name: productName };
-    localStorage.setItem('chatProduct', JSON.stringify(productData));
-    router.push(`/messages/${receiverId}`);
-};
 </script>
 
 <template>
-    <AppHeader />
     <Loader :isLoading="productStore.isLoading" />
-    <div class="min-h-screen bg-[var(--espace-blanc)] pt-16 pb-20 px-4 sm:px-6">
+    <div class=" overflow-y-scroll bg-[var(--espace-blanc)] pt-16 pb-20 px-4 sm:px-6">
         <div class="container mx-auto max-w-5xl">
             <div v-if="productStore.isLoading" class="text-center text-[var(--espace-gris)]">
                 <!-- Loader géré par Loader.vue -->
             </div>
             <div v-else-if="productStore.product" class="bg-[var(--espace-blanc)] rounded-lg shadow-md p-4 sm:p-6">
-                {{ productStore.product.is_favorited_by }}
                 <Transition name="slide-up">
                     <div class="flex flex-col lg:flex-row gap-4 sm:gap-6">
-                        <!-- Image du produit -->
+                        <!-- Slider pour les images du produit -->
                         <div class="w-full lg:w-1/2 relative">
-                            <img :src="productStore.product.photo_url || 'https://via.placeholder.com/300'"
-                                :alt="`Image de ${productStore.product.nom}`"
-                                class="w-full h-64 sm:h-80 lg:h-96 object-cover rounded-lg shadow-sm hover:scale-[1.02] transition-transform duration-300" />
+                            <div class="relative w-full h-64 sm:h-80 lg:h-96 overflow-hidden rounded-lg">
+                                <div class="flex w-full h-full slider-container"
+                                    :style="{ transform: `translateX(-${currentSlideIndex * 100}%)` }">
+                                    <img v-for="(photo, index) in productStore.product.photos || [productStore.product.photo_url || 'https://via.placeholder.com/300']"
+                                        :key="index" :src="photo"
+                                        class="w-full h-full object-contain flex-shrink-0 mx-auto"
+                                        :alt="`Image de ${productStore.product.nom} - ${index + 1}`" />
+                                </div>
+                                <!-- Flèches visibles uniquement sur desktop -->
+                                <button v-if="productStore.product.photos && productStore.product.photos.length > 1"
+                                    @click="prevSlide"
+                                    class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-1 rounded-full hover:bg-opacity-75 hidden md:block"
+                                    aria-label="Image précédente">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button v-if="productStore.product.photos && productStore.product.photos.length > 1"
+                                    @click="nextSlide"
+                                    class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-1 rounded-full hover:bg-opacity-75 hidden md:block"
+                                    aria-label="Image suivante">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                                <!-- Points (dots) pour la navigation -->
+                                <div v-if="productStore.product.photos && productStore.product.photos.length > 1"
+                                    class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                                    <span v-for="(photo, index) in productStore.product.photos" :key="index"
+                                        class="w-2 h-2 rounded-full bg-gray-400"
+                                        :class="{ 'bg-[var(--espace-or)]': index === currentSlideIndex }"></span>
+                                </div>
+                            </div>
                             <span
                                 v-if="productStore.product.boosted_until && new Date(productStore.product.boosted_until) > new Date()"
                                 class="absolute top-3 left-3 bg-[var(--espace-or)] text-[var(--espace-vert)] text-[10px] font-semibold px-2 py-1 rounded-full font-poppins"
@@ -277,13 +305,13 @@ const initChatFromProduct = (productId: number, productName: string, receiverId:
                                 {{ productStore.product.nom }}
                             </h1>
                             <p class="text-sm text-[var(--espace-gris)] mb-3">{{ productStore.product.description ||
-                                'Aucune' }}</p>
-                            <p class="text-lg sm:text-xl font-semibold text-[var(--espace-or)] mb-3">{{
-                                productStore.product.prix }}
-                                XAF</p>
+                                'Aucune description disponible' }}</p>
+                            <p class="text-lg sm:text-xl font-semibold text-[var(--espace-or)] mb-3">
+                                {{ productStore.product.prix }} XAF
+                            </p>
                             <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4 text-xs text-[var(--espace-gris)]">
                                 <p><strong>Catégorie :</strong> {{ productStore.product.category?.nom || 'Non spécifiée'
-                                    }}</p>
+                                }}</p>
                                 <p><strong>Quantité :</strong> {{ productStore.product.quantite }}</p>
                                 <p><strong>Ville :</strong> {{ productStore.product.ville || 'Non spécifiée' }}</p>
                                 <p><strong>Ajouté le :</strong> {{ new
@@ -291,7 +319,7 @@ const initChatFromProduct = (productId: number, productName: string, receiverId:
                                 <div class="flex items-center gap-3">
                                     <div class="flex items-center gap-1">
                                         <i class="fas fa-eye text-[10px]"></i>
-                                        <span>{{ productStore.product.views_count }} vues</span>
+                                        <span>{{ productStore.product.raws_views_count || productStore.product.views_count }} vues</span>
                                     </div>
                                     <div class="flex items-center gap-1">
                                         <i class="fas fa-heart text-[10px]"
@@ -301,7 +329,7 @@ const initChatFromProduct = (productId: number, productName: string, receiverId:
                                 </div>
                             </div>
                             <button @click="handleFavorite"
-                                class="w-full bg-[var(--espace-vert)] text-[var(--espace-blanc)] font-semibold py-2 rounded-lg hover:from-[var(--espace-vert)] hover:to-[var(--espace-or)] transition-all duration-200 active:scale-95 text-sm mb-3"
+                                class="w-full bg-[var(--espace-vert)] text-[var(--espace-blanc)] font-semibold py-2 rounded-lg hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)] transition-all duration-200 active:scale-95 text-sm mb-3"
                                 :aria-label="productStore.product.is_favorited_by ? 'Retirer des favoris' : 'Ajouter aux favoris'">
                                 <i class="fas fa-heart mr-2 text-sm"
                                     :class="{ 'text-[var(--espace-or)]': productStore.product.is_favorited_by }"></i>
@@ -325,7 +353,7 @@ const initChatFromProduct = (productId: number, productName: string, receiverId:
                                     {{ productStore.product.commercant?.bio || 'Aucune description disponible' }}
                                 </p>
                                 <p class="text-xs text-[var(--espace-gris)] mb-1">
-                                    <strong>Ville :</strong> {{ productStore.product.commercant?.ville || 'Non' }}
+                                    <strong>Ville :</strong> {{ productStore.product.commercant?.ville || 'Nonspécifiée' }}
                                 </p>
                                 <p class="text-xs text-[var(--espace-gris)] mb-2">
                                     <strong>Note :</strong> {{ productStore.product.commercant?.rating || 'Non évalué'
@@ -336,17 +364,12 @@ const initChatFromProduct = (productId: number, productName: string, receiverId:
                                     aria-label="Voir le profil du commerçant">
                                     Voir le profil du commerçant
                                 </router-link>
-                                <button @click="viewCommercant"
-                                    class="text-[var(--espace-vert)] hover:text-[var(--espace-or)] underline transition active:scale-95 text-xs"
-                                    aria-label="Voir le commerçant">
-                                    Voir le commerçant
-                                </button>
                             </div>
                             <!-- Actions -->
                             <div class="flex flex-col sm:flex-row gap-3 mt-4">
                                 <button v-if="authStore.user?.commercant?.id !== productStore.product.commercant_id"
                                     @click="contactCommercant"
-                                    class="flex-1 bg-[var(--espace-vert)] font-semibold px-4 py-2 rounded-lg hover:bg-[var(--espace-vert)] text-white hover:text-[var(--espace-blanc)] transition-all duration-200 active:scale-95 text-sm"
+                                    class="flex-1 bg-[var(--espace-vert)] font-semibold px-4 py-2 rounded-lg hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)] text-white transition-all duration-200 active:scale-95 text-sm"
                                     aria-label="Contacter le commerçant">
                                     <i class="fas fa-phone mr-2 text-sm"></i> Contacter le commerçant
                                 </button>
@@ -370,34 +393,18 @@ const initChatFromProduct = (productId: number, productName: string, receiverId:
                                     :aria-label="productStore.product.boosted_until && new Date(productStore.product.boosted_until) > new Date() ? 'Boost déjà actif' : 'Booster ce produit'">
                                     <i class="fas fa-rocket mr-2 text-sm"></i>
                                     {{ productStore.product.boosted_until && new
-                                    Date(productStore.product.boosted_until) > new Date() ? 'Boost' :
-                                    'Booster (50 Jetons)' }}
+                                        Date(productStore.product.boosted_until) > new Date() ? 'Boost' : 'Booster (50Jetons)' }}
                                 </button>
-
-                                <div class="container mx-auto max-w-4xl mt-16">
-                                    <div v-if="productStore.product" class="bg-white rounded-lg shadow-md p-6">
-                                        <h1 class="text-2xl font-bold text-[var(--espace-vert)] mb-4">{{
-                                            productStore.product.nom }}
-                                        </h1>
-                                        <p class="text-[var(--espace-gris)] mb-4">{{ productStore.product.description }}
-                                        </p>
-                                        <!-- Remplacez 2 par lID du destinataire dynamique -->
-                                      
-
-                                        <button
-                                            @click="initChatFromProduct(productStore.product.id, productStore.product.nom, productStore.product.commercant.user.id)"
-                                            class="p-2 bg-green-500 text-white rounded">
-                                            Contacter le vendeur
-                                        </button>
-                                    </div>
-                                    <div v-else class="text-center text-[var(--espace-gris)]">Chargement...</div>
-                                </div>
+                                <button
+                                    @click="initChatFromProduct(productStore.product.id, productStore.product.nom, productStore.product.commercant.user.id)"
+                                    class="flex-1 bg-green-500 text-[var(--espace-blanc)] font-semibold px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-200 active:scale-95 text-sm"
+                                    aria-label="Contacter le vendeur">
+                                    <i class="fas fa-comment mr-2 text-sm"></i> Contacter le vendeur
+                                </button>
                             </div>
                         </div>
                     </div>
                 </Transition>
-                <!-- Produits similaires avec infinite scroll -->
-
             </div>
             <div v-else class="text-center text-[var(--espace-gris)] text-sm font-poppins">
                 Produit non trouvé.
@@ -415,7 +422,7 @@ const initChatFromProduct = (productId: number, productName: string, receiverId:
                         </h2>
                         <p class="text-xs text-[var(--espace-gris)] mb-3">
                             Proposez un prix de revente (minimum : {{ productStore.product.prix +
-                            (productStore.product.marge_min || 0) }} XAF)
+                                (productStore.product.marge_min || 0) }} XAF)
                         </p>
                         <form @submit.prevent="submitCollaboration" class="space-y-3">
                             <div>
@@ -451,9 +458,9 @@ const initChatFromProduct = (productId: number, productName: string, receiverId:
             </h2>
             <TransitionGroup name="fade" tag="div"
                 class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                <ProductCard v-for="produit in productStore.products" :key="productStore.product.id" :produit="produit"
-                    @toggle-favorite="handleFavorite" @mouseover="handleMouseOver(productStore.product.id)"
-                    @touchstart="handleTouchStart(productStore.product.id)" />
+                <ProductCard v-for="produit in productStore.products" :key="produit.id" :produit="produit"
+                     @mouseover="handleMouseOver(produit.id)"
+                    @touchstart="handleTouchStart(produit.id)" />
             </TransitionGroup>
             <div ref="loadMoreTrigger" class="h-10 flex items-center justify-center" aria-live="polite"
                 :aria-busy="productStore.isLoading">
@@ -466,7 +473,6 @@ const initChatFromProduct = (productId: number, productName: string, receiverId:
 </template>
 
 <style scoped>
-/* Styles inchangés */
 :root {
     --espace-vert: #14532d;
     --espace-or: #facc15;
@@ -509,5 +515,20 @@ button:disabled {
     background-color: #a3bffa;
     color: #6b7280;
     cursor: not-allowed;
+}
+
+/* Styles pour le slider */
+.slider-container {
+    display: flex;
+    transition: transform 0.3s ease;
+    width: 100%;
+    height: 100%;
+}
+
+@media (max-width: 768px) {
+    .slider-button {
+        display: none;
+        /* Masquer les flèches sur mobile */
+    }
 }
 </style>

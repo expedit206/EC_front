@@ -1,3 +1,4 @@
+// src/stores/userState.ts
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import apiClient from "../api";
@@ -5,14 +6,17 @@ import { useToast } from "vue-toastification";
 
 export const useUserStateStore = defineStore("userState", () => {
   const collaborationsPending = ref(0);
+  const unreadMessages = ref(0);
   const toast = useToast();
 
-  // Initialiser l'état (collaborations)
+  // Initialiser l'état (collaborations et messages)
   const initializeState = () => {
     const pendingCollaborations = JSON.parse(
       localStorage.getItem("pending_collaborations") || "[]"
     );
     collaborationsPending.value = pendingCollaborations.length;
+    const storedMessages = localStorage.getItem("unread_messages");
+    unreadMessages.value = storedMessages ? parseInt(storedMessages, 10) : 0;
   };
 
   // Sauvegarder les collaborations
@@ -22,6 +26,12 @@ export const useUserStateStore = defineStore("userState", () => {
       JSON.stringify(collaborations)
     );
     collaborationsPending.value = collaborations.length;
+  };
+
+  // Sauvegarder les messages non lus
+  const saveUnreadMessagesToLocalStorage = (count: number) => {
+    localStorage.setItem("unread_messages", count.toString());
+    unreadMessages.value = count;
   };
 
   // Ajouter une collaboration
@@ -65,41 +75,40 @@ export const useUserStateStore = defineStore("userState", () => {
     }
   };
 
-  // Synchroniser les collaborations
+  // Synchroniser les collaborations et messages avec le backend
   const syncCollaborationsWithBackend = async () => {
     try {
-      const response = await apiClient.get("/collaborations");
-      const backendCollaborations = response.data.filter(
-        (item: any) => item.status === "pending"
-      );
-      saveCollaborationsToLocalStorage(
-        backendCollaborations.map((item: any) => ({
-          produit_id: item.produit_id,
-          prix_revente: item.prix_revente,
-          status: item.status,
-          created_at: item.created_at,
-        }))
-      );
+      const response = await apiClient.get("/user/badges");
+      // Utiliser directement le compteur collaborations_pending
+      collaborationsPending.value = response.data.collaborations_pending;
+      console.log(response.data);
+      
+      // Mettre à jour les messages non lus
+      saveUnreadMessagesToLocalStorage(response.data.unread_messages || 0);
+      // Optionnel : Si vous voulez toujours sauvegarder les détails des collaborations, fetch une autre endpoint
+      // Exemple : const collabDetails = await apiClient.get("/collaborations/pending");
+      // saveCollaborationsToLocalStorage(collabDetails.data);
     } catch (error) {
-      console.error(
-        "Erreur lors de la synchronisation des collaborations:",
-        error
-      );
+      console.error("Erreur lors de la synchronisation des badges:", error);
     }
   };
 
   // Vider l'état
   const clearState = () => {
     localStorage.removeItem("pending_collaborations");
+    localStorage.removeItem("unread_messages");
     collaborationsPending.value = 0;
+    unreadMessages.value = 0;
   };
 
   return {
     collaborationsPending,
+    unreadMessages,
     initializeState,
     addCollaboration,
     syncCollaborationsWithBackend,
     clearState,
     saveCollaborationsToLocalStorage,
+    saveUnreadMessagesToLocalStorage,
   };
 });

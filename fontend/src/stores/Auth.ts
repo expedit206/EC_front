@@ -54,7 +54,7 @@ export const useAuthStore = defineStore("auth", {
       mot_de_passe: string;
       parrain_id?: string;
     }) {
-      // console.log(data);
+      console.log(data);
 
       const response = await apiClient.post("/register", {
         nom: data.nom,

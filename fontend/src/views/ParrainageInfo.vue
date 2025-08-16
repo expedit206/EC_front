@@ -33,7 +33,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-100 pt-16 pb-20 px-4 sm:px-6">
+    <div class="overflow-scroll bg-gray-100 pt-16 pb-20 px-4 sm:px-6">
         <div class="container mx-auto max-w-4xl">
             <!-- Titre -->
             <h1 class="text-2xl sm:text-3xl font-bold text-[var(--espace-vert)] mb-6 font-poppins">
@@ -52,7 +52,7 @@ onMounted(() => {
                 <p class="text-[var(--espace-gris)] text-sm sm:text-base">
                     Le système de parrainage d'Espace Cameroun vous permet d'inviter des amis à rejoindre la plateforme
                     en utilisant votre code ou lien unique. Pour chaque commerçant actif que vous parrainez, vous
-                    recevez <strong>1 jeton (500 FCFA)</strong>. En plus de cela, vous pouvez débloquer des niveaux en
+                    recevez <strong>1 jeton </strong>. En plus de cela, vous pouvez débloquer des niveaux en
                     fonction du nombre total de parrainages, chacun offrant des bonus en jetons et des avantages
                     exclusifs. Voici les étapes et détails complets :
                 </p>
@@ -64,8 +64,7 @@ onMounted(() => {
                 <ol class="list-decimal list-inside text-[var(--espace-gris)] text-sm sm:text-base space-y-2">
                     <li>Obtenez votre code de parrainage unique via la page "Mon Parrainage".</li>
                     <li>Partagez votre lien ou code avec vos amis via WhatsApp, Facebook, ou autre.</li>
-                    <li>Lorsqu'un ami s'inscrit avec votre code et devient un commerçant actif, vous gagnez 1 jeton (500
-                        FCFA).</li>
+                    <li>Lorsqu'un ami s'inscrit avec votre code et devient un commerçant actif, vous gagnez 1 jeton.</li>
                     <li>Accumulez des parrainages pour progresser dans les niveaux et débloquer des bonus
                         supplémentaires.</li>
                     <li>Consultez vos gains et votre niveau actuel sur la page "Mon Parrainage".</li>
@@ -81,8 +80,7 @@ onMounted(() => {
                             niveau.filleuls_requis }} parrainages requis)</span>
                     </h3>
                     <p class="text-[var(--espace-gris)] text-sm mt-2">
-                        <strong>Bonus en jetons :</strong> {{ niveau.jetons_bonus }} jetons ({{ niveau.jetons_bonus *
-                        500 }} FCFA)
+                        <strong>Bonus en jetons :</strong> {{ niveau.jetons_bonus }} jetons 
                     </p>
                     <p v-if="niveau.avantages.length" class="text-[var(--espace-gris)] text-sm mt-1">
                         <strong>Avantages exclusifs :</strong>
