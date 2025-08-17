@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useToast } from 'vue-toastification';
-import apiClient from '../api';
+import apiClient from '../api/index';
 import AppHeader from '../components/AppHeader.vue';
 import ProductCard from '../components/ProductCard.vue';
 

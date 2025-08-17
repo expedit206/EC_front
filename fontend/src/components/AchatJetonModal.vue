@@ -93,7 +93,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
-import apiClient from "../api";
+import apiClient from "../api/index";
 import { useToast } from "vue-toastification";
 
 defineProps<{
@@ -146,7 +146,7 @@ const setQuantity = (qty: number) => {
 };
 
 const onQuantityInput = () => {
-    
+
     updateMontant();
 };
 

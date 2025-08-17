@@ -9,7 +9,7 @@ import { useProductStore } from '../stores/product';
 import ProductCard from '../components/ProductCard.vue';
 import Loader from '../components/Loader.vue';
 import AppHeader from '../components/AppHeader.vue';
-import apiClient from '../api';
+import apiClient from '../api/index';
 
 const productStore = useProductStore();
 const route = useRoute();
@@ -162,7 +162,7 @@ const recordView = async (productId: string) => {
 
         viewedProducts[productId] = true;
         localStorage.setItem('viewedProducts', JSON.stringify(viewedProducts));
-    } catch (error) {
+    } catch (error : any) {
         console.error('Erreur lors de l\'enregistrement de la vue:', error);
         toast.error(error.response?.data?.message || 'Erreur lors de l\'enregistrement de la vue.');
     }
@@ -220,7 +220,7 @@ watch(
     () => route.params.id,
     (newId) => {
         if (newId) {
-            fetchProduit(newId as string);
+            fetchProduit();
             currentSlideIndex.value = 0; // Réinitialiser le slider
         }
     }
@@ -311,7 +311,7 @@ watch(productStore.product, (newProduit) => {
                             </p>
                             <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4 text-xs text-[var(--espace-gris)]">
                                 <p><strong>Catégorie :</strong> {{ productStore.product.category?.nom || 'Non spécifiée'
-                                }}</p>
+                                    }}</p>
                                 <p><strong>Quantité :</strong> {{ productStore.product.quantite }}</p>
                                 <p><strong>Ville :</strong> {{ productStore.product.ville || 'Non spécifiée' }}</p>
                                 <p><strong>Ajouté le :</strong> {{ new
@@ -319,7 +319,8 @@ watch(productStore.product, (newProduit) => {
                                 <div class="flex items-center gap-3">
                                     <div class="flex items-center gap-1">
                                         <i class="fas fa-eye text-[10px]"></i>
-                                        <span>{{ productStore.product.raws_views_count || productStore.product.views_count }} vues</span>
+                                        <span>{{ productStore.product.raws_views_count ||
+                                            productStore.product.views_count }} vues</span>
                                     </div>
                                     <div class="flex items-center gap-1">
                                         <i class="fas fa-heart text-[10px]"
@@ -353,7 +354,8 @@ watch(productStore.product, (newProduit) => {
                                     {{ productStore.product.commercant?.bio || 'Aucune description disponible' }}
                                 </p>
                                 <p class="text-xs text-[var(--espace-gris)] mb-1">
-                                    <strong>Ville :</strong> {{ productStore.product.commercant?.ville || 'Nonspécifiée' }}
+                                    <strong>Ville :</strong> {{ productStore.product.commercant?.ville || 'Nonspécifiée'
+                                    }}
                                 </p>
                                 <p class="text-xs text-[var(--espace-gris)] mb-2">
                                     <strong>Note :</strong> {{ productStore.product.commercant?.rating || 'Non évalué'
@@ -392,8 +394,9 @@ watch(productStore.product, (newProduit) => {
                                     :disabled="productStore.product.boosted_until && new Date(productStore.product.boosted_until) > new Date()"
                                     :aria-label="productStore.product.boosted_until && new Date(productStore.product.boosted_until) > new Date() ? 'Boost déjà actif' : 'Booster ce produit'">
                                     <i class="fas fa-rocket mr-2 text-sm"></i>
-                                    {{ productStore.product.boosted_until && new
-                                        Date(productStore.product.boosted_until) > new Date() ? 'Boost' : 'Booster (50Jetons)' }}
+                                    <!-- {{ productStore.product.boosted_until && new
+                                        Date(productStore.product.boosted_until) > new Date() ? 'Boost' : 'Booster
+                                    (50Jetons)' }} -->
                                 </button>
                                 <button
                                     @click="initChatFromProduct(productStore.product.id, productStore.product.nom, productStore.product.commercant.user.id)"
@@ -459,8 +462,7 @@ watch(productStore.product, (newProduit) => {
             <TransitionGroup name="fade" tag="div"
                 class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <ProductCard v-for="produit in productStore.products" :key="produit.id" :produit="produit"
-                     @mouseover="handleMouseOver(produit.id)"
-                    @touchstart="handleTouchStart(produit.id)" />
+                    @mouseover="handleMouseOver(produit.id)" @touchstart="handleTouchStart(produit.id)" />
             </TransitionGroup>
             <div ref="loadMoreTrigger" class="h-10 flex items-center justify-center" aria-live="polite"
                 :aria-busy="productStore.isLoading">

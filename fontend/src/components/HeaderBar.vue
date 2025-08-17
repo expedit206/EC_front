@@ -4,7 +4,7 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/Auth';
 import { useUserStateStore } from '../stores/userState';
-import apiClient from '../api';
+import apiClient from '../api/index';
 import { useProductStore } from '../stores/product';
 import SoldeUser from './SoldeUser.vue';
 
@@ -178,8 +178,7 @@ onUnmounted(() => {
                     </RouterLink>
                     <RouterLink v-if="authStore.user" :to="'/messages'"
                         class="relative flex items-center justify-center" aria-label="Messages">
-                        <div
-                            class="w-10 h-10 rounded-full  flex items-center justify-center text-[var(--espace-gris)]">
+                        <div class="w-10 h-10 rounded-full  flex items-center justify-center text-[var(--espace-gris)]">
                             <i class="fas fa-comment-dots text-2xl text-gray-100"></i>
                         </div>
                         <span v-if="userStateStore.unreadMessages > -1"
@@ -188,7 +187,7 @@ onUnmounted(() => {
                             {{ userStateStore.unreadMessages }}
                         </span>
                     </RouterLink>
-                
+
                 </div>
             </div>
             <!-- Search Overlay -->

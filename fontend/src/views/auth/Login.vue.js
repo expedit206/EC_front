@@ -48,7 +48,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vue_1 = require("vue");
 const vue_router_1 = require("vue-router");
 const vue_toastification_1 = require("vue-toastification");
-const Auth_1 = require("../../stores/Auth");
+const Auth_ts_1 = require("../../stores/Auth.ts");
 const FormField_vue_1 = __importDefault(require("../../components/FormField.vue"));
 const credentials = (0, vue_1.ref)({
     login: '',
@@ -57,7 +57,7 @@ const credentials = (0, vue_1.ref)({
 const errors = (0, vue_1.ref)({});
 const router = (0, vue_router_1.useRouter)();
 const toast = (0, vue_toastification_1.useToast)();
-const authStore = (0, Auth_1.useAuthStore)();
+const authStore = (0, Auth_ts_1.useAuthStore)();
 const login = () => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     try {
@@ -83,7 +83,7 @@ let __VLS_components;
 let __VLS_directives;
 // CSS variable injection 
 // CSS variable injection end 
-__VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)(Object.assign({ class: "min-h-screen bg-gray-100 flex items-center justify-center px-4 py-8" }, { style: ({ background: 'url(/src/assets/images/bginsc.jpg) center/cover' }) }));
+__VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)(Object.assign({ class: "overflow-y-scroll bg-gray-100 flex items-center justify-center px-4 py-8" }));
 __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)(Object.assign({ class: "w-full max-w-lg bg-[rgba(255,255,255,0.85)] rounded-2xl shadow-xl p-6 sm:p-10" }));
 __VLS_asFunctionalElement(__VLS_intrinsicElements.h1, __VLS_intrinsicElements.h1)(Object.assign({ class: "text-3xl sm:text-4xl font-bold text-center text-[var(--espace-vert)] mb-6" }));
 __VLS_asFunctionalElement(__VLS_intrinsicElements.i, __VLS_intrinsicElements.i)(Object.assign({ class: "fas fa-sign-in-alt mr-2 text-[var(--espace-or)]" }));
@@ -136,7 +136,7 @@ const __VLS_7 = __VLS_asFunctionalComponent(__VLS_6, new __VLS_6(Object.assign({
 const __VLS_8 = __VLS_7(Object.assign({ to: "/register" }, { class: "text-[var(--espace-vert)] font-medium hover:text-[var(--espace-or)] hover:underline" }), ...__VLS_functionalComponentArgsRest(__VLS_7));
 __VLS_9.slots.default;
 var __VLS_9;
-/** @type {__VLS_StyleScopedClasses['min-h-screen']} */ ;
+/** @type {__VLS_StyleScopedClasses['overflow-y-scroll']} */ ;
 /** @type {__VLS_StyleScopedClasses['bg-gray-100']} */ ;
 /** @type {__VLS_StyleScopedClasses['flex']} */ ;
 /** @type {__VLS_StyleScopedClasses['items-center']} */ ;

@@ -48,7 +48,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vue_1 = require("vue");
 const vue_router_1 = require("vue-router");
 const vue_toastification_1 = require("vue-toastification");
-const Auth_1 = require("../../stores/Auth");
+const Auth_ts_1 = require("../../stores/Auth.ts");
 const FormField_vue_1 = __importDefault(require("../../components/FormField.vue"));
 const form = (0, vue_1.ref)({
     nom: '',
@@ -61,7 +61,7 @@ const form = (0, vue_1.ref)({
 const errors = (0, vue_1.ref)({});
 const router = (0, vue_router_1.useRouter)();
 const toast = (0, vue_toastification_1.useToast)();
-const authStore = (0, Auth_1.useAuthStore)();
+const authStore = (0, Auth_ts_1.useAuthStore)();
 const register = () => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     try {
@@ -85,13 +85,13 @@ let __VLS_components;
 let __VLS_directives;
 // CSS variable injection 
 // CSS variable injection end 
-__VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)(Object.assign({ class: "min-h-screen bg-gray-100 flex items-center justify-center px-4 py-8" }));
-__VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)(Object.assign({ class: "w-full max-w-lg bg-white rounded-2xl shadow-xl p-6 sm:p-10" }));
+__VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)(Object.assign({ class: "overflow-y-scroll bg-white flex justify-center px-4 " }));
+__VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)(Object.assign({ class: " flex  flex-col w-full max-w-lg  rounded-2xl  pb-16 sm:p-10" }));
 __VLS_asFunctionalElement(__VLS_intrinsicElements.h1, __VLS_intrinsicElements.h1)(Object.assign({ class: "text-3xl sm:text-4xl font-bold text-center text-[var(--espace-vert)] mb-6" }));
 __VLS_asFunctionalElement(__VLS_intrinsicElements.i, __VLS_intrinsicElements.i)(Object.assign({ class: "fas fa-user-plus mr-2 text-[var(--espace-or)]" }));
 __VLS_asFunctionalElement(__VLS_intrinsicElements.p, __VLS_intrinsicElements.p)(Object.assign({ class: "text-center text-sm sm:text-base text-gray-600 mb-6" }));
 __VLS_asFunctionalElement(__VLS_intrinsicElements.strong, __VLS_intrinsicElements.strong)({});
-__VLS_asFunctionalElement(__VLS_intrinsicElements.form, __VLS_intrinsicElements.form)(Object.assign({ onSubmit: (__VLS_ctx.register) }, { class: "space-y-5" }));
+__VLS_asFunctionalElement(__VLS_intrinsicElements.form, __VLS_intrinsicElements.form)(Object.assign({ onSubmit: (__VLS_ctx.register) }, { class: " space-y-5" }));
 /** @type {[typeof FormField, ]} */ ;
 // @ts-ignore
 const __VLS_0 = __VLS_asFunctionalComponent(FormField_vue_1.default, new FormField_vue_1.default({
@@ -206,22 +206,20 @@ const __VLS_19 = __VLS_asFunctionalComponent(__VLS_18, new __VLS_18(Object.assig
 const __VLS_20 = __VLS_19(Object.assign({ to: "/login" }, { class: "text-[var(--espace-vert)] font-medium hover:underline" }), ...__VLS_functionalComponentArgsRest(__VLS_19));
 __VLS_21.slots.default;
 var __VLS_21;
-__VLS_asFunctionalElement(__VLS_intrinsicElements.p, __VLS_intrinsicElements.p)(Object.assign({ class: "text-center text-xs text-gray-400 mt-4" }));
+__VLS_asFunctionalElement(__VLS_intrinsicElements.p, __VLS_intrinsicElements.p)(Object.assign({ class: "text-center text-xs text-gray-400 mt-2 pb-4" }));
 __VLS_asFunctionalElement(__VLS_intrinsicElements.a, __VLS_intrinsicElements.a)(Object.assign({ href: "/conditions" }, { class: "hover:underline text-[var(--espace-vert)]" }));
 __VLS_asFunctionalElement(__VLS_intrinsicElements.a, __VLS_intrinsicElements.a)(Object.assign({ href: "/confidentialite" }, { class: "hover:underline text-[var(--espace-vert)]" }));
-/** @type {__VLS_StyleScopedClasses['min-h-screen']} */ ;
-/** @type {__VLS_StyleScopedClasses['bg-gray-100']} */ ;
+/** @type {__VLS_StyleScopedClasses['overflow-y-scroll']} */ ;
+/** @type {__VLS_StyleScopedClasses['bg-white']} */ ;
 /** @type {__VLS_StyleScopedClasses['flex']} */ ;
-/** @type {__VLS_StyleScopedClasses['items-center']} */ ;
 /** @type {__VLS_StyleScopedClasses['justify-center']} */ ;
 /** @type {__VLS_StyleScopedClasses['px-4']} */ ;
-/** @type {__VLS_StyleScopedClasses['py-8']} */ ;
+/** @type {__VLS_StyleScopedClasses['flex']} */ ;
+/** @type {__VLS_StyleScopedClasses['flex-col']} */ ;
 /** @type {__VLS_StyleScopedClasses['w-full']} */ ;
 /** @type {__VLS_StyleScopedClasses['max-w-lg']} */ ;
-/** @type {__VLS_StyleScopedClasses['bg-white']} */ ;
 /** @type {__VLS_StyleScopedClasses['rounded-2xl']} */ ;
-/** @type {__VLS_StyleScopedClasses['shadow-xl']} */ ;
-/** @type {__VLS_StyleScopedClasses['p-6']} */ ;
+/** @type {__VLS_StyleScopedClasses['pb-16']} */ ;
 /** @type {__VLS_StyleScopedClasses['sm:p-10']} */ ;
 /** @type {__VLS_StyleScopedClasses['text-3xl']} */ ;
 /** @type {__VLS_StyleScopedClasses['sm:text-4xl']} */ ;
@@ -265,7 +263,8 @@ __VLS_asFunctionalElement(__VLS_intrinsicElements.a, __VLS_intrinsicElements.a)(
 /** @type {__VLS_StyleScopedClasses['text-center']} */ ;
 /** @type {__VLS_StyleScopedClasses['text-xs']} */ ;
 /** @type {__VLS_StyleScopedClasses['text-gray-400']} */ ;
-/** @type {__VLS_StyleScopedClasses['mt-4']} */ ;
+/** @type {__VLS_StyleScopedClasses['mt-2']} */ ;
+/** @type {__VLS_StyleScopedClasses['pb-4']} */ ;
 /** @type {__VLS_StyleScopedClasses['hover:underline']} */ ;
 /** @type {__VLS_StyleScopedClasses['text-[var(--espace-vert)]']} */ ;
 /** @type {__VLS_StyleScopedClasses['hover:underline']} */ ;

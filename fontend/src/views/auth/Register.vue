@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
 import { useAuthStore } from '../../stores/Auth';
-import FormField from '../../components/FormField.vue';
+import FormField from '../../components/Form.vue';
 
 const form = ref({
     nom: '',
@@ -14,21 +14,21 @@ const form = ref({
     parrain_id: '',
 });
 
-const errors = ref < {
+const errors = ref<{
     nom?: string;
     telephone?: string;
     email?: string;
     ville?: string;
     mot_de_passe?: string;
     parrain_id?: string;
-} > ({});
+}>({});
 const router = useRouter();
 const toast = useToast();
 const authStore = useAuthStore();
 
 const register = async () => {
     try {
-        
+
         console.log('Envoi des données d\'inscription:', form.value);
         await authStore.register(form.value);
         toast.success('Inscription réussie !');

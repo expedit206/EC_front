@@ -9,71 +9,46 @@
         <p><strong>Email :</strong> {{ user.email || 'Non défini' }}</p>
         <p><strong>Ville :</strong> {{ user.ville }}</p>
         <p><strong>Statut Premium :</strong> {{ user.premium ? 'Actif' : 'Inactif' }}</p>
-        <button
-          @click="editProfile = true"
+        <button @click="editProfile = true"
           class="mt-2 w-full sm:w-auto bg-[var(--espace-or)] text-[var(--espace-vert)] font-medium px-4 py-2 rounded-md hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-colors"
-          aria-label="Modifier le profil"
-        >
+          aria-label="Modifier le profil">
           Modifier
         </button>
       </div>
       <form v-else @submit.prevent="updateProfile" class="space-y-4">
         <div>
           <label class="block text-[var(--espace-gris)] text-sm font-medium" for="nom">Nom</label>
-          <input
-            v-model="profileForm.nom"
-            id="nom"
-            type="text"
-            required
+          <input v-model="profileForm.nom" id="nom" type="text" required
             class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]"
-            placeholder="Votre nom"
-          />
+            placeholder="Votre nom" />
         </div>
         <div>
           <label class="block text-[var(--espace-gris)] text-sm font-medium" for="telephone">Téléphone</label>
-          <input
-            v-model="profileForm.telephone"
-            id="telephone"
-            type="tel"
-            required
+          <input v-model="profileForm.telephone" id="telephone" type="tel" required
             class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]"
-            placeholder="Votre téléphone"
-          />
+            placeholder="Votre téléphone" />
         </div>
         <div>
           <label class="block text-[var(--espace-gris)] text-sm font-medium" for="email">Email</label>
-          <input
-            v-model="profileForm.email"
-            id="email"
-            type="email"
+          <input v-model="profileForm.email" id="email" type="email"
             class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]"
-            placeholder="Votre email (optionnel)"
-          />
+            placeholder="Votre email (optionnel)" />
         </div>
         <div>
           <label class="block text-[var(--espace-gris)] text-sm font-medium" for="ville">Ville</label>
-          <input
-            v-model="profileForm.ville"
-            id="ville"
-            type="text"
-            required
+          <input v-model="profileForm.ville" id="ville" type="text" required
             class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]"
-            placeholder="Votre ville"
-          />
+            placeholder="Votre ville" />
         </div>
         <div class="flex gap-2">
-          <button
-            type="submit"
+          <button type="submit"
             class="w-full sm:w-auto bg-[var(--espace-or)] text-[var(--espace-vert)] font-medium px-4 py-2 rounded-md hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-colors"
-            aria-label="Enregistrer les modifications"
-          >
+            aria-label="Enregistrer les modifications">
             Enregistrer
           </button>
-          <button
-            @click="editProfile = false"
+          <button @click="editProfile = false"
             class="w-full sm:w-auto bg-gray-300 text-[var(--espace-vert)] font-medium px-4 py-2 rounded-md hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-colors"
-            aria-label="Annuler"
-          >
+            aria-label="Annuler">
             Annuler
           </button>
         </div>
@@ -84,16 +59,16 @@
     <section class="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-4">
       <h2 class="text-lg sm:text-xl font-semibold text-[var(--espace-vert)]">Statistiques</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[var(--espace-gris)]">
-        <p><strong>Commandes totales :</strong> {{ stats?.commandes || 0 }}</p>
-        <p><strong>Parrainages actifs :</strong> {{ stats?.parrainages || 0 }}</p>
-        <p v-if="user.commercant"><strong>Revenus cumulés :</strong> {{ stats?.revenus || 0 }} FCFA</p>
-        <p v-if="user.commercant"><strong>Produits vendus :</strong> {{ stats?.produits_vendus || 0 }}</p>
+        <!-- <p><strong>Commandes totales :</strong> {{ stats?.commandes || 0 }}</p> -->
+        <!-- <p><strong>Parrainages actifs :</strong> {{ stats?.parrainages || 0 }}</p> -->
+        <!-- <p v-if="user.commercant"><strong>Revenus cumulés :</strong> {{ stats?.revenus || 0 }} FCFA</p>
+        <p v-if="user.commercant"><strong>Produits vendus :</strong> {{ stats?.produits_vendus || 0 }}</p> -->
         <p><strong>Dernière connexion :</strong> {{ user.last_login || 'Non disponible' }}</p>
       </div>
     </section>
 
     <!-- Collaborations -->
-    <section class="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-4">
+    <!-- <section class="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-4">
       <h2 class="text-lg sm:text-xl font-semibold text-[var(--espace-vert)]">Mes Collaborations</h2>
       <div v-if="collaborations?.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div v-for="collab in collaborations" :key="collab.id" class="border rounded-md p-3 text-[var(--espace-gris)]">
@@ -104,12 +79,12 @@
         </div>
       </div>
       <p v-else class="text-[var(--espace-gris)]">Aucune collaboration en cours.</p>
-    </section>
+    </section> -->
 
     <!-- Parrainage -->
     <section class="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-4">
       <h2 class="text-lg sm:text-xl font-semibold text-[var(--espace-vert)]">Mon Parrainage</h2>
-      <div v-if="parrainage?.niveau" class="space-y-4">
+      <!-- <div v-if="parrainage?.niveau" class="space-y-4">
         <p class="text-[var(--espace-gris)]">
           <strong>Niveau actuel :</strong> {{ parrainage?.niveau.emoji }} {{ parrainage?.niveau.nom }}
         </p>
@@ -122,17 +97,16 @@
         </div>
         <div>
           <p class="text-[var(--espace-gris)]">
-            <strong>Progression :</strong> {{ parrainage?.filleuls_commercants }} / {{ parrainage?.prochain_seuil }} filleuls commerçants
+            <strong>Progression :</strong> {{ parrainage?.filleuls_commercants }} / {{ parrainage?.prochain_seuil }}
+            filleuls commerçants
           </p>
           <div class="w-full bg-gray-200 rounded-full h-2.5">
-            <div
-              class="bg-[var(--espace-or)] h-2.5 rounded-full"
-              :style="{ width: `${(parrainage.filleuls_commercants / parrainage?.prochain_seuil * 100 || 0)}%` }"
-            ></div>
+            <div class="bg-[var(--espace-or)] h-2.5 rounded-full"
+              :style="{ width: `${(parrainage.filleuls_commercants / parrainage?.prochain_seuil * 100 || 0)}%` }"></div>
           </div>
         </div>
-      </div>
-      <p v-else class="text-[var(--espace-gris)]">Vous n'avez pas encore de niveau de parrainage?.</p>
+      </div> -->
+      <!-- <p v-else class="text-[var(--espace-gris)]">Vous n'avez pas encore de niveau de parrainage?.</p> -->
     </section>
   </div>
 </template>
@@ -141,14 +115,15 @@
 import { ref, watch } from 'vue';
 import { useToast } from 'vue-toastification';
 import { useAuthStore } from '../stores/Auth';
-import apiClient from '../api';
+import apiClient from '../api/index';
 
- const props = defineProps({
+const props = defineProps({
   user: Object,
-  collaborations: Array,
-  stats: Object,
-  parrainage: Object,
+  // collaborations: Array,
+  // stats: Object,
+  // parrainage: Object,
 });
+console.log(props);
 
 const authStore = useAuthStore();
 const toast = useToast();

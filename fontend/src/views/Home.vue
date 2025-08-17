@@ -4,9 +4,9 @@ import { useToast } from 'vue-toastification';
 import ProductCard from '../components/ProductCard.vue';
 import AppHeader from '../components/AppHeader.vue';
 import Loader from '../components/Loader.vue';
-import apiClient from '../api';
+import apiClient from '../api/index';
 import { useProductStore } from '../stores/product';
-import { useAuthStore } from '../stores/auth';
+import { useAuthStore } from '../stores/Auth';
 
 const productStore = useProductStore();
 const authStore = useAuthStore();
@@ -30,7 +30,7 @@ const fetchCategories = async () => {
     try {
         const response = await apiClient.get('/categories');
         categories.value = response.data.categories;
-    } catch (error) {
+    } catch (error:any) {
         console.error('Erreur lors du chargement des catégories:', error);
         toast.error('Erreur lors du chargement des catégories.');
     }
@@ -88,14 +88,14 @@ const recordView = async (productId: string) => {
 
     // Vérifier si le produit est déjà dans les vues du jour
     if (await viewedProducts[productId]) {
-        
+
         return; // Pas d'appel API si déjà vu aujourd'hui
     }
-    
+
     console.log(viewedProducts);
     try {
-        setTimeout(async() => {
-            
+        setTimeout(async () => {
+
             const response = await apiClient.post(`/record_view`, {
                 product_id: productId,
                 user_id: userId,
@@ -106,8 +106,8 @@ const recordView = async (productId: string) => {
 
         // Mettre à jour localStorage avec le produit vu
         viewedProducts[productId] = true;
-         localStorage.setItem('viewedProducts', JSON.stringify(viewedProducts));
-    } catch (error) {
+        localStorage.setItem('viewedProducts', JSON.stringify(viewedProducts));
+    } catch (error: any) {
         console.error('Erreur lors de l\'enregistrement de la vue:', error);
         toast.error(error.response?.data?.message || 'Erreur lors de l\'enregistrement de la vue.');
     }
@@ -117,7 +117,7 @@ onMounted(async () => {
     try {
         await productStore.fetchProducts();
         await fetchCategories();
-    } catch (error) {
+    } catch (error:any) {
         console.error('Erreur lors du chargement des produits ou catégories:', error);
         toast.error('Erreur lors du chargement des produits. Veuillez réessayer.');
     }

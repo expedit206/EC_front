@@ -4,19 +4,22 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 import { useAuthStore } from "../stores/Auth";
-import apiClient from "../api";
+import apiClient from "../api/index";
 import Loader from "../components/Loader.vue";
+import { Product } from "../components/types/index"; // Import de l'interface Parrainage
+import { Category } from "../components/types/index"; // Import de l'interface Parrainage
 
 const authStore = useAuthStore();
 const router = useRouter();
 const toast = useToast();
 
 const isLoading = ref(false);
-const produits = ref<any[]>([]);
-const categories = ref<any[]>([]);
+const produits = ref<Product[]>([]);
+
+const categories = ref<Category[]>([]);
 const showAddModal = ref(false);
 const showEditModal = ref(false);
-const currentProduit = ref<any>(null);
+const currentProduit = ref<Product | null>(null);
 
 // Objet réactif pour suivre l'index du slide par produit
 const slideIndexes = ref<{ [key: string]: number }>({});
@@ -222,10 +225,10 @@ onMounted(() => {
             </div>
             <div v-else-if="produits.length"
                 class="grid grid-cols-1 pt-4 pb-16 lg:pb-12 md:grid-cols-3 sm:grid-cols-2 overflow-y-scroll pt-4 h-full lg:grid-cols-4 gap-6">
-                
+
                 <div v-for="produit in produits" :key="produit.id"
-                class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition relative">
-                <router-link :to="`/produits/${produit.id}`" class="block relative">
+                    class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition relative">
+                    <router-link :to="`/produits/${produit.id}`" class="block relative">
                         <div class="relative w-full h-40 overflow-hidden rounded-t-lg mb-2">
                             <div class="flex w-full h-full slider-container"
                                 :style="{ transform: `translateX(-${currentSlideIndex(produit.id) * 100}%)` }">
@@ -263,7 +266,7 @@ onMounted(() => {
                             <p class="text-md font-bold text-[var(--espace-or)] mt-2">{{ produit.prix }} FCFA</p>
                             <p class="text-sm text-[var(--espace-gris)]">Stock: {{ produit.quantite }}</p>
                             <div class="text-sm text-[var(--espace-gris)] mt-2">
-                                <span><i class="fas fa-eye mr-1"></i> {{ produit.views_count || 0 }} vues</span>
+                                <span><i class="fas fa-eye mr-1"></i> {{ produit.raw_views_count || 0 }} vues</span>
                                 <span class="ml-4"><i class="fas fa-heart mr-1"></i> {{ produit.favorites_count || 0 }}
                                     favoris</span>
                             </div>
@@ -280,74 +283,75 @@ onMounted(() => {
                         </div>
                     </router-link>
 
+                </div>
             </div>
+            <p v-else class="text-center text-[var(--espace-gris)]">Aucun produit pour le moment.</p>
         </div>
-        <p v-else class="text-center text-[var(--espace-gris)]">Aucun produit pour le moment.</p>
-    </div>
 
-    <!-- MODALE AJOUT / MODIF -->
-    <Transition name="fade">
-        <div v-if="showAddModal || showEditModal"
-            class="overflow-y-scroll fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            @click.self="closeModal">
-            <div class="bg-white rounded-lg p-6 sm:p-8 w-full max-w-md mx-4 shadow-lg">
-                <h2 class="text-lg font-semibold text-[var(--espace-vert)] mb-4">
-                    {{ showAddModal ? "Ajouter un produit" : "Modifier le produit" }}
-                </h2>
-                <form @submit.prevent="submitProduit" class="space-y-4">
-                    <div>
-                        <label class="text-sm text-[var(--espace-vert)]">Nom</label>
-                        <input v-model="form.nom" type="text" required class="input-style" />
-                    </div>
-                    <div>
-                        <label class="text-sm text-[var(--espace-vert)]">Description</label>
-                        <textarea v-model="form.description" rows="3" class="input-style"></textarea>
-                    </div>
-                    <div>
-                        <label class="text-sm text-[var(--espace-vert)]">Prix (FCFA)</label>
-                        <input v-model.number="form.prix" type="number" min="0" required class="input-style" />
-                    </div>
-                    <div>
-                        <label class="text-sm text-[var(--espace-vert)]">Stock</label>
-                        <input v-model.number="form.stock" type="number" min="0" required class="input-style" />
-                    </div>
-                    <div>
-                        <label class="text-sm text-[var(--espace-vert)]">Photos</label>
-                        <input type="file" multiple @change="handleFileChange" class="input-style" accept="image/*" />
-                        <div v-if="photoPreviews.length" class="mt-2 flex gap-2 flex-wrap">
-                            <img v-for="(preview, index) in photoPreviews" :key="index" :src="preview"
-                                class="w-16 h-16 object-cover rounded" alt="Prévisualisation" />
+        <!-- MODALE AJOUT / MODIF -->
+        <Transition name="fade">
+            <div v-if="showAddModal || showEditModal"
+                class="overflow-y-scroll fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                @click.self="closeModal">
+                <div class="bg-white rounded-lg p-6 sm:p-8 w-full max-w-md mx-4 shadow-lg">
+                    <h2 class="text-lg font-semibold text-[var(--espace-vert)] mb-4">
+                        {{ showAddModal ? "Ajouter un produit" : "Modifier le produit" }}
+                    </h2>
+                    <form @submit.prevent="submitProduit" class="space-y-4">
+                        <div>
+                            <label class="text-sm text-[var(--espace-vert)]">Nom</label>
+                            <input v-model="form.nom" type="text" required class="input-style" />
                         </div>
-                    </div>
-                    <div>
-                        <label class="text-sm text-[var(--espace-vert)]">Catégorie</label>
-                        <select v-model="form.category_id" required class="input-style">
-                            <option value="">Sélectionner une catégorie</option>
-                            <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.nom }}</option>
-                        </select>
-                    </div>
-                    <!-- {{ form.collaboratif }} -->
-                    <div class="flex items-center gap-2 " v-if="form.collaboratif || showEditModal">
-                    </div>
-                    <div class="flex items-center gap-2 " v-else>
-                        <input id="collaboratif" type="checkbox" v-model="form.collaboratif" />
-                        <label for="collaboratif" class="text-sm text-[var(--espace-vert)]">Collaboratif</label>
-                    </div>
+                        <div>
+                            <label class="text-sm text-[var(--espace-vert)]">Description</label>
+                            <textarea v-model="form.description" rows="3" class="input-style"></textarea>
+                        </div>
+                        <div>
+                            <label class="text-sm text-[var(--espace-vert)]">Prix (FCFA)</label>
+                            <input v-model.number="form.prix" type="number" min="0" required class="input-style" />
+                        </div>
+                        <div>
+                            <label class="text-sm text-[var(--espace-vert)]">Stock</label>
+                            <input v-model.number="form.stock" type="number" min="0" required class="input-style" />
+                        </div>
+                        <div>
+                            <label class="text-sm text-[var(--espace-vert)]">Photos</label>
+                            <input type="file" multiple @change="handleFileChange" class="input-style"
+                                accept="image/*" />
+                            <div v-if="photoPreviews.length" class="mt-2 flex gap-2 flex-wrap">
+                                <img v-for="(preview, index) in photoPreviews" :key="index" :src="preview"
+                                    class="w-16 h-16 object-cover rounded" alt="Prévisualisation" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-sm text-[var(--espace-vert)]">Catégorie</label>
+                            <select v-model="form.category_id" required class="input-style">
+                                <option value="">Sélectionner une catégorie</option>
+                                <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.nom }}</option>
+                            </select>
+                        </div>
+                        <!-- {{ form.collaboratif }} -->
+                        <div class="flex items-center gap-2 " v-if="form.collaboratif || showEditModal">
+                        </div>
+                        <div class="flex items-center gap-2 " v-else>
+                            <input id="collaboratif" type="checkbox" v-model="form.collaboratif" />
+                            <label for="collaboratif" class="text-sm text-[var(--espace-vert)]">Collaboratif</label>
+                        </div>
 
-                    <div class="flex gap-4 pt-2">
-                        <button type="submit"
-                            class="flex-1 bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold px-4 py-2 rounded hover:bg-[var(--espace-vert)] hover:text-white transition">
-                            {{ showAddModal ? "Ajouter" : "Modifier" }}
-                        </button>
-                        <button type="button" @click="closeModal"
-                            class="flex-1 bg-[var(--espace-gris)] text-white font-semibold px-4 py-2 rounded hover:bg-gray-700 transition">
-                            Annuler
-                        </button>
-                    </div>
-                </form>
+                        <div class="flex gap-4 pt-2">
+                            <button type="submit"
+                                class="flex-1 bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold px-4 py-2 rounded hover:bg-[var(--espace-vert)] hover:text-white transition">
+                                {{ showAddModal ? "Ajouter" : "Modifier" }}
+                            </button>
+                            <button type="button" @click="closeModal"
+                                class="flex-1 bg-[var(--espace-gris)] text-white font-semibold px-4 py-2 rounded hover:bg-gray-700 transition">
+                                Annuler
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
-    </Transition>
+        </Transition>
     </div>
 </template>
 

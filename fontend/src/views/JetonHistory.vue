@@ -57,13 +57,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import apiClient from "../api";
+import apiClient from "../api/index";
 import { useAuthStore } from "../stores/Auth";
 import { useToast } from "vue-toastification";
+import { Transaction } from "../components/types/index"; // Import de l'interface Parrainage
 
 const authStore = useAuthStore();
 const user = authStore.user;
-const transactions = ref([]);
+const transactions = ref<Transaction[]>([]);
 const isLoading = ref(false); // Nouvel état pour le modal de chargement
 const toast = useToast();
 
@@ -87,7 +88,7 @@ const formatDate = (dateString: string) => {
     });
 };
 
-const redoTransaction = async (transaction) => {
+const redoTransaction = async (transaction: Transaction) => {
     console.log("Refaire la transaction:", transaction);
     if (!confirm(`Refaire l'achat de ${transaction.nombre_jetons} jetons avec le même service (${transaction.methode_paiement}) ?`)) {
         return;
@@ -103,7 +104,7 @@ const redoTransaction = async (transaction) => {
         });
         toast.success(res.data.message);
         fetchTransactions(); // Rafraîchir la liste après achat
-    } catch (e) {
+    } catch (e: any) {
         toast.error(e.response?.data?.message || "Erreur lors de l'achat.");
         console.error(e);
     } finally {

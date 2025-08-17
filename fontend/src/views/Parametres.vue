@@ -4,9 +4,9 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/Auth';
 import { useToast } from 'vue-toastification';
-import FormField from '../components/FormField.vue';
+import FormField from '../components/Form.vue';
 import Loader from '../components/Loader.vue';
-import apiClient from '../api';
+import apiClient from '../api/index';
 import { watch } from 'vue';
 
 const isLoading = ref(false);
@@ -189,12 +189,14 @@ watch(() => passwordForm.value.new_password, checkPasswordStrength);
                                 <img :src="user?.commercant?.photo_url || 'https://via.placeholder.com/50'"
                                     alt="Photo de profil" class="w-12 h-12 rounded-full object-cover" />
                                 <div>
-                                    <p class="text-[var(--espace-vert)] font-semibold">{{ profileForm.nom || 'Nonni' }}</p>
+                                    <p class="text-[var(--espace-vert)] font-semibold">{{ profileForm.nom || 'Nonni' }}
+                                    </p>
                                     <p class="text-sm text-[var(--espace-gris)]">{{ profileForm.email || 'Non défini' }}
                                     </p>
                                 </div>
                             </div>
-                            <p class="text-sm text-[var(--espace-gris)]">Téléphone: {{ profileForm.telephone || 'Nonni' }}</p>
+                            <p class="text-sm text-[var(--espace-gris)]">Téléphone: {{ profileForm.telephone || 'Nonni'
+                            }}</p>
                             <p class="text-sm text-[var(--espace-gris)]">Ville: {{ profileForm.ville || 'Non défini' }}
                             </p>
                         </div>
@@ -218,7 +220,7 @@ watch(() => passwordForm.value.new_password, checkPasswordStrength);
                             'text-green-500': passwordStrength === 'strong',
                         }">
                             Force du mot de passe : {{ passwordStrength === 'weak' ? 'Faible' : passwordStrength ===
-                            'medium' ? 'Moyen' : 'Fort' }}
+                                'medium' ? 'Moyen' : 'Fort' }}
                         </div>
                         <FormField label="Confirmer le nouveau mot de passe" icon="fa-lock"
                             v-model="passwordForm.confirm_password" type="password" required
@@ -275,7 +277,7 @@ watch(() => passwordForm.value.new_password, checkPasswordStrength);
         </main>
     </div>
 </template>
-  
+
 
 <style scoped>
 :root {

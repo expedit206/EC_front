@@ -116,7 +116,6 @@ const routes = [
   }, // Temporaire, à adapter
 ];
 
-
 const router = createRouter({
   history: createWebHistory(),
   routes,

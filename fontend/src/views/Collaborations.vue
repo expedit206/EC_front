@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import apiClient from '../api';
+import apiClient from '../api/index';
 import { useToast } from 'vue-toastification';
 import Loader from '../components/Loader.vue'; // ← 🔥 Import du loader
 

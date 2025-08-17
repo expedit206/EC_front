@@ -2,7 +2,7 @@
 import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/Auth';
-import apiClient from '../api';
+import apiClient from '../api/index';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -42,8 +42,7 @@ const logout = () => {
 
         <i class="fas fa-coins text-[var(--espace-or)] text-lg"></i>
         <span class="text-sm font-semibold text-[var(--espace-vert)]">
-        <router-link to="/jeton-history"
-          >
+            <router-link to="/jeton-history">
                 Jetons : <span class="text-gray-800">{{ jetons }}</span>
             </router-link>
         </span>

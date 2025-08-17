@@ -1,7 +1,7 @@
 // src/stores/userState.ts
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import apiClient from "../api";
+import apiClient from "../api/index";
 import { useToast } from "vue-toastification";
 
 export const useUserStateStore = defineStore("userState", () => {
@@ -82,7 +82,7 @@ export const useUserStateStore = defineStore("userState", () => {
       // Utiliser directement le compteur collaborations_pending
       collaborationsPending.value = response.data.collaborations_pending;
       console.log(response.data);
-      
+
       // Mettre à jour les messages non lus
       saveUnreadMessagesToLocalStorage(response.data.unread_messages || 0);
       // Optionnel : Si vous voulez toujours sauvegarder les détails des collaborations, fetch une autre endpoint

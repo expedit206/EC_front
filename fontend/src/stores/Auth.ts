@@ -2,14 +2,13 @@ import { defineStore } from "pinia";
 import axios from "axios";
 import { ref } from "vue";
 import type { User } from "../types";
-import apiClient from "../api/index.js";
+import apiClient from "../api/index";
 import router from "../router";
 //productstore et appel de setUserId
-import { useProductStore } from "./product.js";
-
+import { useProductStore } from "./product";
 
 // stores/useSafeProductStore.ts
-import { getActivePinia } from 'pinia';
+import { getActivePinia } from "pinia";
 
 export const productstore = () => {
   if (!getActivePinia()) {

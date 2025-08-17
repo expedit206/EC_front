@@ -53,7 +53,7 @@
                             <p class="text-sm opacity-90 mb-4">
                                 Accès complet à toutes les fonctionnalités
                             </p>
-                            <div class="text-3xl font-extrabold mb-2">5000 FCFA / mois  </div>
+                            <div class="text-3xl font-extrabold mb-2">5000 FCFA / mois </div>
                             <ul class="space-y-2 text-sm">
                                 <li class="flex items-center gap-2"><span>✔</span> Produits illimités</li>
                                 <li class="flex items-center gap-2"><span>✔</span> Collaborations illimitées</li>
@@ -114,8 +114,8 @@
                             </h4>
                             <p class="mb-2 text-sm opacity-90">
                                 {{ selectedPlan === 'monthly'
-                                ? 'Accès complet à toutes les fonctionnalités.'
-                                : 'Payez moins, profitez plus avec 16% d’économie !' }}
+                                    ? 'Accès complet à toutes les fonctionnalités.'
+                                    : 'Payez moins, profitez plus avec 16% d’économie !' }}
                             </p>
                             <div class="text-3xl font-extrabold">
                                 {{ selectedPlan === 'monthly' ? '5 000 FCFA' : '50 000 FCFA' }}
@@ -198,7 +198,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import apiClient from '../api';
+import apiClient from '../api/index';
 import { useToast } from 'vue-toastification';
 
 const props = defineProps<{
@@ -237,7 +237,7 @@ const paymentServices = [
         label: 'MTN Mobile Money',
         logo: new URL('../assets/images/logo/mtn.jpg', import.meta.url).href,
     },
-   
+
 ];
 
 const confirmUpgrade = async () => {
@@ -262,7 +262,7 @@ const confirmUpgrade = async () => {
             phone_number: phoneNumber.value,
         });
         isLoading.value = false;
-        
+
         toast.success(res.data.message);
         emit('upgraded');
         emit('close');

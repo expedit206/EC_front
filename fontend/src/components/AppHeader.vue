@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, watch, ref, nextTick } from 'vue'; //
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/Auth';
 import { useUserStateStore } from '../stores/userState';
-import apiClient from '../api';
+import apiClient from '../api/index';
 import { useProductStore } from '../stores/product';
 // /soldeUser/
 import SoldeUser from './SoldeUser.vue';
@@ -187,16 +187,16 @@ onUnmounted(() => {
                         <span v-if="(typeof link.badge === 'object' ? link.badge.value : link.badge) > 0"
                             class="cart-badge bg-[var(--espace-or)] text-[var(--espace-vert)] text-xs rounded-full h-5 w-5 flex items-center justify-center"
                             :class="{
-                            'animate-scale':
-                                (link.to === '/panier' && animateCartBadge) ||
-                                (link.to === '/collaborations' && animateCollaborationBadge) ||
-                                (link.to === '/commandes' && animateOrdersBadge),
-                        }" :aria-label="link.to === '/panier'
-                            ? 'Nombre d\'articles dans le panier'
-                            : link.to === '/collaborations'
-                                ? 'Collaborations en attente'
-                                : 'Commandes en attente'
-                            ">
+                                'animate-scale':
+                                    (link.to === '/panier' && animateCartBadge) ||
+                                    (link.to === '/collaborations' && animateCollaborationBadge) ||
+                                    (link.to === '/commandes' && animateOrdersBadge),
+                            }" :aria-label="link.to === '/panier'
+                                ? 'Nombre d\'articles dans le panier'
+                                : link.to === '/collaborations'
+                                    ? 'Collaborations en attente'
+                                    : 'Commandes en attente'
+                                ">
                             {{ typeof link.badge === 'object' ? link.badge.value : link.badge }}
                         </span>
                     </RouterLink>
@@ -278,16 +278,16 @@ onUnmounted(() => {
                         <span v-if="(typeof link.badge === 'object' ? link.badge.value : link.badge) > 0"
                             class="cart-badge absolute top-0 right-0 bg-[var(--espace-or)] text-[var(--espace-vert)] text-xs rounded-full h-5 w-5 flex items-center justify-center"
                             :class="{
-                            'animate-scale':
-                                (link.to === '/panier' && animateCartBadge) ||
-                                (link.to === '/collaborations' && animateCollaborationBadge) ||
-                                (link.to === '/commandes' && animateOrdersBadge),
-                        }" :aria-label="link.to === '/panier'
-                            ? 'Nombre d\'articles dans le panier'
-                            : link.to === '/collaborations'
-                                ? 'Collaborations en attente'
-                                : 'Commandes en attente'
-                            ">
+                                'animate-scale':
+                                    (link.to === '/panier' && animateCartBadge) ||
+                                    (link.to === '/collaborations' && animateCollaborationBadge) ||
+                                    (link.to === '/commandes' && animateOrdersBadge),
+                            }" :aria-label="link.to === '/panier'
+                                ? 'Nombre d\'articles dans le panier'
+                                : link.to === '/collaborations'
+                                    ? 'Collaborations en attente'
+                                    : 'Commandes en attente'
+                                ">
                             {{ typeof link.badge === 'object' ? link.badge.value : link.badge }}
                         </span>
                     </RouterLink>

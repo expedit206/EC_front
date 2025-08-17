@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useToast } from 'vue-toastification';
-import apiClient from '../api';
+import apiClient from '../api/index';
 import AppHeader from '../components/AppHeader.vue';
 import Loader from '../components/Loader.vue';
 import ProductCard from '../components/ProductCard.vue';

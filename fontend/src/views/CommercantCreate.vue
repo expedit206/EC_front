@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
-import apiClient from '../api';
+import apiClient from '../api/index';
 
 const router = useRouter();
 const toast = useToast();
@@ -44,9 +44,9 @@ const submitForm = async () => {
         const response = await apiClient.post('/commercants', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
-console.log(response.data.message)
+        console.log(response.data.message)
         toast.success('Commerçant créé avec succès !');
-        router.push('/profil')  ; // Rediriger vers la liste des commerçants
+        router.push('/profil'); // Rediriger vers la liste des commerçants
     } catch (error: any) {
         if (error.response?.data?.errors) {
             errors.value = error.response.data.errors;

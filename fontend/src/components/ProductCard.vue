@@ -58,8 +58,8 @@ const handleFavorite = async () => {
             :key="index" :src="photo" class="w-full h-full object-contain flex-shrink-0 mx-auto"
             :alt="`Image de ${produit.nom} - ${index + 1}`" />
         </div>
-        
-       
+
+
         <!-- Points (dots) pour la navigation -->
         <div v-if="produit.photos && produit.photos.length > 1"
           class="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex space-x-1">

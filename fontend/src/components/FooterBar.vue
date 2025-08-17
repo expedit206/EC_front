@@ -69,10 +69,10 @@ watch(
                             :class="{
                                 'animate-scale': (link.to === '/collaborations' && animateCollaborationBadge) || (link.to === '/messages' && animateMessagesBadge),
                             }" :aria-label="link.to === '/collaborations'
-                            ? 'Collaborations en attente'
-                            : link.to === '/messages'
-                                ? 'Messages non lus'
-                                : ''">
+                                ? 'Collaborations en attente'
+                                : link.to === '/messages'
+                                    ? 'Messages non lus'
+                                    : ''">
                             {{ typeof link.badge === 'object' ? link.badge.value : link.badge }}
                         </span>
                     </RouterLink>

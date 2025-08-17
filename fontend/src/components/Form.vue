@@ -1,3 +1,18 @@
+<script setup lang="ts">
+defineProps({
+  label: String,
+  icon: String,
+  type: { type: String, default: 'text' },
+  modelValue: [String, Number],
+  required: Boolean,
+  placeholder: String,
+  error: String
+});
+
+defineEmits(['update:modelValue']);
+</script>
+
+
 <template>
   <div class="mb-4">
     <!-- Label -->
@@ -28,17 +43,3 @@
     </p>
   </div>
 </template>
-
-<script setup>
-defineProps({
-  label: String,
-  icon: String,
-  type: { type: String, default: 'text' },
-  modelValue: [String, Number],
-  required: Boolean,
-  placeholder: String,
-  error: String
-});
-
-defineEmits(['update:modelValue']);
-</script>

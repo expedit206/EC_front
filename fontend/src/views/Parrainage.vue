@@ -2,9 +2,9 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/Auth";
-import apiClient from "../api";
+import apiClient from "../api/index";
 import { useToast } from "vue-toastification";
-
+import { Parrainage } from "../components/types/index"; // Import de l'interface Parrainage
 const authStore = useAuthStore();
 const router = useRouter();
 const toast = useToast();
@@ -12,7 +12,7 @@ const toast = useToast();
 // Données réactives
 const code = ref("");
 const link = ref("");
-const parrainages = ref([]);
+const parrainages = ref<Parrainage[]>([]);
 const totalGains = ref(0); // Total en jetons
 const suggestedCode = ref("");
 const customCode = ref("");
@@ -37,6 +37,7 @@ const fetchParrainageData = async () => {
         const response = await apiClient.get("/parrainages/dashboard");
         const data = response.data;
         code.value = data.code || "";
+        console.log(data)
         link.value = data.code ? `https://espacecameroun.cm/invite/${data.code}` : "";
         parrainages.value = data.parrainages || [];
         totalGains.value = data.total_gains || 0; // Total en jetons
@@ -137,16 +138,16 @@ onMounted(() => {
                     Votre niveau actuel : <strong>{{ niveauActuel ? niveauActuel.nom : "pas niveau" }} {{
                         niveauActuel?.emoji }}
                         ({{ parrainages.length }}/{{ niveauSuivant ? niveauSuivant.filleuls_requis :
-                        niveauActuel?.filleuls_requis
+                            niveauActuel?.filleuls_requis
                         }})</strong>
                     <span v-if="niveauActuel?.jetons_bonus > 0" class="ml-2">+{{ niveauActuel?.jetons_bonus }} jetons
                         bonus</span>
                 </p>
                 <div class="w-full bg-gray-200 rounded-full h-4">
                     <div class="h-4 rounded-full bg-[var(--espace-or)] transition-all duration-300" :style="{
-                            width: `${progression}%`,
-                        background : `${currentColor}`
-                              }"></div>
+                        width: `${progression}%`,
+                        background: `${currentColor}`
+                    }"></div>
                 </div>
                 <p class="text-[var(--espace-gris)] text-xs mt-2">
                     Prochain niveau : {{ niveauSuivant ? niveauSuivant.nom : "Légende 🏆" }} à
@@ -232,7 +233,7 @@ onMounted(() => {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="p in parrainages" :key="p.filleul_nom" class="border-b hover:bg-gray-50">
+                            <tr v-for="p in parrainages" :key="p.id" class="border-b hover:bg-gray-50">
                                 <td class="px-4 py-2">{{ p.filleul_nom || "Anonyme" }}</td>
                                 <td class="px-4 py-2">{{ new Date(p.date_inscription).toLocaleDateString("fr-FR") }}
                                 </td>
@@ -255,7 +256,7 @@ onMounted(() => {
                 </p>
                 <p class="text-[var(--espace-gris)] mt-2">
                     🎉 Vous avez invité <strong>{{ parrainages.length }}</strong> utilisateurs, dont
-                    <strong>{{parrainages.filter((p) => p.est_commerçant).length}}</strong> sont commerçants !
+                    <strong>{{parrainages.filter((p : Parrainage) => p.est_commerçant).length}}</strong> sont commerçants !
                 </p>
                 <p class="text-[var(--espace-gris)]">⬇️ Gagnez <strong>1 jeton</strong> par commerçant actif parrainé.
                 </p>

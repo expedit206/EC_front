@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "esnext", // Utiliser esnext pour correspondre à Vite
+    "module": "esnext", // Modules ES pour Vite
+    "moduleResolution": "node", // Résolution de modules compatible avec Node.js
+    "strict": true, // Activer les vérifications strictes
+    "esModuleInterop": true, // Support pour les modules CommonJS
+    "skipLibCheck": true, // Ignorer la vérification des fichiers .d.ts
+    "forceConsistentCasingInFileNames": true, // Sensibilité à la casse pour les imports
+    "noEmit": true, // Empêcher TypeScript d'émettre des fichiers .js (Vite s'en charge)
+    "baseUrl": ".", // Base pour les chemins relatifs
+    "paths": {
+      "@/*": ["src/*"], // Alias pour src/
+      "@/stores/*": ["src/stores/*"], // Alias pour les stores
+      "@/api": ["src/api/index.js"] // Alias pour l'API client
+    },
+    "types": ["vite/client"], // Inclure les types de Vite
+    "jsx": "preserve" // Nécessaire pour les fichiers .vue
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

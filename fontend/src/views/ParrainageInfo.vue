@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import apiClient from '../api';
+import apiClient from '../api/index';
 import { useToast } from 'vue-toastification';
 
 const router = useRouter();
@@ -64,7 +64,8 @@ onMounted(() => {
                 <ol class="list-decimal list-inside text-[var(--espace-gris)] text-sm sm:text-base space-y-2">
                     <li>Obtenez votre code de parrainage unique via la page "Mon Parrainage".</li>
                     <li>Partagez votre lien ou code avec vos amis via WhatsApp, Facebook, ou autre.</li>
-                    <li>Lorsqu'un ami s'inscrit avec votre code et devient un commerçant actif, vous gagnez 1 jeton.</li>
+                    <li>Lorsqu'un ami s'inscrit avec votre code et devient un commerçant actif, vous gagnez 1 jeton.
+                    </li>
                     <li>Accumulez des parrainages pour progresser dans les niveaux et débloquer des bonus
                         supplémentaires.</li>
                     <li>Consultez vos gains et votre niveau actuel sur la page "Mon Parrainage".</li>
@@ -80,7 +81,7 @@ onMounted(() => {
                             niveau.filleuls_requis }} parrainages requis)</span>
                     </h3>
                     <p class="text-[var(--espace-gris)] text-sm mt-2">
-                        <strong>Bonus en jetons :</strong> {{ niveau.jetons_bonus }} jetons 
+                        <strong>Bonus en jetons :</strong> {{ niveau.jetons_bonus }} jetons
                     </p>
                     <p v-if="niveau.avantages.length" class="text-[var(--espace-gris)] text-sm mt-1">
                         <strong>Avantages exclusifs :</strong>

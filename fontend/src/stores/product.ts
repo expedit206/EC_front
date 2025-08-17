@@ -1,11 +1,11 @@
 // src/stores/product.js
 import { defineStore } from "pinia";
-import apiClient from "../api";
-
+import apiClient from "../api/index";
+import { Product } from "@/types/product";
 export const useProductStore = defineStore("product", {
   state: () => ({
-    products: [],
-    product: [],
+    product: {} as Product, // Single product
+    products: [] as Product[],
     isLoading: false,
     hasMore: true,
     page: 1,
@@ -56,35 +56,36 @@ export const useProductStore = defineStore("product", {
         this.isLoading = false;
       }
     },
-async toggleFavorite(produitId) {
-  try {
-    // Mettre à jour dans la liste des produits
-    const product = this.products.find((p) => p.id === produitId);
-    if (product) {
-      product.is_favorited_by = !product.is_favorited_by;
-      product.favorites_count = product.is_favorited_by
-        ? product.favorites_count + 1
-        : product.favorites_count - 1;
-    }
+    async toggleFavorite(produitId) {
+      try {
+        // Mettre à jour dans la liste des produits
+        const product = this.products.find((p) => p.id === produitId);
+        if (product) {
+          product.is_favorited_by = !product.is_favorited_by;
+          product.favorites_count = product.is_favorited_by
+            ? product.favorites_count + 1
+            : product.favorites_count - 1;
+        }
 
-    // Mettre à jour le produit unique affiché
-    if (this.product && this.product.id === produitId) {
-      this.product.is_favorited_by = !this.product.is_favorited_by;
-      this.product.favorites_count = this.product.is_favorited_by
-        ? this.product.favorites_count + 1
-        : this.product.favorites_count - 1;
-    }
+        // Mettre à jour le produit unique affiché
+        if (this.product && this.product.id === produitId) {
+          this.product.is_favorited_by = !this.product.is_favorited_by;
+          this.product.favorites_count = this.product.is_favorited_by
+            ? this.product.favorites_count + 1
+            : this.product.favorites_count - 1;
+        }
 
-    const response = await apiClient.post(`/produits/${produitId}/favorite`);
-    return response.data.message;
-  } catch (error) {
-    throw (
-      error.response?.data?.message ||
-      "Erreur lors de la mise à jour des favoris"
-    );
-  }
-},
-
+        const response = await apiClient.post(
+          `/produits/${produitId}/favorite`
+        );
+        return response.data.message;
+      } catch (error) {
+        throw (
+          error.response?.data?.message ||
+          "Erreur lors de la mise à jour des favoris"
+        );
+      }
+    },
 
     // async viewProduct(produitId) {
     //   try {
@@ -109,7 +110,7 @@ async toggleFavorite(produitId) {
 
     async viewProduct(produitId) {
       try {
-        console.log('jjj')
+        console.log("jjj");
         const response = await apiClient.get(`/produits/${produitId}`);
         this.product = response.data.produit; // Stocker le produit unique
         const productIndex = this.products.findIndex((p) => p.id === produitId);

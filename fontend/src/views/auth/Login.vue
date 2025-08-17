@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
 import { useAuthStore } from '../../stores/Auth';
-import FormField from '../../components/FormField.vue';
+import FormField from '../../components/Form.vue';
 
 const credentials = ref({
     login: '',
@@ -39,8 +39,7 @@ const login = async () => {
 </script>
 
 <template>
-    <div class="overflow-y-scroll bg-gray-100 flex items-center justify-center px-4 py-8"
-        >
+    <div class="overflow-y-scroll bg-gray-100 flex items-center justify-center px-4 py-8">
         <div class="w-full max-w-lg bg-[rgba(255,255,255,0.85)] rounded-2xl shadow-xl p-6 sm:p-10">
             <h1 class="text-3xl sm:text-4xl font-bold text-center text-[var(--espace-vert)] mb-6">
                 <i class="fas fa-sign-in-alt mr-2 text-[var(--espace-or)]"></i> Connexion

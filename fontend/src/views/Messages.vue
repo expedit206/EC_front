@@ -3,9 +3,13 @@
 import { ref, onMounted, computed, onUnmounted, nextTick, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/Auth';
-import apiClient from '../api';
+import apiClient from '../api/index';
 import { useToast } from 'vue-toastification';
 import { useUserStateStore } from '../stores/userState'; // Importer le store
+import { Message } from "../components/types/index"; // Import de l'interface Parrainage
+import { Product } from "../components/types/index"; // Import de l'interface Parrainage
+import { User } from "../components/types/index"; // Import de l'interface Parrainage
+
 
 const router = useRouter();
 const route = useRoute();
@@ -14,7 +18,7 @@ const toast = useToast();
 const userStateStore = useUserStateStore(); // Utiliser le store
 
 const conversations = ref<any[]>([]);
-const messages = ref<any[]>([]);
+const messages = ref<Message[]>([]);
 const selectedConversation = ref<any>(null);
 const newMessage = ref('');
 const isSidebarOpen = ref(true);
@@ -23,8 +27,8 @@ const hasMore = ref(false);
 const isLoading = ref(false);
 const messagesContainer = ref<HTMLElement | null>(null);
 const productId = ref<number | null>(null);
-
 const isMobile = ref(window.innerWidth < 768);
+const product = ref<Product | null>(null);
 
 const scrollToBottom = () => {
     nextTick(() => {
@@ -35,6 +39,11 @@ const scrollToBottom = () => {
     });
 };
 
+const clearProductTag = () => {
+    productId.value = null;
+    product.value = null;
+    window.localStorage.removeItem('chatProductId');
+};
 const fetchConversations = async () => {
     try {
         const res = await apiClient.get('/conversations');
@@ -58,6 +67,8 @@ const fetchMessages = async (receiverId: number, resetOffset = true) => {
         isSidebarOpen.value = false;
         const res = await apiClient.get(`/chat/${receiverId}?offset=${offset.value}`);
         messages.value = [...res.data.messages];
+        console.log(res.data);
+        
         hasMore.value = res.data.hasMore;
 
         selectedConversation.value = conversations.value.find(c => c.user_id === receiverId) || {
@@ -96,15 +107,37 @@ const sendMessage = async () => {
     }
 
     const content = newMessage.value.trim();
-    const tempMessage = {
+    const tempMessage: Message = {
         id: -Date.now(),
         sender_id: authStore.user.id,
         receiver_id: selectedConversation.value.user_id,
         content,
         created_at: new Date().toISOString(),
-        sender: { nom: authStore.user.nom || 'Moi' },
-        product_id: productId.value,
+        updated_at: new Date().toISOString(),
+        is_read: 0,
+        product_id: productId.value?.toString() || "",
+        sender: {
+            id: authStore.user.id,
+            nom: authStore.user.nom,
+            email: authStore.user.email,
+            telephone: authStore.user.telephone,
+            ville: authStore.user.ville,
+            role: authStore.user.role,
+            premium: authStore.user.premium,
+            parrain_id: authStore.user.parrain_id,
+        },
+        receiver: {
+            id: selectedConversation.value.user_id,
+            nom: selectedConversation.value.name,
+            email: null,
+            telephone: "",
+            ville: null,
+            role: "user",
+            premium: false,
+            parrain_id: null,
+        },
     };
+
 
     messages.value.push(tempMessage);
     newMessage.value = '';
@@ -247,9 +280,9 @@ onUnmounted(() => {
                             <!-- Tag du produit -->
                             <span v-if="product?.id"
                                 class="bg-yellow-200 text-yellow-800 text-xs px-3 py-1 rounded-full flex items-center gap-2 ml-4">
-                                Produit {{ product.name }}
+                                Produit {{ product?.nom }}
                                 <button
-                                    @click="() => { productId.value = null; localStorage.removeItem('chatProductId'); }"
+                                    @click="() => clearProductTag()"
                                     class="ml-2 text-yellow-800 hover:text-red-600 font-bold" title="Retirer le tag">
                                     &times;
                                 </button>

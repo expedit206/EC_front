@@ -6,7 +6,9 @@
             <div v-if="commercant" class="space-y-2 text-[var(--espace-gris)]">
                 <p><strong>Nom :</strong> {{ commercant.nom }}</p>
                 <p><strong>Ville :</strong> {{ commercant.ville }}</p>
-                <p><strong>Produits actifs :</strong> {{ commercant.active_products || 0 }}</p>
+                <p><strong>Produits actifs :</strong> 
+                    <!-- {{ commercant.active_products || 0 }} -->
+                </p>
             </div>
             <div v-else>
                 <p class="text-[var(--espace-gris)]">Aucune information de commerce disponible.</p>
@@ -32,23 +34,28 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useToast } from 'vue-toastification';
-import apiClient from '../api';
+import apiClient from '../api/index';
+import { Commercant } from "../components/types/index"; // Import de l'interface Parrainage
 
+import { Product } from "../components/types/index"; // Import de l'interface Parrainage
 defineProps({
     user: Object,
 });
 
 const toast = useToast();
-const commercant = ref(null);
-const produits = ref([]);
+const commercant = ref<Commercant | null>(null);
+
+const produits = ref<Product[]>([]);
 
 onMounted(async () => {
     try {
-        const response = await apiClient.get('/commercants/profil');
+        console.log('Données du commerçant');
+        const response = await apiClient.get('/commercant/profil');
+        console.log('Données du commerçant:', response.data);
         commercant.value = response.data.commercant;
         produits.value = response.data.produits || [];
     } catch (error) {
-        toast.error('Erreur lors du chargement des données du commerçant.');
+        toast.error('Erreur lors du chargement des données du commerçant.' + error);
     }
 });
 </script>

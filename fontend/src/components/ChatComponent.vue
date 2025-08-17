@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
 import { useAuthStore } from '../stores/Auth';
-import apiClient from '../api';
+import apiClient from '../api/index';
 import Echo from 'laravel-echo';
 // import { Echo } from 'laravel-echo';
 // Echo
