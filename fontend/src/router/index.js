@@ -16,6 +16,7 @@ import CommercantCreate from "../views/CommercantCreate.vue";
 import ParrainageInfo from "../views/ParrainageInfo.vue";
 import Messages from "../views/Messages.vue";
 import JetonHistory from "../views/JetonHistory.vue";
+import AchatJetonModal from "../views/JetonHistory.vue";
 
 const routes = [
   { path: "/login", component: Login, name: "login" },
@@ -111,7 +112,7 @@ const routes = [
   {
     path: "/acheter-jetons",
     name: "acheter-jetons",
-    component: () => import("../components/AchatJetonModal.vue"),
+    component: AchatJetonModal,
     meta: { requiresAuth: true },
   }, // Temporaire, à adapter
 ];
