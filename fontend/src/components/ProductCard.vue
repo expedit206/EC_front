@@ -4,21 +4,10 @@ import { defineProps, defineEmits, ref } from 'vue';
 import { useToast } from 'vue-toastification';
 import { useProductStore } from '../stores/product';
 
+import { Product } from "../components/types/index"; // Import de l'interface Parrainage
+
 const props = defineProps<{
-  produit: {
-    id: string;
-    nom: string;
-    description: string;
-    prix: number;
-    photo_url: string;
-    photos?: string[]; // Ajout pour gérer plusieurs photos
-    views_count: number;
-    favorites_count: number;
-    is_favorited_by: boolean;
-    collaboratif: boolean;
-    boosted_until: string | null;
-    raw_views_count?: number; // Optionnel pour compatibilité
-  };
+  produit: Product
 }>();
 
 const emit = defineEmits(['toggle-favorite', 'handleToggleFavorite']);
@@ -88,7 +77,7 @@ const handleFavorite = async () => {
     <div class="flex items-center justify-between mt-2 text-xs text-[var(--espace-gris)]">
       <div class="flex items-center gap-1">
         <i class="fas fa-eye text-[10px]"></i>
-        <span>{{ produit.raw_views_count || produit.views_count }} vues</span>
+        <span>{{ produit.raw_views_count || produit.raw_views_count }} vues</span>
       </div>
       <div class="flex items-center gap-1">
         <button @click="handleFavorite"

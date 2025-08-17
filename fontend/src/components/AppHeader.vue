@@ -56,15 +56,7 @@ const fetchBadges = async () => {
                 created_at: item.created_at,
             }))
         );
-        userStateStore.saveOrdersToLocalStorage(
-            response.data.orders_pending.map((order: any) => ({
-                id: order.id,
-                items: order.items,
-                status: order.status,
-                created_at: order.created_at,
-                total: order.total,
-            }))
-        );
+     
     } catch (error) {
         console.error('Erreur lors du chargement des badges:', error);
     }
@@ -81,15 +73,7 @@ watch(
     { immediate: true }
 );
 
-watch(
-    () => userStateStore.cartCount,
-    () => {
-        if (userStateStore.cartCount > 0) {
-            animateCartBadge.value = true;
-            setTimeout(() => (animateCartBadge.value = false), 300);
-        }
-    }
-);
+
 
 watch(
     () => userStateStore.collaborationsPending,
@@ -101,15 +85,7 @@ watch(
     }
 );
 
-watch(
-    () => userStateStore.ordersPending,
-    () => {
-        if (userStateStore.ordersPending > 0) {
-            animateOrdersBadge.value = true;
-            setTimeout(() => (animateOrdersBadge.value = false), 300);
-        }
-    }
-);
+
 
 // Call products API with search query
 const performSearch = async () => {
@@ -184,7 +160,7 @@ onUnmounted(() => {
                         active-class="text-[var(--espace-or)]">
                         <i class="fas" :class="link.icon"></i>
                         {{ link.label }}
-                        <span v-if="(typeof link.badge === 'object' ? link.badge.value : link.badge) > 0"
+                        <span v-if="( link.badge) > 0"
                             class="cart-badge bg-[var(--espace-or)] text-[var(--espace-vert)] text-xs rounded-full h-5 w-5 flex items-center justify-center"
                             :class="{
                                 'animate-scale':
@@ -197,7 +173,7 @@ onUnmounted(() => {
                                     ? 'Collaborations en attente'
                                     : 'Commandes en attente'
                                 ">
-                            {{ typeof link.badge === 'object' ? link.badge.value : link.badge }}
+                            {{ link.badge }}
                         </span>
                     </RouterLink>
                 </nav>
@@ -237,11 +213,11 @@ onUnmounted(() => {
                             <i :class="`fas ${link.icon}`" class="text-2xl text-gray-100"></i>
                         </div>
                         <span
-                            v-if="(typeof link.badge === 'object' ? link.badge.value : link.badge) > 0 && link.to === '/collaborations'"
+                            v-if="( link.badge) > 0 && link.to === '/collaborations'"
                             class="cart-badge absolute top-0 right-0 bg-[var(--espace-or)] text-[var(--espace-vert)] text-xs rounded-full h-5 w-5 flex items-center justify-center"
                             :class="{ 'animate-scale': link.to === '/collaborations' && animateCollaborationBadge }"
                             aria-label="Collaborations en attente">
-                            {{ typeof link.badge === 'object' ? link.badge.value : link.badge }}
+                            {{ link.badge }}
                         </span>
                     </RouterLink>
                 </div>
@@ -275,7 +251,7 @@ onUnmounted(() => {
                         class="relative flex items-center justify-center w-10 h-10 hover:text-[var(--espace-or)] transition-colors duration-300"
                         active-class="text-[var(--espace-or)]">
                         <i class="fas text-lg" :class="link.icon"></i>
-                        <span v-if="(typeof link.badge === 'object' ? link.badge.value : link.badge) > 0"
+                        <span v-if="( link.badge) > 0"
                             class="cart-badge absolute top-0 right-0 bg-[var(--espace-or)] text-[var(--espace-vert)] text-xs rounded-full h-5 w-5 flex items-center justify-center"
                             :class="{
                                 'animate-scale':
@@ -288,7 +264,7 @@ onUnmounted(() => {
                                     ? 'Collaborations en attente'
                                     : 'Commandes en attente'
                                 ">
-                            {{ typeof link.badge === 'object' ? link.badge.value : link.badge }}
+                            {{  link.badge }}
                         </span>
                     </RouterLink>
                 </div>

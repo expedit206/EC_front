@@ -176,7 +176,7 @@ const handleFavorite = async () => {
     }
 };
 
-const initChatFromProduct = (productId: number, productName: string, receiverId: number) => {
+const initChatFromProduct = (productId: string, productName: string, receiverId: number) => {
     const productData = { id: productId, name: productName };
     localStorage.setItem('chatProduct', JSON.stringify(productData));
     router.push(`/messages/${receiverId}`);
@@ -287,15 +287,11 @@ watch(productStore.product, (newProduit) => {
                                 aria-label="Produit collaboratif">
                                 Collaboratif
                             </span>
-                            <span v-if="productStore.product.commercant?.abonnement_type === 'premium'"
-                                class="absolute bottom-3 left-3 bg-[var(--espace-bleu)] text-[var(--espace-blanc)] text-[10px] font-semibold px-2 py-1 rounded-full font-poppins"
-                                aria-label="Commerçant Premium">
-                                Premium
-                            </span>
-                            <span v-if="productStore.product.commercant?.abonnement_type === 'pro'"
+                          
+                            <span v-if="authStore.user.premium"
                                 class="absolute bottom-3 left-3 bg-[var(--espace-bleu)] text-[var(--espace-blanc)] text-[10px] font-semibold px-2 py-1 rounded-full font-poppins"
                                 aria-label="Commerçant Pro">
-                                Pro
+                                Premium
                             </span>
                         </div>
                         <!-- Détails du produit -->
@@ -319,8 +315,7 @@ watch(productStore.product, (newProduit) => {
                                 <div class="flex items-center gap-3">
                                     <div class="flex items-center gap-1">
                                         <i class="fas fa-eye text-[10px]"></i>
-                                        <span>{{ productStore.product.raws_views_count ||
-                                            productStore.product.views_count }} vues</span>
+                                        <span>{{ productStore.product.raw_views_count }} vues</span>
                                     </div>
                                     <div class="flex items-center gap-1">
                                         <i class="fas fa-heart text-[10px]"
@@ -351,7 +346,7 @@ watch(productStore.product, (newProduit) => {
                                     </span>
                                 </p>
                                 <p class="text-xs text-[var(--espace-gris)] mb-1">
-                                    {{ productStore.product.commercant?.bio || 'Aucune description disponible' }}
+                                    {{ productStore.product.commercant?.description || 'Aucune description disponible' }}
                                 </p>
                                 <p class="text-xs text-[var(--espace-gris)] mb-1">
                                     <strong>Ville :</strong> {{ productStore.product.commercant?.ville || 'Nonspécifiée'
@@ -391,7 +386,7 @@ watch(productStore.product, (newProduit) => {
                                 <button v-if="authStore.user?.commercant?.id === productStore.product.commercant_id"
                                     @click="boostProduit"
                                     class="flex-1 bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold px-4 py-2 rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-all duration-200 active:scale-95 text-sm"
-                                    :disabled="productStore.product.boosted_until && new Date(productStore.product.boosted_until) > new Date()"
+                                    :disabled="!!productStore.product.boosted_until && new Date(productStore.product.boosted_until) > new Date()"
                                     :aria-label="productStore.product.boosted_until && new Date(productStore.product.boosted_until) > new Date() ? 'Boost déjà actif' : 'Booster ce produit'">
                                     <i class="fas fa-rocket mr-2 text-sm"></i>
                                     <!-- {{ productStore.product.boosted_until && new

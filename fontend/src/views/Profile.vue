@@ -5,23 +5,23 @@
       <div class="flex items-center space-x-4 relative w-full gap-1 px-3">
         <!-- Photo utilisateur -->
         <div class="relative ">
-          <img v-if="user.photo" :src="`http://localhost:8000/storage/${user.photo}`" alt="Photo de profil"
+          <img v-if="user?.photo" :src="`http://localhost:8000/storage/${user?.photo}`" alt="Photo de profil"
             class=" w-16 h-16 rounded-full object-cover border-2 border-[var(--espace-vert)]" />
           <div v-else class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
             <i class="fas fa-user-circle text-4xl"></i>
           </div>
 
           <!-- Couronne -->
-          <i v-if="user.premium" class="fas fa-crown text-yellow-400 absolute -top-2 -right-2 text-lg p-1 rounded-full"
+          <i v-if="user?.premium" class="fas fa-crown text-yellow-400 absolute -top-2 -right-2 text-lg p-1 rounded-full"
             :style="{
-  color : `${user.niveaux_users[0]?.parrainage_niveau?.couleur}`  
+  color : `${user?.niveaux_users[0]?.parrainage_niveau?.couleur}`  
                              }"></i>
 
           <!-- Bouton modifier -->
           <button @click="showEditMenu = !showEditMenu"
             class="absolute bottom-0 right-0 w-6 h-6 bg-[var(--espace-or)] text-[var(--espace-vert)] rounded-full flex items-center justify-center hover:bg-[var(--espace-vert)] hover:text-white"
             :style="{
-              background: `${user.niveaux_users[0]?.parrainage_niveau?.couleur}`
+              background: `${user?.niveaux_users[0]?.parrainage_niveau?.couleur}`
             }">
             <i class="fas fa-pencil-alt text-xs"></i>
           </button>
@@ -45,18 +45,18 @@
         <div class="space-y-1">rr
           <h1 class="text-2xl sm:text-3xl font-bold flex items-center gap-2 text-blue-500"
             :style="{
-  color: `${user.niveaux_users[0]?.parrainage_niveau?.couleur}`  
+  color: `${user?.niveaux_users[0]?.parrainage_niveau?.couleur}`  
                              }">
                              
-            {{ user.nom }}
-            <span v-if="user.premium" class="text-black  text-xs px-3 py-1 rounded-full uppercase font-bold" :style="{
-                background: `${user.niveaux_users[0]?.parrainage_niveau?.couleur}`
+            {{ user?.nom }}
+            <span v-if="user?.premium" class="text-black  text-xs px-3 py-1 rounded-full uppercase font-bold" :style="{
+                background: `${user?.niveaux_users[0]?.parrainage_niveau?.couleur}`
               }">
               Premium
             </span>
           </h1>
-          <span v-if="user.subscription_ends_at" class="text-sm text-gray-500">
-            Jusqu'au {{ new Date(user.subscription_ends_at).toLocaleDateString() }}
+          <span v-if="user?.subscription_ends_at" class="text-sm text-gray-500">
+            Jusqu'au {{ new Date(user?.subscription_ends_at).toLocaleDateString() }}
           </span>
         </div>
 
@@ -76,7 +76,7 @@
 
       <!-- Actions -->
       <div class="flex flex-col sm:flex-row gap-2 items-center">
-        <button v-if="user.commercant" @click="isMerchantProfile = !isMerchantProfile"
+        <button v-if="user?.commercant" @click="isMerchantProfile = !isMerchantProfile"
           class="text-[var(--espace-or)] hover:text-[var(--espace-vert)] font-medium flex items-center gap-1">
           <i class="fas fa-store"></i> Compte Commerçant
         </button>
@@ -84,7 +84,7 @@
           class="bg-[var(--espace-or)] text-[var(--espace-vert)] px-4 py-2 rounded-md font-semibold hover:bg-[var(--espace-vert)] hover:text-white">
           Devenir commerçant
         </button>
-        <button v-if="!user.premium" @click="showSubscriptionModal = true"
+        <button v-if="!user?.premium" @click="showSubscriptionModal = true"
           class="bg-[var(--espace-vert)] text-white px-4 py-2 rounded-md font-semibold hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)]">
           Passer Premium
         </button>
@@ -137,7 +137,8 @@ const router = useRouter();
 const toast = useToast();
 const authStore = useAuthStore();
 
-const user = ref(authStore.user || {});
+const user = ref(authStore.user);
+console.log(user.value)
 const showEditMenu = ref(false);
 const uploading = ref(false);
 const previewUrl = ref<string | null>(null);
@@ -261,7 +262,7 @@ const handleUpgraded = async () => {
 const handleJetonPurchase = (nombreJetons: number) => {
   toast.success(`Vous avez acheté ${nombreJetons} jetons !`);
   // Ajoutez ici la logique pour mettre à jour le solde si nécessaire
-  // Exemple : user.value.jetons = (user.value.jetons || 0) + nombreJetons;
+  // Exemple : user?.value.jetons = (user?.value.jetons || 0) + nombreJetons;
 };
 
 watch(() => authStore.user, (newUser) => {

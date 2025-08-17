@@ -7,9 +7,12 @@ import Echo from 'laravel-echo';
 // import { Echo } from 'laravel-echo';
 // Echo
 // import Reverb from '@laravel/reverb-client';
+import { Message } from "../components/types/index"; // Import de l'interface Parrainage
+
+
+const messages = ref<Message[]>([]);
 
 const authStore = useAuthStore();
-const messages = ref([]);
 const newMessage = ref('');
 const receiverId = ref(0);
 const productId = ref(0);
@@ -44,6 +47,7 @@ const fetchMessages = async () => {
     if (authStore.user && receiverId.value && productId.value) {
         const response = await apiClient.get(`/chat/${productId.value}/${receiverId.value}`);
         messages.value = response.data.messages;
+        console.log(response.data)
     }
 };
 

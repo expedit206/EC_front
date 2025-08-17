@@ -1,32 +1,75 @@
+
 export interface User {
-  id: string;
+  id: number;
   nom: string;
   email: string | null;
   telephone: string;
   ville: string | null;
-  role: "user" | "admin";
   premium: boolean;
-  parrain_id: string | null;
+  is_premium: boolean;
+  jetons: number;
+  parrain_id: number | null;
+  parrainage_code: string | null;
+  photo: string | null;
+  solde: string;
+  subscription_ends_at: string | null;
+  token: string | null;
+  token_expires_at: string | null;
+  last_login: string | null;
+  created_at: string;
+  updated_at: string;
+  commercant?: Commercant;
+  niveaux_users: NiveauUser[];
 }
 
+
+
+// src/types/niveauUser.ts
+
+export interface NiveauUser {
+  id: number;
+  user_id: number;
+  niveau_id: number;
+  date_atteinte: string;
+  jetons_attribues: number;
+  nombre_filleuls_actuels: number;
+  statut: string;
+  created_at: string | null;
+  updated_at: string | null;
+  parrainage_niveau: ParrainageNiveau;
+}
+// src/types/niveauUser.ts
+// src/types/parrainageNiveau.ts
+export interface ParrainageNiveau {
+  id: number;
+  nom: string;
+  avantages: string; // JSON-encoded string, e.g., "[\"acces_progression\",\"bonus_petit_parrain\"]"
+  couleur: string;
+  emoji: string;
+  filleuls_requis: number;
+  jetons_bonus: number;
+  created_at: string;
+  updated_at: string;
+}
 // src/types/product.ts
 export interface Product {
   id: string;
   nom: string;
-  prix: string; // Stored as string in the data, consider converting to number if needed
+  prix: number; // Stored as string in the data, consider converting to number if needed
   quantite: number;
   description: string | null;
   ville: string;
   created_at: string;
   updated_at: string;
   category_id: string;
-  collaboratif: number; // 0 or 1, could be boolean if converted
+  collaboratif: boolean; // 0 or 1, could be boolean if converted
   commercant_id: string;
   boosted_until: string | null;
   favorites_count: number;
   is_favorited_by: boolean;
-  marge_min: string; // Stored as string, consider converting to number if needed
+  marge_min: number; // Stored as string, consider converting to number if needed
   photos: string[];
+  photo_url: string | null;
   raw_views_count: string; // Stored as string, consider number if applicable
   score: string; // Stored as string, consider number if applicable
   counts: any | null; // Adjust type if you know the structure of counts
@@ -41,6 +84,10 @@ export interface Product {
     nom: string;
     description: string | null;
     ville: string;
+    rating: number;
+    user: User;
+    telephone: string | null;
+    verified: boolean;
     logo: string | null;
     user_id: number;
     created_at: string;
@@ -55,18 +102,37 @@ export interface Parrainage {
   // Ajoutez d'autres propriétés si nécessaire (par exemple, id, email, etc.)
 }
 
+
 export interface Message {
   id: number;
   content: string;
   created_at: string;
+  updated_at: string;
   is_read: number;
   product_id: string;
   product?: Product;
-  receiver_id: number;
-  receiver: User;
   sender_id: number;
-  sender: User;
-  updated_at: string;
+  receiver_id: number;
+  sender: {
+    id: number;
+    nom: string;
+    email: string | null;
+    telephone: string;
+    ville: string | null;
+    premium: boolean;
+    parrain_id: number | null;
+    role?: string; // Added
+  };
+  receiver: {
+    id: number;
+    nom: string;
+    email: string | null;
+    telephone: string;
+    ville: string | null;
+    premium: boolean;
+    parrain_id: number | null;
+    role?: string; // Added
+  };
 }
 
 // src/types/commercant.ts
@@ -77,6 +143,8 @@ export interface Commercant {
   ville?: string;
   logo?: string | null;
   user_id: number;
+  
+  telephone: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -101,4 +169,16 @@ export interface Category {
   nom: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface Collaboration {
+  id: number;
+  produit: Product;
+  produit_id: string;
+  prix_revente: string;
+  statut: string;
+  gains_totaux: string;
+  user_id: number;
+  created_at: string | null;
+  updated_at: string | null;
 }

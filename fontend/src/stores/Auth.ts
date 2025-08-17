@@ -1,15 +1,11 @@
+// src/stores/Auth.ts
 import { defineStore } from "pinia";
-import axios from "axios";
-import { ref } from "vue";
-import type { User } from "../types";
-import apiClient from "../api/index";
-import router from "../router";
-//productstore et appel de setUserId
-import { useProductStore } from "./product";
-
-// stores/useSafeProductStore.ts
 import { getActivePinia } from "pinia";
+import { useProductStore } from "./product";
+import { User } from "../components/types/index"; // Import de l'interface Parrainage
+import apiClient from "../api/index";
 
+// Utility to access product store safely
 export const productstore = () => {
   if (!getActivePinia()) {
     throw new Error("Pinia n’est pas encore actif");
@@ -17,32 +13,30 @@ export const productstore = () => {
   return useProductStore();
 };
 
-// const productstore = useProductStore();
 export const useAuthStore = defineStore("auth", {
   state: () => {
     const rawUser = localStorage.getItem("user");
-    // console.log(rawUser=='undefined');
-
-    const user =
+    const user: User =
       rawUser && rawUser !== "undefined" ? JSON.parse(rawUser) : null;
-
     const token = localStorage.getItem("token") || null;
-    // console.log(token);
 
     return {
       user,
-      token,
+      token: token as string | null,
     };
   },
+
   actions: {
     async login(credentials: { login: string; mot_de_passe: string }) {
       const response = await apiClient.post("/login", credentials);
-      // console.log(response.data);
-
       this.user = response.data.user;
       this.token = response.data.token;
-      // localStorage.setItem("user", JSON.stringify(this.user));
-      localStorage.setItem("token", this.token);
+      if (this.token) {
+        localStorage.setItem("token", this.token);
+      }
+      if (this.user) {
+        localStorage.setItem("user", JSON.stringify(this.user));
+      }
     },
 
     async register(data: {
@@ -53,8 +47,6 @@ export const useAuthStore = defineStore("auth", {
       mot_de_passe: string;
       parrain_id?: string;
     }) {
-      console.log(data);
-
       const response = await apiClient.post("/register", {
         nom: data.nom,
         telephone: data.telephone,
@@ -63,13 +55,16 @@ export const useAuthStore = defineStore("auth", {
         mot_de_passe: data.mot_de_passe,
         parrain_id: data.parrain_id || null,
       });
-      // console.log(response.data);
-
       this.user = response.data.user;
       this.token = response.data.token;
-      localStorage.setItem("user", JSON.stringify(this.user));
-      localStorage.setItem("token", this.token);
+      if (this.token) {
+        localStorage.setItem("token", this.token);
+      }
+      if (this.user) {
+        localStorage.setItem("user", JSON.stringify(this.user));
+      }
     },
+
     async checkAuth() {
       if (!this.token) {
         this.logout();
@@ -77,11 +72,11 @@ export const useAuthStore = defineStore("auth", {
       }
       try {
         const response = await apiClient.get("/user");
-        // console.log(response.data);
-
         this.user = response.data.user;
-        localStorage.setItem("user", JSON.stringify(this.user));
-        productstore().setUserId(this.user.id);
+        if (this.user) {
+          localStorage.setItem("user", JSON.stringify(this.user));
+          productstore().setUserId(this.user.id);
+        }
         return true;
       } catch (error) {
         this.logout();
@@ -91,12 +86,11 @@ export const useAuthStore = defineStore("auth", {
 
     async updateJetons() {
       const response = await apiClient.get("/user");
-      this.user = response.data;
+      this.user = response.data.user; // Ensure response matches User type
     },
 
     logout() {
-      apiClient.post("/logout").catch(() => {}); // Ignorer les erreurs réseau
-      this.user = null;
+      apiClient.post("/logout").catch(() => {});
       this.token = null;
       localStorage.removeItem("user");
       localStorage.removeItem("token");

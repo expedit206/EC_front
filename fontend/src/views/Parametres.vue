@@ -28,8 +28,8 @@ const passwordForm = ref({
     confirm_password: '',
 });
 const notifications = ref({
-    email_notifications: user?.email_notifications || false,
-    sms_notifications: user?.sms_notifications || false,
+    // email_notifications: user?.email_notifications || false,
+    // sms_notifications: user?.sms_notifications || false,
 });
 const passwordStrength = ref(''); // Force du mot de passe
 
@@ -186,7 +186,7 @@ watch(() => passwordForm.value.new_password, checkPasswordStrength);
                         <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
                             <h3 class="text-lg font-semibold text-[var(--espace-vert)] mb-2 font-poppins">Aperçu</h3>
                             <div class="flex items-center gap-4 mb-4">
-                                <img :src="user?.commercant?.photo_url || 'https://via.placeholder.com/50'"
+                                <img :src="user?.commercant?.logo || 'https://via.placeholder.com/50'"
                                     alt="Photo de profil" class="w-12 h-12 rounded-full object-cover" />
                                 <div>
                                     <p class="text-[var(--espace-vert)] font-semibold">{{ profileForm.nom || 'Nonni' }}
@@ -233,7 +233,7 @@ watch(() => passwordForm.value.new_password, checkPasswordStrength);
                 </section>
             </Transition>
 
-            <!-- Section Notifications -->
+            <!-- Section Notifications
             <Transition name="slide">
                 <section v-if="activeSection === 'notifications'" class="space-y-6">
                     <h2 class="text-2xl font-bold text-[var(--espace-vert)] font-poppins">Notifications</h2>
@@ -256,7 +256,7 @@ watch(() => passwordForm.value.new_password, checkPasswordStrength);
                         </button>
                     </div>
                 </section>
-            </Transition>
+            </Transition> -->
 
             <!-- Section Autres options -->
             <Transition name="slide">

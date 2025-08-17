@@ -1,4 +1,4 @@
-<!-- src/views/CommercantDetails.vue -->
+<!-- src/views/CommercantProduits.vue -->
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
@@ -32,7 +32,7 @@ const form = ref({
     photos: [] as File[], // Tableau de fichiers au lieu de URLs
     category_id: "",
     collaboratif: false,
-    marge_min: null as number | null,
+    marge_min: 0
 });
 
 const photoPreviews = ref<string[]>([]); // Pour prévisualiser les photos
@@ -77,13 +77,13 @@ const openAddModal = () => {
         photos: [],
         category_id: "",
         collaboratif: false,
-        marge_min: null,
+        marge_min: 0,
     };
     photoPreviews.value = [];
     showAddModal.value = true;
 };
 
-const openEditModal = (produit: any) => {
+const openEditModal = (produit: Product) => {
     currentProduit.value = produit;
     form.value = {
         nom: produit.nom,
@@ -92,8 +92,9 @@ const openEditModal = (produit: any) => {
         stock: produit.quantite,
         photos: [], // Les fichiers seront uploadés à nouveau
         category_id: produit.category_id,
-        collaboratif: produit.collaboratif,
-        marge_min: produit.marge_min || null,
+        collaboratif: produit.collaboratif ? true : false,
+        
+        marge_min: produit.marge_min || 0,
     };
     console.log(form.value)
     photoPreviews.value = produit.photos || []; // Prévisualisation des URLs existantes
@@ -133,7 +134,7 @@ const submitProduit = async () => {
     formData.append("prix", form.value.prix.toString());
     formData.append("stock", form.value.stock.toString());
     formData.append("category_id", form.value.category_id);
-    formData.append("collaboratif", form.value.collaboratif);
+    formData.append("collaboratif", form.value.collaboratif ? "1" : "0");
     if (form.value.marge_min !== null) {
         formData.append("marge_min", form.value.marge_min.toString());
     }
@@ -151,7 +152,7 @@ const submitProduit = async () => {
         } else {
             console.log(form.value)
             const response = await apiClient.post(
-                `/commercant/produits/${currentProduit.value.id}`,
+                `/commercant/produits/${currentProduit.value?.id}`,
                 formData,
                 {
                     headers: { "Content-Type": "multipart/form-data" },
@@ -184,7 +185,7 @@ const currentSlideIndex = computed(() => (id: string) => slideIndexes.value[id] 
 
 const nextSlide = (id: string) => {
     const produit = produits.value.find((p) => p.id === id);
-    const maxIndex = produit?.photos.length - 1 || 0;
+    const maxIndex = produit?.photos?.length ? produit.photos.length - 1 : 0;
     slideIndexes.value[id] = Math.min((slideIndexes.value[id] || 0) + 1, maxIndex);
 };
 

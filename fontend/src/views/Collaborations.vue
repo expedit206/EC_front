@@ -4,16 +4,19 @@ import { useRouter } from 'vue-router';
 import apiClient from '../api/index';
 import { useToast } from 'vue-toastification';
 import Loader from '../components/Loader.vue'; // ← 🔥 Import du loader
+import { Collaboration } from "../components/types/index"; // Import de l'interface Parrainage
 
 const toast = useToast();
 const router = useRouter();
 
-const collaborations = ref([]);
+const collaborations =  ref<Collaboration[]>([]);
+
 const isLoading = ref(true); // ← 🔥 état de chargement
 
 const fetchCollaborations = async () => {
     try {
         const response = await apiClient.get('/collaborations');
+        console.log(response.data)
         collaborations.value = response.data.collaborations;
     } catch (error) {
         toast.error('Erreur lors du chargement des collaborations');
@@ -58,14 +61,14 @@ onMounted(() => {
                             <p class="text-sm text-[var(--espace-gris)]">
                                 Statut :
                                 <span :class="{
-                                    'text-green-600': collaboration.status === 'accepted',
-                                    'text-yellow-600': collaboration.status === 'pending',
-                                    'text-red-600': collaboration.status === 'rejected',
+                                    'text-green-600': collaboration.statut === 'accepted',
+                                    'text-yellow-600': collaboration.statut === 'pending',
+                                    'text-red-600': collaboration.statut === 'rejected',
                                 }">
                                     {{
-                                        collaboration.status === 'pending'
+                                        collaboration.statut === 'pending'
                                             ? 'En attente'
-                                            : collaboration.status === 'accepted'
+                                            : collaboration.statut === 'accepted'
                                                 ? 'Acceptée'
                                                 : 'Rejetée'
                                     }}

@@ -64,7 +64,7 @@ watch(
                         class="relative flex items-center justify-center w-10 h-10 hover:text-[var(--espace-or)] transition-colors duration-300"
                         active-class="text-[var(--espace-or)]">
                         <i class="fas text-lg" :class="link.icon"></i>
-                        <span v-if="(typeof link.badge === 'object' ? link.badge.value : link.badge) > -1"
+                        <span v-if=" link.badge > -1"
                             class="cart-badge absolute top-0 right-0 bg-[var(--espace-or)] text-[var(--espace-vert)] text-xs rounded-full h-5 w-5 flex items-center justify-center"
                             :class="{
                                 'animate-scale': (link.to === '/collaborations' && animateCollaborationBadge) || (link.to === '/messages' && animateMessagesBadge),
@@ -73,7 +73,7 @@ watch(
                                 : link.to === '/messages'
                                     ? 'Messages non lus'
                                     : ''">
-                            {{ typeof link.badge === 'object' ? link.badge.value : link.badge }}
+                            {{  link.badge }}
                         </span>
                     </RouterLink>
                 </div>

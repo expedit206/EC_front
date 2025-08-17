@@ -7,7 +7,6 @@ import AppHeader from '../components/AppHeader.vue';
 import Loader from '../components/Loader.vue';
 import ProductCard from '../components/ProductCard.vue';
 import { useProductStore } from '../stores/product';
-import { createPopper } from '@popperjs/core'; // Pour le modal (optionnel, si vous utilisez Popper)
 
 const route = useRoute();
 const toast = useToast();
@@ -54,9 +53,9 @@ const submitRating = async () => {
         toast.success('Merci pour votre note !');
         userRating.value = null; // Réinitialiser après soumission
         showModal.value = false; // Fermer le modal
+        voteCount.value = response.data.vote_count || voteCount.value + 1; // Mettre à jour le nombre de votes
     } catch (error: any) {
         toast.error(error.response?.data?.message || 'Erreur lors de la notation.');
-        voteCount.value = response.data.vote_count || voteCount.value + 1; // Mettre à jour le nombre de votes
     }
 };
 
@@ -115,7 +114,7 @@ onMounted(async () => {
                                     <i :class="star <= Math.round(averageRating) ? 'fas fa-star' : 'far fa-star'"></i>
                                 </span>
                                 <p class="text-sm text-[var(--espace-gris)]">
-                                    {{ parseFloat(averageRating).toFixed(1) }}/5
+                                    {{ averageRating.toFixed(1) }}/5
                                 </p>
                             </div>
                             <span class="text-xs text-[var(--espace-gris)]">({{ voteCount }} votes)</span>

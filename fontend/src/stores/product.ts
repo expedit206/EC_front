@@ -1,7 +1,11 @@
 // src/stores/product.js
 import { defineStore } from "pinia";
 import apiClient from "../api/index";
-import { Product } from "@/types/product";
+import { Product } from "../components/types/index"; // Import de l'interface Parrainage
+interface FetchProductsParams {
+  per_page?: string | number;
+  [key: string]: any; // Allow additional params for flexibility
+}
 export const useProductStore = defineStore("product", {
   state: () => ({
     product: {} as Product, // Single product
@@ -15,7 +19,7 @@ export const useProductStore = defineStore("product", {
   }),
 
   actions: {
-    async fetchProducts(params = {}, reset = false) {
+    async fetchProducts(params: FetchProductsParams = {}, reset = false) {
       if (this.isLoading || (!reset && !this.hasMore)) return;
       this.isLoading = true;
       if (reset) {
@@ -47,7 +51,7 @@ export const useProductStore = defineStore("product", {
           this.hasMore = response.data.current_page < response.data.last_page;
           this.page = response.data.current_page + 1;
         }
-      } catch (error) {
+      } catch (error : any) {
         throw (
           error.response?.data?.message ||
           "Erreur lors du chargement des produits"
@@ -56,7 +60,7 @@ export const useProductStore = defineStore("product", {
         this.isLoading = false;
       }
     },
-    async toggleFavorite(produitId) {
+    async toggleFavorite(produitId : string) {
       try {
         // Mettre à jour dans la liste des produits
         const product = this.products.find((p) => p.id === produitId);
@@ -79,7 +83,7 @@ export const useProductStore = defineStore("product", {
           `/produits/${produitId}/favorite`
         );
         return response.data.message;
-      } catch (error) {
+      } catch (error : any) {
         throw (
           error.response?.data?.message ||
           "Erreur lors de la mise à jour des favoris"
@@ -108,7 +112,7 @@ export const useProductStore = defineStore("product", {
     //   }
     // },
 
-    async viewProduct(produitId) {
+    async viewProduct(produitId : string |string[]) {
       try {
         console.log("jjj");
         const response = await apiClient.get(`/produits/${produitId}`);
@@ -122,7 +126,7 @@ export const useProductStore = defineStore("product", {
         } else {
           this.products.push(this.product);
         }
-      } catch (error) {
+      } catch (error : any) {
         throw (
           error.response?.data?.message ||
           "Erreur lors du chargement du produit"
@@ -130,7 +134,7 @@ export const useProductStore = defineStore("product", {
       }
     },
 
-    setSort(sort) {
+    setSort(sort : any) {
       this.sort = sort;
       this.page = 1;
       this.products = [];
@@ -138,7 +142,7 @@ export const useProductStore = defineStore("product", {
       this.fetchProducts({}, true);
     },
 
-    setUserId(userId) {
+    setUserId(userId :any) {
       this.userId = userId;
     },
   },
