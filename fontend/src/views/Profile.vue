@@ -130,7 +130,7 @@ import { useAuthStore } from "../stores/Auth";
 import apiClient from "../api/index";
 import SubscriptionModal from "../components/SubscriptionModal.vue";
 import AchatJetonModal from "../components/AchatJetonModal.vue"; // Importer le nouveau composant
-import UserProfile from "./UserProfile.vue";
+import UserProfile from "./userProfile.vue";
 import MerchantProfile from "./MerchantProfile.vue";
 
 const router = useRouter();
