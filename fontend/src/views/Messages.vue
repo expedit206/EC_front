@@ -1,21 +1,17 @@
-<!-- src/components/MessageComponent.vue (ou équivalent) -->
 <script setup lang="ts">
 import { ref, onMounted, computed, onUnmounted, nextTick, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/Auth';
-import apiClient from '../api/index';
 import { useToast } from 'vue-toastification';
-import { useUserStateStore } from '../stores/userState'; // Importer le store
-import { Message } from "../components/types/index"; // Import de l'interface Parrainage
-import { Product } from "../components/types/index"; // Import de l'interface Parrainage
-import { User } from "../components/types/index"; // Import de l'interface Parrainage
-
+import { useUserStateStore } from '../stores/userState';
+import { Message, Product, User } from '../components/types/index';
+import apiClient from '../api/index';
 
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const toast = useToast();
-const userStateStore = useUserStateStore(); // Utiliser le store
+const userStateStore = useUserStateStore();
 
 const conversations = ref<any[]>([]);
 const messages = ref<Message[]>([]);
@@ -34,7 +30,7 @@ const scrollToBottom = () => {
     nextTick(() => {
         messagesContainer.value?.scrollTo({
             top: messagesContainer.value.scrollHeight,
-            behavior: 'smooth'
+            behavior: 'smooth',
         });
     });
 };
@@ -44,6 +40,7 @@ const clearProductTag = () => {
     product.value = null;
     window.localStorage.removeItem('chatProductId');
 };
+
 const fetchConversations = async () => {
     try {
         const res = await apiClient.get('/conversations');
@@ -66,9 +63,7 @@ const fetchMessages = async (receiverId: number, resetOffset = true) => {
 
         isSidebarOpen.value = false;
         const res = await apiClient.get(`/chat/${receiverId}?offset=${offset.value}`);
-        messages.value = [...res.data.messages];
-        console.log(res.data);
-        
+        messages.value = resetOffset ? res.data.messages : [...res.data.messages, ...messages.value];
         hasMore.value = res.data.hasMore;
 
         selectedConversation.value = conversations.value.find(c => c.user_id === receiverId) || {
@@ -79,11 +74,12 @@ const fetchMessages = async (receiverId: number, resetOffset = true) => {
         const storedProductId = localStorage.getItem('chatProductId');
         if (storedProductId) {
             productId.value = parseInt(storedProductId);
+            // Optionnel : Charger les détails du produit
+            const productRes = await apiClient.get(`/products/${productId.value}`);
+            product.value = productRes.data;
         }
 
-        // Marquer tous les messages comme lus pour cette conversation
         await markAllMessagesAsRead(receiverId);
-
         scrollToBottom();
     } catch (e) {
         toast.error('Erreur lors du chargement des messages');
@@ -114,8 +110,8 @@ const sendMessage = async () => {
         content,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        is_read: 0,
-        product_id: productId.value?.toString() || "",
+        is_read: false,
+        product_id: productId.value?.toString() || null,
         sender: {
             id: authStore.user.id,
             nom: authStore.user.nom,
@@ -129,13 +125,13 @@ const sendMessage = async () => {
             id: selectedConversation.value.user_id,
             nom: selectedConversation.value.name,
             email: null,
-            telephone: "",
+            telephone: null,
             ville: null,
             premium: false,
             parrain_id: null,
         },
+        product: product.value,
     };
-
 
     messages.value.push(tempMessage);
     newMessage.value = '';
@@ -150,12 +146,12 @@ const sendMessage = async () => {
         if (productId.value) {
             localStorage.removeItem('chatProductId');
             productId.value = null;
+            product.value = null;
         }
-
-        await fetchMessages(selectedConversation.value.user_id);
     } catch (e) {
         toast.error('Échec d\'envoi');
         console.error(e);
+        messages.value = messages.value.filter(m => m.id !== tempMessage.id);
     }
 };
 
@@ -172,17 +168,9 @@ const handleResize = () => {
     isSidebarOpen.value = window.innerWidth > 768;
 };
 
-const toggleSidebar = () => {
-    isSidebarOpen.value = !isSidebarOpen.value;
-};
-
-// Nouvelle méthode pour marquer tous les messages comme lus
 const markAllMessagesAsRead = async (receiverId: number) => {
     try {
-
-        console.log(receiverId)
         const response = await apiClient.put('/messages/mark-all-as-read');
-        console.log(response.data)
         userStateStore.saveUnreadMessagesToLocalStorage(response.data.unread_messages);
     } catch (error) {
         console.error('Erreur lors du marquage des messages comme lus:', error);
@@ -190,22 +178,37 @@ const markAllMessagesAsRead = async (receiverId: number) => {
     }
 };
 
-watch(() => route.params.receiverId, async (receiverId) => {
-    if (receiverId) {
-        await fetchMessages(parseInt(receiverId as string));
-    }
-});
-
 onMounted(() => {
     fetchConversations();
     if (route.params.receiverId) {
         fetchMessages(parseInt(route.params.receiverId as string));
     }
     window.addEventListener('resize', handleResize);
+
+    // Écouter les événements Reverb
+    if (authStore.user?.id) {
+        window.Echo.private(`chat.${authStore.user.id}`)
+            .listen('.message.sent', (e: { message: Message }) => {
+                if (e.message.sender_id === selectedConversation.value?.user_id ||
+                    e.message.receiver_id === authStore.user.id) {
+                    messages.value.push(e.message);
+                    scrollToBottom();
+                }
+            });
+    }
 });
 
 onUnmounted(() => {
     window.removeEventListener('resize', handleResize);
+    if (authStore.user?.id) {
+        window.Echo.leave(`chat.${authStore.user.id}`);
+    }
+});
+
+watch(() => route.params.receiverId, async (receiverId) => {
+    if (receiverId) {
+        await fetchMessages(parseInt(receiverId as string));
+    }
 });
 </script>
 
@@ -231,7 +234,6 @@ onUnmounted(() => {
 
         <div class="w-full grid grid-rows-[10%_86%]">
             <div class="flex border-b">
-                <!-- Bouton retour mobile -->
                 <button v-if="!isSidebarOpen && isMobile && selectedConversation" @click="toggleSidebar"
                     class="text-green-900 p-2 rounded-full hover:bg-[var(--espace-or)] transition text-start md:hidden">
                     <i class="fas fa-arrow-left text-2xl"></i>
@@ -242,13 +244,11 @@ onUnmounted(() => {
                 </h2>
             </div>
 
-            <!-- Zone des messages -->
             <div :class="[
                 'bg-white shadow-md transition-all duration-300 flex flex-col flex-1 h-full overflow-hidden w-full',
                 isSidebarOpen && !isMobile ? '' : 'rounded-r-lg'
             ]" @scroll="handleScroll">
                 <div v-if="selectedConversation" class="h-full flex flex-col">
-                    <!-- Zone scrollable des messages -->
                     <div ref="messagesContainer"
                         class="h-full flex-1 overflow-y-auto p-2 md:p-4 space-y-3 bg-gray-50 messages-container">
                         <div v-for="message in messages" :key="message.id" class="p-3 rounded-lg break-words" :class="{
@@ -260,7 +260,7 @@ onUnmounted(() => {
                                 <router-link v-if="message.product?.id"
                                     :to="{ name: 'produit', params: { id: message.product.id } }"
                                     class="text-blue-500 underline hover:text-blue-700 ml-1">[Produit {{
-                                        message.product.nom
+                                    message.product.nom
                                     }}]</router-link>
                                 {{ message.content }}
                             </p>
@@ -271,27 +271,20 @@ onUnmounted(() => {
                         <div v-if="isLoading" class="text-center text-[var(--espace-gris)]">Chargement...</div>
                     </div>
 
-                    <!-- Zone d’écriture -->
                     <div class="px-2 md:px-4 z-20">
                         <div
                             class="bg-white shadow-lg rounded-full flex items-center flex-wrap p-2 border max-w-3xl mx-auto gap-2">
-                            <!-- Tag du produit -->
                             <span v-if="product?.id"
                                 class="bg-yellow-200 text-yellow-800 text-xs px-3 py-1 rounded-full flex items-center gap-2 ml-4">
                                 Produit {{ product?.nom }}
-                                <button
-                                    @click="() => clearProductTag()"
+                                <button @click="clearProductTag"
                                     class="ml-2 text-yellow-800 hover:text-red-600 font-bold" title="Retirer le tag">
                                     &times;
                                 </button>
                             </span>
-
-                            <!-- Champ de texte -->
                             <input v-model="newMessage" type="text" placeholder="Écrivez votre message..."
                                 class="flex-1 px-4 py-2 rounded-full focus:outline-none text-gray-700 text-sm placeholder-gray-400 min-w-[100px] md:min-w-[200px]" />
-
-                            <!-- Bouton envoyer -->
-                            <button @click="sendMessage"
+                            <button @click="sendMessage" @keyup.enter="sendMessage"
                                 class="ml-2 p-3 rounded-full bg-[var(--espace-vert)] text-white hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)] transition">
                                 <i class="fas fa-location-arrow text-lg"></i>
                             </button>
@@ -327,24 +320,16 @@ onUnmounted(() => {
     transition: all 0.4s ease;
 }
 
-.slide-fade-enter-from {
-    opacity: 0;
-    transform: translateX(-100%);
-}
-
-.slide-fade-enter-to {
-    opacity: 1;
-    transform: translateX(0);
-}
-
+.slide-fade-enter-from,
 .slide-fade-leave-from {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.slide-fade-leave-to {
     opacity: 0;
     transform: translateX(-100%);
+}
+
+.slide-fade-enter-to,
+.slide-fade-leave-to {
+    opacity: 1;
+    transform: translateX(0);
 }
 
 button:active {
