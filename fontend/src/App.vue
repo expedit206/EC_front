@@ -15,6 +15,6 @@ import FooterBar from './components/FooterBar.vue';
 
 const authStore = useAuthStore();
 onMounted(async () => {
-  await authStore.checkAuth();
+  // await authStore.checkAuth();
 });
 </script>

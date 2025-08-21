@@ -54,7 +54,7 @@ watch(
     () => authStore.user,
     (newUser) => {
         if (newUser) {
-            fetchBadges();
+            // fetchBadges();
             userStateStore.initializeState();
         }
     },
@@ -113,7 +113,7 @@ const toggleSearch = async () => {
 
 onMounted(() => {
     if (authStore.user) {
-        fetchBadges();
+        // fetchBadges();
         userStateStore.initializeState();
     }
     document.addEventListener('click', handleClickOutside);
