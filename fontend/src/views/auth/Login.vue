@@ -40,7 +40,7 @@ const login = async () => {
 
 
         toast.success('Connexion réussie !');
-        router.push(authStore.user.commercant ? { name: 'commercant' } : { name: 'profil' });
+        router.push(authStore.user?.commercant ? { name: 'commercant' } : { name: 'profil' });
     } catch (error: any) {
         console.error('Erreur lors de la connexion:', error);
         const message = error.message || 'Erreur lors de la connexion. Veuillez vérifier vos informations.';

@@ -109,7 +109,7 @@ const sendMessage = async () => {
     const content = newMessage.value.trim();
     const tempMessage: Message = {
         id: -Date.now(),
-        sender_id: authStore.user.id,
+        sender_id: authStore.user?.id,
         receiver_id: selectedConversation.value.user_id,
         content,
         created_at: new Date().toISOString(),
@@ -117,14 +117,15 @@ const sendMessage = async () => {
         is_read: 0,
         product_id: productId.value?.toString() || "",
         sender: {
-            id: authStore.user.id,
-            nom: authStore.user.nom,
-            email: authStore.user.email,
-            telephone: authStore.user.telephone,
-            ville: authStore.user.ville,
-            premium: authStore.user.premium,
-            parrain_id: authStore.user.parrain_id,
-        },
+            id: authStore.user?.id ?? 0,
+            nom: authStore.user?.nom ?? "",
+            email: authStore.user?.email ?? "",
+            telephone: authStore.user?.telephone ?? "",
+            ville: authStore.user?.ville ?? "",
+            premium: authStore.user?.premium ?? false,
+            parrain_id: authStore.user?.parrain_id ?? 0,
+        }
+        , // Utiliser l'utilisateur connecté
         receiver: {
             id: selectedConversation.value.user_id,
             nom: selectedConversation.value.name,
@@ -252,8 +253,8 @@ onUnmounted(() => {
                     <div ref="messagesContainer"
                         class="h-full flex-1 overflow-y-auto p-2 md:p-4 space-y-3 bg-gray-50 messages-container">
                         <div v-for="message in messages" :key="message.id" class="p-3 rounded-lg break-words" :class="{
-                            'bg-blue-200 ml-auto max-w-[85%] md:max-w-[70%]': message.sender_id === authStore.user.id,
-                            'bg-gray-200 max-w-[85%] md:max-w-[70%]': message.sender_id !== authStore.user.id
+                            'bg-blue-200 ml-auto max-w-[85%] md:max-w-[70%]': message.sender_id === authStore.user?.id,
+                            'bg-gray-200 max-w-[85%] md:max-w-[70%]': message.sender_id !== authStore.user?.id
                         }">
                             <strong class="block text-[var(--espace-vert)]">{{ message.sender.nom }} :</strong>
                             <p class="text-gray-800">

@@ -13,14 +13,10 @@ export const productstore = () => {
 
 export const useAuthStore = defineStore("auth", {
   state: () => {
-    const rawUser = localStorage.getItem("user");
     const rawToken = localStorage.getItem("token");
 
-    const user: User =
-      rawUser && rawUser !== "undefined" ? JSON.parse(rawUser) : null;
-
     return {
-      user,
+      user: null as User | null, // ⚡ user seulement en mémoire
       token: rawToken || null,
     };
   },
@@ -31,13 +27,11 @@ export const useAuthStore = defineStore("auth", {
         const response = await apiClient.post("/login", credentials);
 
         this.user = response.data.user;
-        this.token = response.data.token; // ⚡ ton API doit renvoyer {user, token}
+        this.token = response.data.token;
 
-        if (this.user && this.token) {
-          localStorage.setItem("user", JSON.stringify(this.user));
+        if (this.token) {
           localStorage.setItem("token", this.token);
 
-          // Ajoute le token par défaut dans axios
           apiClient.defaults.headers.common["Authorization"] =
             `Bearer ${this.token}`;
         }
@@ -62,8 +56,7 @@ export const useAuthStore = defineStore("auth", {
         this.user = response.data.user;
         this.token = response.data.token;
 
-        if (this.user && this.token) {
-          localStorage.setItem("user", JSON.stringify(this.user));
+        if (this.token) {
           localStorage.setItem("token", this.token);
 
           apiClient.defaults.headers.common["Authorization"] =
@@ -84,10 +77,9 @@ export const useAuthStore = defineStore("auth", {
           `Bearer ${this.token}`;
 
         const response = await apiClient.get("/user");
-        this.user = response.data.user;
-console.log(response.data)
+
+        this.user = response.data.user; // ⚡ recharge user à chaque démarrage
         if (this.user) {
-          localStorage.setItem("user", JSON.stringify(this.user));
           productstore().setUserId(this.user.id);
         }
         return true;
@@ -101,7 +93,6 @@ console.log(response.data)
       try {
         const response = await apiClient.get("/user");
         this.user = response.data.user;
-        localStorage.setItem("user", JSON.stringify(this.user));
       } catch (error) {
         console.error("Erreur lors de la mise à jour des jetons:", error);
       }
@@ -111,12 +102,11 @@ console.log(response.data)
       try {
         await apiClient.post("/logout");
       } catch (e) {
-        // ignorer l'erreur logout si le token est déjà invalide
+        // ignorer si déjà invalide
       }
 
-      // this.user = null;
+      this.user = null;
       this.token = null;
-      localStorage.removeItem("user");
       localStorage.removeItem("token");
       delete apiClient.defaults.headers.common["Authorization"];
     },

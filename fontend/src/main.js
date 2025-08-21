@@ -23,7 +23,7 @@ window.Echo = new Echo({
     wssPort: import.meta.env.VITE_REVERB_PORT,
     forceTLS: false,
     enabledTransports: ['ws'],
-    authEndpoint: 'http://localhost:8000/broadcasting/auth',
+    // authEndpoint: 'http://localhost:8000/broadcasting/auth',
     auth: {
         headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
