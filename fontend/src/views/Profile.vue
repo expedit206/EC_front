@@ -14,14 +14,14 @@
           <!-- Couronne -->
           <i v-if="user?.premium" class="fas fa-crown text-yellow-400 absolute -top-2 -right-2 text-lg p-1 rounded-full"
             :style="{
-  color : `${user?.niveaux_users[0]?.parrainage_niveau?.couleur}`  
+  color : `${user?.niveaux_users?.parrainage_niveau?.couleur}`  
                              }"></i>
 
           <!-- Bouton modifier -->
           <button @click="showEditMenu = !showEditMenu"
             class="absolute bottom-0 right-0 w-6 h-6 bg-[var(--espace-or)] text-[var(--espace-vert)] rounded-full flex items-center justify-center hover:bg-[var(--espace-vert)] hover:text-white"
             :style="{
-              background: `${user?.niveaux_users[0]?.parrainage_niveau?.couleur}`
+              background: `${user?.niveaux_users?.parrainage_niveau?.couleur}`
             }">
             <i class="fas fa-pencil-alt text-xs"></i>
           </button>
@@ -45,12 +45,12 @@
         <div class="space-y-1">rr
           <h1 class="text-2xl sm:text-3xl font-bold flex items-center gap-2 text-blue-500"
             :style="{
-  color: `${user?.niveaux_users[0]?.parrainage_niveau?.couleur}`  
+  color: `${user?.niveaux_users?.parrainage_niveau?.couleur}`  
                              }">
                              
             {{ user?.nom }}
             <span v-if="user?.premium" class="text-black  text-xs px-3 py-1 rounded-full uppercase font-bold" :style="{
-                background: `${user?.niveaux_users[0]?.parrainage_niveau?.couleur}`
+                background: `${user?.niveaux_users?.parrainage_niveau?.couleur}`
               }">
               Premium
             </span>

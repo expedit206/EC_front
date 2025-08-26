@@ -143,17 +143,33 @@ const sendMessage = async () => {
     scrollToBottom();
 
     try {
-        await apiClient.post(`/chat/${selectedConversation.value.user_id}`, {
+       const res=  await apiClient.post(`/chat/${selectedConversation.value.user_id}`, {
             content,
             product_id: productId.value,
         });
-
+console.log(res.data)
         if (productId.value) {
             localStorage.removeItem('chatProductId');
             productId.value = null;
         }
 
-        await fetchMessages(selectedConversation.value.user_id);
+        if (authStore.user?.id) {
+            window.Echo.channel(`chat.${authStore.user.id}`)
+            .listen('MessageSent', (event: any) => {
+                    console.log("📩 Nouveau message reçu :", event.message);
+
+                    // Si c’est bien dans la conversation ouverte, on ajoute direct
+                    if (selectedConversation.value?.user_id === event.message.sender_id) {
+                        messages.value.push(event.message);
+                        scrollToBottom();
+                    }
+
+                    // Mettre à jour les unread messages
+                    userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
+                });
+        }
+
+        // await fetchMessages(selectedConversation.value.user_id);
     } catch (e) {
         toast.error('Échec d\'envoi');
         console.error(e);
@@ -203,6 +219,28 @@ onMounted(() => {
         fetchMessages(parseInt(route.params.receiverId as string));
     }
     window.addEventListener('resize', handleResize);
+
+    if (authStore.user?.id) {
+        console.log(authStore.user)
+        window.Echo.channel(`public-channel`)
+        // window.Echo.channel(`chat.${authStore.user.id}`)
+            .listen('.message.sent', (event: any) => {
+                console.log("📩 Nouveau message reçu :", event.message);
+
+                // si c’est bien la conversation ouverte → afficher
+                if (selectedConversation.value?.user_id === event.message.sender_id) {
+                    messages.value.push(event.message);
+                    scrollToBottom();
+                }
+
+
+                // mise à jour unread
+                userStateStore.saveUnreadMessagesToLocalStorage(event.message.unread_messages);
+            })
+            .error((error: any) => {
+                console.error("Erreur Echo:", error);
+            });
+    }
 });
 
 onUnmounted(() => {

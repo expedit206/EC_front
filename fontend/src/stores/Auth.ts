@@ -1,47 +1,43 @@
 import { defineStore } from "pinia";
-import { getActivePinia } from "pinia";
-import { useProductStore } from "./product";
-import { User } from "../components/types/index";
 import apiClient from "../api/index";
-
-export const productstore = () => {
-  if (!getActivePinia()) {
-    throw new Error("Pinia n’est pas encore actif");
-  }
-  return useProductStore();
-};
+import { User } from "../components/types/index";
+import axios from "axios";
 
 export const useAuthStore = defineStore("auth", {
-  state: () => {
-    const rawToken = localStorage.getItem("token");
-
-    return {
-      user: null as User | null, // ⚡ user seulement en mémoire
-      token: rawToken || null,
-    };
-  },
+  state: () => ({
+    user: null as User | null,
+    token: localStorage.getItem("token") || null,
+  }),
 
   actions: {
-    async login(credentials: { login: string; mot_de_passe: string }) {
-      try {
-        const response = await apiClient.post("/login", credentials);
-
-        this.user = response.data.user;
-        this.token = response.data.token;
-
-        if (this.token) {
-          localStorage.setItem("token", this.token);
-
-          apiClient.defaults.headers.common["Authorization"] =
-            `Bearer ${this.token}`;
-        }
-      } catch (error: any) {
-        throw new Error(
-          error.response?.data?.message || "Échec de la connexion"
-        );
-      }
+    // 🔑 Récupérer le cookie CSRF
+    async getCsrfCookie() {
+      // Laravel Sanctum doit poser le cookie "XSRF-TOKEN"
+      await axios.get("http://localhost:8000/sanctum/csrf-cookie", {
+        withCredentials: true, // très important
+      });
     },
 
+    // Connexion
+    async login(credentials: { login: string; mot_de_passe: string }) {
+      // ✅ attendre la récupération du CSRF
+      await this.getCsrfCookie();
+
+      const response = await apiClient.post("/login", credentials, {
+        withCredentials: true, // nécessaire pour que Laravel voie le cookie
+      });
+
+      this.user = response.data.user;
+      this.token = response.data.token;
+
+      localStorage.setItem("token", this.token);
+
+      // Configurer apiClient pour les requêtes futures
+      apiClient.defaults.headers.common["Authorization"] =
+        `Bearer ${this.token}`;
+    },
+
+    // Inscription
     async register(data: {
       nom: string;
       telephone: string;
@@ -50,59 +46,51 @@ export const useAuthStore = defineStore("auth", {
       mot_de_passe: string;
       parrain_id?: string;
     }) {
-      try {
-        const response = await apiClient.post("/register", data);
+      await this.getCsrfCookie();
 
-        this.user = response.data.user;
-        this.token = response.data.token;
+      const response = await apiClient.post("/register", data, {
+        withCredentials: true,
+      });
 
-        if (this.token) {
-          localStorage.setItem("token", this.token);
+      this.user = response.data.user;
+      this.token = response.data.token;
 
-          apiClient.defaults.headers.common["Authorization"] =
-            `Bearer ${this.token}`;
-        }
-      } catch (error: any) {
-        throw new Error(
-          error.response?.data?.message || "Échec de l'inscription"
-        );
-      }
+      localStorage.setItem("token", this.token);
+      apiClient.defaults.headers.common["Authorization"] =
+        `Bearer ${this.token}`;
     },
 
+    // Vérifier l'authentification
     async checkAuth() {
-      try {
-        if (!this.token) return false;
+      if (!this.token) return false;
 
+      try {
         apiClient.defaults.headers.common["Authorization"] =
           `Bearer ${this.token}`;
+        const response = await apiClient.get("/user", {
+          withCredentials: true,
+        });
 
-        const response = await apiClient.get("/user");
-
-        this.user = response.data.user; // ⚡ recharge user à chaque démarrage
-        if (this.user) {
-          productstore().setUserId(this.user.id);
-        }
+        this.user = response.data.user;
         return true;
-      } catch (error) {
-        this.logout();
+      } catch (error: any) {
+        this.user = null;
+        this.token = null;
+        localStorage.removeItem("token");
         return false;
       }
     },
 
-    async updateJetons() {
-      try {
-        const response = await apiClient.get("/user");
-        this.user = response.data.user;
-      } catch (error) {
-        console.error("Erreur lors de la mise à jour des jetons:", error);
-      }
-    },
-
+    // Déconnexion
     async logout() {
       try {
-        await apiClient.post("/logout");
-      } catch (e) {
-        // ignorer si déjà invalide
+        if (this.token) {
+          apiClient.defaults.headers.common["Authorization"] =
+            `Bearer ${this.token}`;
+          await apiClient.post("/logout", {}, { withCredentials: true });
+        }
+      } catch {
+        // ignorer si token invalide ou expiré
       }
 
       this.user = null;
