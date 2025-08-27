@@ -63,13 +63,10 @@ const fetchMessages = async (receiverId: number, resetOffset = true) => {
 
         isSidebarOpen.value = false;
         const res = await apiClient.get(`/chat/${receiverId}?offset=${offset.value}`);
-<<<<<<< HEAD
-        messages.value = resetOffset ? res.data.messages : [...res.data.messages, ...messages.value];
-=======
+        // messages.value = resetOffset ? res.data.messages : [...res.data.messages, ...messages.value];
         messages.value = [...res.data.messages];
         console.log(res.data);
 
->>>>>>> 0553ae4
         hasMore.value = res.data.hasMore;
 
         selectedConversation.value = conversations.value.find(c => c.user_id === receiverId) || {
@@ -155,8 +152,6 @@ const sendMessage = async () => {
             productId.value = null;
             product.value = null;
         }
-<<<<<<< HEAD
-=======
 
         if (authStore.user?.id) {
             window.Echo.channel(`chat.${authStore.user.id}`)
@@ -175,7 +170,6 @@ const sendMessage = async () => {
         }
 
         // await fetchMessages(selectedConversation.value.user_id);
->>>>>>> 0553ae4
     } catch (e) {
         toast.error('Échec d\'envoi');
         console.error(e);
@@ -213,20 +207,17 @@ onMounted(() => {
     }
     window.addEventListener('resize', handleResize);
 
-<<<<<<< HEAD
     // Écouter les événements Reverb
+    // if (authStore.user?.id) {
+    //     window.Echo.private(`chat.${authStore.user.id}`)
+    //         .listen('.message.sent', (e: { message: Message }) => {
+    //             if (e.message.sender_id === selectedConversation.value?.user_id ||
+    //                 e.message.receiver_id === authStore.user.id) {
+    //                 messages.value.push(e.message);
+    //                 scrollToBottom();
+    //             }
+    //         });
     if (authStore.user?.id) {
-        window.Echo.private(`chat.${authStore.user.id}`)
-            .listen('.message.sent', (e: { message: Message }) => {
-                if (e.message.sender_id === selectedConversation.value?.user_id ||
-                    e.message.receiver_id === authStore.user.id) {
-                    messages.value.push(e.message);
-                    scrollToBottom();
-                }
-            });
-=======
-    if (authStore.user?.id) {
-        console.log(authStore.user)
         window.Echo.channel(`public-channel`)
             // window.Echo.channel(`chat.${authStore.user.id}`)
             .listen('.message.sent', (event: any) => {
@@ -241,8 +232,10 @@ onMounted(() => {
                     // console.log("📩  :", selectedConversation.value?.user_id);
                     // console.log("📩 Nouveau message reçu :", event.unread_messages);
                     messages.value.push(message);
-        scrollToBottom();
-        userStateStore.saveUnreadMessagesToLocalStorage(4);
+            scrollToBottom();
+            console.log(event.unread_messages)
+
+            userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
     }
 
 
@@ -252,7 +245,6 @@ onMounted(() => {
     .error((error: any) => {
         console.error("Erreur Echo:", error);
     });
->>>>>>> 0553ae4
     }
 });
 
@@ -309,7 +301,7 @@ watch(() => route.params.receiverId, async (receiverId) => {
                 <div v-if="selectedConversation" class="h-full flex flex-col">
                     <div ref="messagesContainer"
                         class="h-full flex-1 overflow-y-auto p-2 md:p-4 space-y-3 bg-gray-50 messages-container">
-                        <div v-for="message in messages" :key="message.id" class="p-3 rounded-lg break-words" :class="{
+                        <div v-for="message in messages" :key="message.id" class="p-3 rounded-full break-words" :class="{
                             'bg-blue-200 ml-auto max-w-[85%] md:max-w-[70%]': message.sender_id === authStore.user?.id,
                             'bg-gray-200 max-w-[85%] md:max-w-[70%]': message.sender_id !== authStore.user?.id
                         }">
@@ -322,7 +314,7 @@ watch(() => route.params.receiverId, async (receiverId) => {
                                     }}]</router-link>
                                 {{ message.content }}
                             </p>
-                            <p class="text-xs text-[var(--espace-gris)] text-right">
+                            <p class="text-xs text-[var(--espace-gris)] text-right mr-2">
                                 {{ new Date(message.created_at).toLocaleTimeString() }}
                             </p>
                         </div>
@@ -335,11 +327,7 @@ watch(() => route.params.receiverId, async (receiverId) => {
                             <span v-if="product?.id"
                                 class="bg-yellow-200 text-yellow-800 text-xs px-3 py-1 rounded-full flex items-center gap-2 ml-4">
                                 Produit {{ product?.nom }}
-<<<<<<< HEAD
-                                <button @click="clearProductTag"
-=======
                                 <button @click="() => clearProductTag()"
->>>>>>> 0553ae4
                                     class="ml-2 text-yellow-800 hover:text-red-600 font-bold" title="Retirer le tag">
                                     &times;
                                 </button>

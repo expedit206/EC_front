@@ -17,7 +17,7 @@ import Pusher from "pusher-js";
 import axios from "axios";
 
 // Config axios global
-// axios.defaults.withCredentials = true;
+axios.defaults.withCredentials = true;
 
 // Récupérer le token stocké
 const token = localStorage.getItem("token");
@@ -99,7 +99,9 @@ if (token) {
 // // 3️⃣ Exemple d'écoute d'un canal privé
 window.Echo.channel(`public-channel`)
       // window.Echo.private(`chat.4`)
-      .listen(".message.sent", (event) => {
+  .listen(".message.sent", (event) => {
+        console.log(event.message);
+        
         // userStateStore.saveUnreadMessagesToLocalStorage();
          
         
