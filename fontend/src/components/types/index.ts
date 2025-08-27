@@ -111,8 +111,8 @@ export interface Message {
   is_read: number;
   product_id: string;
   product?: Product;
-  sender_id: number;
-  receiver_id: number;
+  sender_id: number | undefined;
+  receiver_id: number | undefined;
   sender: {
     id: number;
     nom: string;

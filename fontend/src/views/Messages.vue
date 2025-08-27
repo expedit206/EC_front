@@ -63,7 +63,13 @@ const fetchMessages = async (receiverId: number, resetOffset = true) => {
 
         isSidebarOpen.value = false;
         const res = await apiClient.get(`/chat/${receiverId}?offset=${offset.value}`);
+<<<<<<< HEAD
         messages.value = resetOffset ? res.data.messages : [...res.data.messages, ...messages.value];
+=======
+        messages.value = [...res.data.messages];
+        console.log(res.data);
+
+>>>>>>> 0553ae4
         hasMore.value = res.data.hasMore;
 
         selectedConversation.value = conversations.value.find(c => c.user_id === receiverId) || {
@@ -105,7 +111,7 @@ const sendMessage = async () => {
     const content = newMessage.value.trim();
     const tempMessage: Message = {
         id: -Date.now(),
-        sender_id: authStore.user.id,
+        sender_id: authStore.user?.id,
         receiver_id: selectedConversation.value.user_id,
         content,
         created_at: new Date().toISOString(),
@@ -113,14 +119,15 @@ const sendMessage = async () => {
         is_read: false,
         product_id: productId.value?.toString() || null,
         sender: {
-            id: authStore.user.id,
-            nom: authStore.user.nom,
-            email: authStore.user.email,
-            telephone: authStore.user.telephone,
-            ville: authStore.user.ville,
-            premium: authStore.user.premium,
-            parrain_id: authStore.user.parrain_id,
-        },
+            id: authStore.user?.id ?? 0,
+            nom: authStore.user?.nom ?? "",
+            email: authStore.user?.email ?? "",
+            telephone: authStore.user?.telephone ?? "",
+            ville: authStore.user?.ville ?? "",
+            premium: authStore.user?.premium ?? false,
+            parrain_id: authStore.user?.parrain_id ?? 0,
+        }
+        , // Utiliser l'utilisateur connecté
         receiver: {
             id: selectedConversation.value.user_id,
             nom: selectedConversation.value.name,
@@ -138,16 +145,37 @@ const sendMessage = async () => {
     scrollToBottom();
 
     try {
-        await apiClient.post(`/chat/${selectedConversation.value.user_id}`, {
+        const res = await apiClient.post(`/chat/${selectedConversation.value.user_id}`, {
             content,
             product_id: productId.value,
         });
-
+        console.log(res.data)
         if (productId.value) {
             localStorage.removeItem('chatProductId');
             productId.value = null;
             product.value = null;
         }
+<<<<<<< HEAD
+=======
+
+        if (authStore.user?.id) {
+            window.Echo.channel(`chat.${authStore.user.id}`)
+                .listen('MessageSent', (event: any) => {
+
+                    // Si c’est bien dans la conversation ouverte, on ajoute direct
+                    if (selectedConversation.value?.user_id === ender_id) {
+                        console.log("📩 Nouveau message reçu :", event.message);
+                        messages.value.push(event.message);
+                        scrollToBottom();
+                    }
+
+                    // Mettre à jour les unread messages
+                    // userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
+                });
+        }
+
+        // await fetchMessages(selectedConversation.value.user_id);
+>>>>>>> 0553ae4
     } catch (e) {
         toast.error('Échec d\'envoi');
         console.error(e);
@@ -185,6 +213,7 @@ onMounted(() => {
     }
     window.addEventListener('resize', handleResize);
 
+<<<<<<< HEAD
     // Écouter les événements Reverb
     if (authStore.user?.id) {
         window.Echo.private(`chat.${authStore.user.id}`)
@@ -195,6 +224,35 @@ onMounted(() => {
                     scrollToBottom();
                 }
             });
+=======
+    if (authStore.user?.id) {
+        console.log(authStore.user)
+        window.Echo.channel(`public-channel`)
+            // window.Echo.channel(`chat.${authStore.user.id}`)
+            .listen('.message.sent', (event: any) => {
+                
+                // si c’est bien la conversation ouverte → afficher
+                const message = JSON.parse(event.message
+            )
+                
+        if (selectedConversation.value?.user_id === message.sender?.id) {
+                    console.log("📩  receiver:", message.receiver)
+                    console.log("📩  sender:", message.sender)
+                    // console.log("📩  :", selectedConversation.value?.user_id);
+                    // console.log("📩 Nouveau message reçu :", event.unread_messages);
+                    messages.value.push(message);
+        scrollToBottom();
+        userStateStore.saveUnreadMessagesToLocalStorage(4);
+    }
+
+
+    // mise à jour unread
+    // userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
+})
+    .error((error: any) => {
+        console.error("Erreur Echo:", error);
+    });
+>>>>>>> 0553ae4
     }
 });
 
@@ -252,8 +310,8 @@ watch(() => route.params.receiverId, async (receiverId) => {
                     <div ref="messagesContainer"
                         class="h-full flex-1 overflow-y-auto p-2 md:p-4 space-y-3 bg-gray-50 messages-container">
                         <div v-for="message in messages" :key="message.id" class="p-3 rounded-lg break-words" :class="{
-                            'bg-blue-200 ml-auto max-w-[85%] md:max-w-[70%]': message.sender_id === authStore.user.id,
-                            'bg-gray-200 max-w-[85%] md:max-w-[70%]': message.sender_id !== authStore.user.id
+                            'bg-blue-200 ml-auto max-w-[85%] md:max-w-[70%]': message.sender_id === authStore.user?.id,
+                            'bg-gray-200 max-w-[85%] md:max-w-[70%]': message.sender_id !== authStore.user?.id
                         }">
                             <strong class="block text-[var(--espace-vert)]">{{ message.sender.nom }} :</strong>
                             <p class="text-gray-800">
@@ -277,7 +335,11 @@ watch(() => route.params.receiverId, async (receiverId) => {
                             <span v-if="product?.id"
                                 class="bg-yellow-200 text-yellow-800 text-xs px-3 py-1 rounded-full flex items-center gap-2 ml-4">
                                 Produit {{ product?.nom }}
+<<<<<<< HEAD
                                 <button @click="clearProductTag"
+=======
+                                <button @click="() => clearProductTag()"
+>>>>>>> 0553ae4
                                     class="ml-2 text-yellow-800 hover:text-red-600 font-bold" title="Retirer le tag">
                                     &times;
                                 </button>
