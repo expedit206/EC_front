@@ -30,6 +30,7 @@ export const useUserStateStore = defineStore("userState", () => {
 
   // Sauvegarder les messages non lus
   const saveUnreadMessagesToLocalStorage = (count: number) => {
+    
     localStorage.setItem("unread_messages", count.toString());
     unreadMessages.value = count;
   };

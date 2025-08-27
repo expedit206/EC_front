@@ -68,7 +68,7 @@ const fetchMessages = async (receiverId: number, resetOffset = true) => {
         const res = await apiClient.get(`/chat/${receiverId}?offset=${offset.value}`);
         messages.value = [...res.data.messages];
         console.log(res.data);
-        
+
         hasMore.value = res.data.hasMore;
 
         selectedConversation.value = conversations.value.find(c => c.user_id === receiverId) || {
@@ -143,11 +143,11 @@ const sendMessage = async () => {
     scrollToBottom();
 
     try {
-       const res=  await apiClient.post(`/chat/${selectedConversation.value.user_id}`, {
+        const res = await apiClient.post(`/chat/${selectedConversation.value.user_id}`, {
             content,
             product_id: productId.value,
         });
-console.log(res.data)
+        console.log(res.data)
         if (productId.value) {
             localStorage.removeItem('chatProductId');
             productId.value = null;
@@ -155,17 +155,17 @@ console.log(res.data)
 
         if (authStore.user?.id) {
             window.Echo.channel(`chat.${authStore.user.id}`)
-            .listen('MessageSent', (event: any) => {
-                    console.log("📩 Nouveau message reçu :", event.message);
+                .listen('MessageSent', (event: any) => {
 
                     // Si c’est bien dans la conversation ouverte, on ajoute direct
-                    if (selectedConversation.value?.user_id === event.message.sender_id) {
+                    if (selectedConversation.value?.user_id === ender_id) {
+                        console.log("📩 Nouveau message reçu :", event.message);
                         messages.value.push(event.message);
                         scrollToBottom();
                     }
 
                     // Mettre à jour les unread messages
-                    userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
+                    // userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
                 });
         }
 
@@ -223,23 +223,30 @@ onMounted(() => {
     if (authStore.user?.id) {
         console.log(authStore.user)
         window.Echo.channel(`public-channel`)
-        // window.Echo.channel(`chat.${authStore.user.id}`)
+            // window.Echo.channel(`chat.${authStore.user.id}`)
             .listen('.message.sent', (event: any) => {
-                console.log("📩 Nouveau message reçu :", event.message);
-
+                
                 // si c’est bien la conversation ouverte → afficher
-                if (selectedConversation.value?.user_id === event.message.sender_id) {
-                    messages.value.push(event.message);
-                    scrollToBottom();
-                }
+                const message = JSON.parse(event.message
+            )
+                
+        if (selectedConversation.value?.user_id === message.sender?.id) {
+                    console.log("📩  receiver:", message.receiver)
+                    console.log("📩  sender:", message.sender)
+                    // console.log("📩  :", selectedConversation.value?.user_id);
+                    // console.log("📩 Nouveau message reçu :", event.unread_messages);
+                    messages.value.push(message);
+        scrollToBottom();
+        userStateStore.saveUnreadMessagesToLocalStorage(4);
+    }
 
 
-                // mise à jour unread
-                userStateStore.saveUnreadMessagesToLocalStorage(event.message.unread_messages);
-            })
-            .error((error: any) => {
-                console.error("Erreur Echo:", error);
-            });
+    // mise à jour unread
+    // userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
+})
+    .error((error: any) => {
+        console.error("Erreur Echo:", error);
+    });
     }
 });
 
@@ -318,8 +325,7 @@ onUnmounted(() => {
                             <span v-if="product?.id"
                                 class="bg-yellow-200 text-yellow-800 text-xs px-3 py-1 rounded-full flex items-center gap-2 ml-4">
                                 Produit {{ product?.nom }}
-                                <button
-                                    @click="() => clearProductTag()"
+                                <button @click="() => clearProductTag()"
                                     class="ml-2 text-yellow-800 hover:text-red-600 font-bold" title="Retirer le tag">
                                     &times;
                                 </button>
