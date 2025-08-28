@@ -4,11 +4,11 @@
     <section class="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-4">
       <h2 class="text-lg sm:text-xl font-semibold text-[var(--espace-vert)]">Informations personnelles</h2>
       <div v-if="!editProfile" class="space-y-2 text-[var(--espace-gris)]">
-        <p><strong>Nom :</strong> {{ user.nom }}</p>
-        <p><strong>Téléphone :</strong> {{ user.telephone }}</p>
-        <p><strong>Email :</strong> {{ user.email || 'Non défini' }}</p>
-        <p><strong>Ville :</strong> {{ user.ville }}</p>
-        <p><strong>Statut Premium :</strong> {{ user.premium ? 'Actif' : 'Inactif' }}</p>
+        <p><strong>Nom :</strong> {{ user?.nom }}</p>
+        <p><strong>Téléphone :</strong> {{ user?.telephone }}</p>
+        <p><strong>Email :</strong> {{ user?.email || 'Non défini' }}</p>
+        <p><strong>Ville :</strong> {{ user?.ville }}</p>
+        <p><strong>Statut Premium :</strong> {{ user?.premium ? 'Actif' : 'Inactif' }}</p>
         <button @click="editProfile = true"
           class="mt-2 w-full sm:w-auto bg-[var(--espace-or)] text-[var(--espace-vert)] font-medium px-4 py-2 rounded-md hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-colors"
           aria-label="Modifier le profil">
@@ -63,7 +63,7 @@
         <!-- <p><strong>Parrainages actifs :</strong> {{ stats?.parrainages || 0 }}</p> -->
         <!-- <p v-if="user.commercant"><strong>Revenus cumulés :</strong> {{ stats?.revenus || 0 }} FCFA</p>
         <p v-if="user.commercant"><strong>Produits vendus :</strong> {{ stats?.produits_vendus || 0 }}</p> -->
-        <p><strong>Dernière connexion :</strong> {{ user.last_login || 'Non disponible' }}</p>
+        <p><strong>Dernière connexion :</strong> {{ user?.last_login || 'Non disponible' }}</p>
       </div>
     </section>
 
@@ -88,7 +88,7 @@
         <p class="text-[var(--espace-gris)]">
           <strong>Niveau actuel :</strong> {{ parrainage?.niveau.emoji }} {{ parrainage?.niveau.nom }}
         </p>
-        <p class="text-[var(--espace-gris)]"><strong>Jetons :</strong> {{ user.jetons }} jetons</p>
+        <p class="text-[var(--espace-gris)]"><strong>Jetons :</strong> {{ user?.jetons }} jetons</p>
         <div>
           <p class="text-[var(--espace-gris)]"><strong>Avantages débloqués :</strong></p>
           <ul class="list-disc list-inside text-[var(--espace-gris)]">
@@ -116,8 +116,10 @@ import { ref, watch } from 'vue';
 import { useToast } from 'vue-toastification';
 import { useAuthStore } from '../stores/Auth';
 import apiClient from '../api/index';
+import { User } from "../components/types/index";
 
 const props = defineProps({
+  // user: null as User | null,
   user: Object,
   // collaborations: Array,
   // stats: Object,
@@ -128,22 +130,29 @@ console.log(props);
 const authStore = useAuthStore();
 const toast = useToast();
 const editProfile = ref(false);
-const user = authStore.user || props.user;
+// const user = authStore.user || props.user;
+const user = ref<User | null>(authStore.user || (props.user as User | null));
+
 const profileForm = ref({
-  nom: user.nom || '',
-  telephone: user.telephone || '',
-  email: user.email || '',
-  ville: user.ville || '',
+  nom: authStore.user?.nom || '',
+  telephone: authStore.user?.telephone || '',
+  email: authStore.user?.email || '',
+  ville: authStore.user?.ville || '',
 });
+
 
 const updateProfile = async () => {
   try {
     const response = await apiClient.put('/profile', profileForm.value);
-    user.nom = response.data.user.nom;
-    user.telephone = response.data.user.telephone;
-    user.email = response.data.user.email;
-    user.ville = response.data.user.ville;
-    authStore.user = user;
+    if (user.value) {
+      user.value.nom = response.data.user.nom || '';
+      user.value.telephone = response.data.user.telephone || '';
+      user.value.email = response.data.user.email || '';
+      user.value.ville = response.data.user.ville || '';
+    }
+    // authStore.user = user;
+    authStore.user = response.data.user;
+
     editProfile.value = false;
     toast.success('Profil mis à jour avec succès.');
   } catch (error: any) {
@@ -153,10 +162,10 @@ const updateProfile = async () => {
 
 watch(() => user, (newUser) => {
   profileForm.value = {
-    nom: newUser.nom || '',
-    telephone: newUser.telephone || '',
-    email: newUser.email || '',
-    ville: newUser.ville || '',
+    nom: newUser?.value?.nom || '',
+    telephone: newUser?.value?.telephone || '',
+    email: newUser?.value?.email || '',
+    ville: newUser?.value?.ville || '',
   };
 }, { immediate: true });
 </script>

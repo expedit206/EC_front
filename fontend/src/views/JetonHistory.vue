@@ -70,7 +70,7 @@ const toast = useToast();
 
 const fetchTransactions = async () => {
     try {
-        const response = await apiClient.get(`/jeton-transactions/${user.id}`);
+        const response = await apiClient.get(`/jeton-transactions/${user?.id}`);
         console.log(response.data);
         transactions.value = response.data;
     } catch (error) {

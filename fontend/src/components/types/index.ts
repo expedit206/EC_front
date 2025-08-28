@@ -108,16 +108,16 @@ export interface Message {
   content: string;
   created_at: string;
   updated_at: string;
-  is_read: number;
-  product_id: string;
-  product?: Product;
+  is_read: boolean;
+  product_id: string | null;
+  product: Product | null;
   sender_id: number | undefined;
   receiver_id: number | undefined;
   sender: {
     id: number;
     nom: string;
     email: string | null;
-    telephone: string;
+    telephone: string | null;
     ville: string | null;
     premium: boolean;
     parrain_id: number | null;
@@ -127,7 +127,7 @@ export interface Message {
     id: number;
     nom: string;
     email: string | null;
-    telephone: string;
+    telephone: string | null;
     ville: string | null;
     premium: boolean;
     parrain_id: number | null;

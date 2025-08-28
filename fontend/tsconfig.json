@@ -17,6 +17,7 @@
     "types": ["vite/client"], // Inclure les types de Vite
     "jsx": "preserve" // Nécessaire pour les fichiers .vue
   },
-  "include": ["src/**/*"],
+  // "include": ["src/**/*", "src/types/**/*.d.ts"],
+
   "exclude": ["node_modules", "dist"]
 }

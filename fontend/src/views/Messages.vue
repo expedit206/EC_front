@@ -134,7 +134,7 @@ const sendMessage = async () => {
             premium: false,
             parrain_id: null,
         },
-        product: product.value,
+        product: product.value || null,
     };
 
     messages.value.push(tempMessage);
@@ -158,7 +158,7 @@ const sendMessage = async () => {
                 .listen('MessageSent', (event: any) => {
 
                     // Si c’est bien dans la conversation ouverte, on ajoute direct
-                    if (selectedConversation.value?.user_id === ender_id) {
+                    if (selectedConversation.value?.user_id === event.sender_id) {
                         console.log("📩 Nouveau message reçu :", event.message);
                         messages.value.push(event.message);
                         scrollToBottom();
@@ -198,6 +198,11 @@ const markAllMessagesAsRead = async (receiverId: number) => {
         console.error('Erreur lors du marquage des messages comme lus:', error);
         toast.error('Erreur lors de la mise à jour des messages lus');
     }
+};
+
+
+const toggleSidebar = () => {
+    isSidebarOpen.value = !isSidebarOpen.value;
 };
 
 onMounted(() => {

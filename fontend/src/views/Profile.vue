@@ -14,14 +14,14 @@
           <!-- Couronne -->
           <i v-if="user?.premium" class="fas fa-crown text-yellow-400 absolute -top-2 -right-2 text-lg p-1 rounded-full"
             :style="{
-  color : `${user?.niveaux_users?.parrainage_niveau?.couleur}`  
+  color : `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#000'}`  
                              }"></i>
 
           <!-- Bouton modifier -->
           <button @click="showEditMenu = !showEditMenu"
             class="absolute bottom-0 right-0 w-6 h-6 bg-[var(--espace-or)] text-[var(--espace-vert)] rounded-full flex items-center justify-center hover:bg-[var(--espace-vert)] hover:text-white"
             :style="{
-              background: `${user?.niveaux_users?.parrainage_niveau?.couleur}`
+              background: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#000'}`
             }">
             <i class="fas fa-pencil-alt text-xs"></i>
           </button>
@@ -45,12 +45,12 @@
         <div class="space-y-1">rr
           <h1 class="text-2xl sm:text-3xl font-bold flex items-center gap-2 text-blue-500"
             :style="{
-  color: `${user?.niveaux_users?.parrainage_niveau?.couleur}`  
+  color: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#000'}`  
                              }">
                              
             {{ user?.nom }}
             <span v-if="user?.premium" class="text-black  text-xs px-3 py-1 rounded-full uppercase font-bold" :style="{
-                background: `${user?.niveaux_users?.parrainage_niveau?.couleur}`
+                background: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#000'}`
               }">
               Premium
             </span>
@@ -138,7 +138,7 @@ const toast = useToast();
 const authStore = useAuthStore();
 
 const user = ref(authStore.user);
-console.log(user.value)
+console.log(user?.value)
 const showEditMenu = ref(false);
 const uploading = ref(false);
 const previewUrl = ref<string | null>(null);
@@ -241,8 +241,11 @@ const uploadProfilePicture = async () => {
       headers: { "Content-Type": "multipart/form-data" },
     });
     if (response.data.photo) {
-      user.value.photo = response.data.photo;
-      authStore.user = user.value;
+      if (user.value) {
+        user.value.photo = response.data.photo;
+        authStore.user = user.value;
+      }
+
       toast.success("Photo mise à jour.");
       cancelUpload();
     }
@@ -266,7 +269,7 @@ const handleJetonPurchase = (nombreJetons: number) => {
 };
 
 watch(() => authStore.user, (newUser) => {
-  user.value = newUser || {};
+  user.value = newUser || null;
 }, { immediate: true });
 
 onMounted(() => { });

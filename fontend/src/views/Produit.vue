@@ -288,7 +288,7 @@ watch(productStore.product, (newProduit) => {
                                 Collaboratif
                             </span>
                           
-                            <span v-if="authStore.user.premium"
+                            <span v-if="authStore.user?.premium"
                                 class="absolute bottom-3 left-3 bg-[var(--espace-bleu)] text-[var(--espace-blanc)] text-[10px] font-semibold px-2 py-1 rounded-full font-poppins"
                                 aria-label="Commerçant Pro">
                                 Premium

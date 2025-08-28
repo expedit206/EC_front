@@ -8,6 +8,7 @@ import FormField from '../components/Form.vue';
 import Loader from '../components/Loader.vue';
 import apiClient from '../api/index';
 import { watch } from 'vue';
+import { User } from "../components/types/index";
 
 const isLoading = ref(false);
 const authStore = useAuthStore();
@@ -17,11 +18,17 @@ const toast = useToast();
 const user = authStore.user;
 const activeSection = ref('profile'); // Section active (profile, security, notifications, links)
 const profileForm = ref({
-    nom: user?.nom || '',
-    email: user?.email || '',
-    telephone: user?.telephone || '',
-    ville: user?.ville || '',
-});
+    id: user?.id ?? 0,  // ou null si ton backend accepte
+    nom: user?.nom ?? '',
+    email: user?.email ?? '',
+    telephone: user?.telephone ?? '',
+    ville: user?.ville ?? '',
+})
+authStore.user = {
+    ...authStore.user!,
+    ...profileForm.value,
+} as User
+
 const passwordForm = ref({
     current_password: '',
     new_password: '',
@@ -46,7 +53,7 @@ const updateProfile = async () => {
     isLoading.value = true;
     try {
         await apiClient.put('/user/profile', profileForm.value);
-        authStore.user = { ...authStore.user, ...profileForm.value };
+        // authStore.user = { ...authStore.user, ...profileForm.value };
         localStorage.setItem('user', JSON.stringify(authStore.user));
         toast.success('Profil mis à jour avec succès', { timeout: 3000 });
     } catch (error: any) {
@@ -82,7 +89,7 @@ const updateNotifications = async () => {
     isLoading.value = true;
     try {
         await apiClient.put('/user/notifications', notifications.value);
-        authStore.user = { ...authStore.user, ...notifications.value };
+        // authStore.user = { ...authStore.user, ...notifications.value };
         localStorage.setItem('user', JSON.stringify(authStore.user));
         toast.success('Préférences de notification mises à jour', { timeout: 3000 });
     } catch (error: any) {

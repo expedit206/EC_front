@@ -30,7 +30,7 @@ export const useAuthStore = defineStore("auth", {
       this.user = response.data.user;
       this.token = response.data.token;
 
-      localStorage.setItem("token", this.token);
+localStorage.setItem("token", this.token ?? "");
 
       // Configurer apiClient pour les requêtes futures
       apiClient.defaults.headers.common["Authorization"] =
@@ -53,9 +53,9 @@ export const useAuthStore = defineStore("auth", {
       });
 
       this.user = response.data.user;
-      this.token = response.data.token;
+      this.token = response.data.token ;
 
-      localStorage.setItem("token", this.token);
+localStorage.setItem("token", this.token ?? "");
       apiClient.defaults.headers.common["Authorization"] =
         `Bearer ${this.token}`;
     },
