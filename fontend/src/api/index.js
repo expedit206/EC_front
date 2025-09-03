@@ -5,7 +5,7 @@ axios.defaults.withCredentials = true;
 axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 axios.defaults.withXSRFToken = true;
 export const apiClient = axios.create({
-  // withCredentials: true, 
+  withCredentials: true, 
 
   // baseURL: "http://localhost:8000/api/v1",
   baseURL: "https://espacecameroun.devfack.com/api/v1",

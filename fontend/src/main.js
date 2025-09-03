@@ -9,119 +9,58 @@ import router from "./router";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { fas } from "@fortawesome/free-solid-svg-icons";
-import { useUserStateStore } from './stores/userState'; // Importer le store
 
-// Importer le store
-import Echo from "laravel-echo";
-import Pusher from "pusher-js";
 import axios from "axios";
+import Pusher from "pusher-js";
 
-// Config axios global
-axios.defaults.withCredentials = true;
-
-// Récupérer le token stocké
+// 🔹 Config axios
+// axios.defaults.baseURL = "http://localhost:8000/api/v1"; // ton API
+axios.defaults.headers.common["Accept"] = "application/json";
+axios.defaults.withCredentials = true; // si tu utilises les cookies
+// 🔹 Ajouter le token automatiquement s'il existe
 const token = localStorage.getItem("token");
-
-// Config axios pour ajouter automatiquement le Bearer token
 if (token) {
-  //   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 }
 
-async function initApp() {
-  // 1️⃣ Demander le cookie CSRF (utile si certaines requêtes POST nécessitent CSRF)
-//   try {
-//     await axios.get("http://localhost:8000/sanctum/csrf-cookie");
-//   } catch (error) {
-//     console.warn("Impossible de récupérer le cookie CSRF :", error);
-//   }
-
-// 2️⃣ Initialiser Echo si le token existe
+// 🔹 Echo (uniquement si besoin de Reverb/Pusher public)
+// Si tu veux écouter un canal public, pas besoin d'auth
 if (token) {
-  window.Pusher = Pusher;
-  // window.Echo = new Echo({
-    //   broadcaster: "reverb",
-    //   key: import.meta.env.VITE_REVERB_APP_KEY,
-    //   wsHost: import.meta.env.VITE_REVERB_HOST,
-    //   wsPort: import.meta.env.VITE_REVERB_PORT ?? 6001,
-    //   wssPort: import.meta.env.VITE_REVERB_PORT ?? 6001,
-    //   forceTLS: false,
-    //   enabledTransports: ["ws", "wss"],
-    // //   authEndpoint: "http://localhost:8000/broadcasting/auth",
-    //   auth: {
-      //     headers: {
-        //       Authorization: `Bearer ${token}`,
-        //     },
-    //   },
-    //   authorizer: (channel, options) => {
-      //     return {
-        //       authorize: (socketId, callback) => {
-          //         axios
-    //           .get(
-      //             "http://localhost:8000/broadcasting/auth",
-      //             {
-        //               socket_id: socketId,
-    //               channel_name: channel.name,
-    //             },
-    //             {
-      //               withCredentials: true, // Important for session/cookie based auth
-      //               headers: {
-        //                 Authorization: `Bearer ${token}`,
+  import("laravel-echo").then(({ default: Echo }) => {
+      window.Pusher = Pusher;
 
-    //                 // "X-XSRF-TOKEN": getCsrfToken(), // Function to get XSRF token
-    //               },
-    //             }
-    //           )
-    //           .then((response) => {
-      //             callback(false, response.data);
-    //           })
-    //           .catch((error) => {
-      //             callback(true, error);
-    //           });
-    //       },
-    //     };
-    //   },
-    // });
+      window.Echo = new Echo({
+        broadcaster: "reverb",
+        key: import.meta.env.VITE_REVERB_APP_KEY,
+        wsHost: import.meta.env.VITE_REVERB_HOST,
+        wsPort: import.meta.env.VITE_REVERB_PORT ?? 6001,
+        wssPort: import.meta.env.VITE_REVERB_PORT ?? 6001,
+        forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
 
-    
-    window.Echo = new Echo({
-  broadcaster: "reverb",
-  key: import.meta.env.VITE_REVERB_APP_KEY,
-  wsHost: import.meta.env.VITE_REVERB_HOST,
-  wsPort: import.meta.env.VITE_REVERB_PORT ?? 6001,
-  wssPort: import.meta.env.VITE_REVERB_PORT ?? 6001,
-  forceTLS: false,
-  enabledTransports: ["ws", "wss"],
-});
-
-
-
-
-// // 3️⃣ Exemple d'écoute d'un canal privé
-window.Echo.channel(`public-channel`)
-      // window.Echo.private(`chat.4`)
-  .listen(".message.sent", (event) => {
-        console.log(event.message);
-        
-        // userStateStore.saveUnreadMessagesToLocalStorage();
-         
-        
-      })
-      .error((error) => {
-        console.error("Erreur Echo:", error);
+        enabledTransports: ["ws", "wss"],
+        auth: {
+          headers: {
+            Authorization: `Bearer ${token}`, // ✅ Auth via token
+          },
+        },
       });
-    }
-    
-    // 4️⃣ Boot Vue
-  library.add(fas);
-  
-  const app = createApp(App);
-  app.component("font-awesome-icon", FontAwesomeIcon);
-  app.use(createPinia());
-  app.use(router);
-  app.use(Toast);
-  app.mount("#app");
+
+      // Exemple : écouter un canal public
+      window.Echo.channel("public-channel")
+        .listen(".message.sent", (event) => {
+          console.log("📩 Nouveau message reçu:", event.message);
+        })
+        .error((error) => {
+          console.error("Erreur Echo:", error);
+        });
+  });
 }
 
-initApp();
-
-const userStateStore = useUserStateStore(); // Initialiser le store
+// 🔹 Boot Vue
+library.add(fas);
+const app = createApp(App);
+app.component("font-awesome-icon", FontAwesomeIcon);
+app.use(createPinia());
+app.use(router);
+app.use(Toast);
+app.mount("#app");

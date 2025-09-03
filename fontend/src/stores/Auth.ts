@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import apiClient from "../api/index";
 import { User } from "../components/types/index";
-import axios from "axios";
+import axios, { Axios } from "axios";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -10,29 +10,22 @@ export const useAuthStore = defineStore("auth", {
   }),
 
   actions: {
-    // 🔑 Récupérer le cookie CSRF
-    async getCsrfCookie() {
-      // Laravel Sanctum doit poser le cookie "XSRF-TOKEN"
-      await axios.get("http://localhost:8000/sanctum/csrf-cookie", {
-        withCredentials: true, // très important
-      });
-    },
-
     // Connexion
-    async login(credentials: { login: string; mot_de_passe: string }) {
-      // ✅ attendre la récupération du CSRF
-      await this.getCsrfCookie();
 
-      const response = await apiClient.post("/login", credentials, {
-        withCredentials: true, // nécessaire pour que Laravel voie le cookie
-      });
+    async login(credentials: { login: string; mot_de_passe: string }) {
+      // await axios.get("http://localhost:8000/sanctum/csrf-cookie", {
+      // await axios.get("https://espacecameroun.devfack.com/sanctum/csrf-cookie", {
+      //   withCredentials: true,
+      // });
+
+      const response = await apiClient.post("/login", credentials);
 
       this.user = response.data.user;
       this.token = response.data.token;
 
-localStorage.setItem("token", this.token ?? "");
+      localStorage.setItem("token", this.token ?? "");
 
-      // Configurer apiClient pour les requêtes futures
+      // Ajout du header Authorization pour toutes les requêtes futures
       apiClient.defaults.headers.common["Authorization"] =
         `Bearer ${this.token}`;
     },
@@ -40,40 +33,34 @@ localStorage.setItem("token", this.token ?? "");
     // Inscription
     async register(data: {
       nom: string;
-      telephone: string;
+      telephone: string;  
       email?: string;
       ville: string;
       mot_de_passe: string;
       parrain_id?: string;
     }) {
-      await this.getCsrfCookie();
-
-      const response = await apiClient.post("/register", data, {
-        withCredentials: true,
-      });
+      const response = await apiClient.post("/register", data);
 
       this.user = response.data.user;
-      this.token = response.data.token ;
+      this.token = response.data.token;
 
-localStorage.setItem("token", this.token ?? "");
+      localStorage.setItem("token", this.token ?? "");
       apiClient.defaults.headers.common["Authorization"] =
         `Bearer ${this.token}`;
     },
 
-    // Vérifier l'authentification
+    // Vérifier l'authentification (profil)
     async checkAuth() {
       if (!this.token) return false;
 
       try {
         apiClient.defaults.headers.common["Authorization"] =
           `Bearer ${this.token}`;
-        const response = await apiClient.get("/user", {
-          withCredentials: true,
-        });
+        const response = await apiClient.get("/user");
 
         this.user = response.data.user;
         return true;
-      } catch (error: any) {
+      } catch (error) {
         this.user = null;
         this.token = null;
         localStorage.removeItem("token");
@@ -87,7 +74,7 @@ localStorage.setItem("token", this.token ?? "");
         if (this.token) {
           apiClient.defaults.headers.common["Authorization"] =
             `Bearer ${this.token}`;
-          await apiClient.post("/logout", {}, { withCredentials: true });
+          await apiClient.post("/logout");
         }
       } catch {
         // ignorer si token invalide ou expiré
