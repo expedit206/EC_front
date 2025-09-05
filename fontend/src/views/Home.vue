@@ -70,10 +70,10 @@ const handleTouchStart = (productId: string) => {
 
 const recordView = async (productId: string) => {
     const userId = authStore.user?.id;
-    if (!userId) {
-        toast.error('Connexion requise pour enregistrer la vue.');
-        return;
-    }
+    // if (!userId?? null) {
+    //     // toast.error('Connexion requise pour enregistrer la vue.');
+    //     return;
+    // }
 
     // Récupérer les vues stockées
     const viewedProducts = JSON.parse(localStorage.getItem('viewedProducts') || '{}');
@@ -92,13 +92,13 @@ const recordView = async (productId: string) => {
         return; // Pas d'appel API si déjà vu aujourd'hui
     }
 
-    console.log(viewedProducts);
+    // console.log(viewedProducts);
     try {
         setTimeout(async () => {
 
             const response = await apiClient.post(`/record_view`, {
                 product_id: productId,
-                user_id: userId,
+                user_id: userId?? null,
             });
             toast.success(response.data.message);
         }, 1000);
@@ -182,7 +182,7 @@ onUnmounted(() => {
             <!-- Filtres -->
             <Transition name="slide-up">
                 <div v-if="showFilters"
-                    class="bg-[var(--espace-blanc)] rounded-xl shadow-md p-4 mb-4 fixed bottom-0 left-0 right-0 z-50 sm:static sm:flex sm:items-center sm:gap-3 sm:flex-wrap">
+                    class="bg-[var(--espace-blanc)] rounded-xl shadow-md p-4 mb-4 fixed top-0 left-0 right-0 z-50 sm:static sm:flex sm:items-center sm:gap-3 sm:flex-wrap">
                     <form @submit.prevent="applyFilters" class="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-3">
                         <div class="flex-1 min-w-[120px]">
                             <input v-model="filterForm.search" id="search" type="text"

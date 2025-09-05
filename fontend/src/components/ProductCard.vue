@@ -13,7 +13,7 @@ const props = defineProps<{
 const emit = defineEmits(['toggle-favorite', 'handleToggleFavorite']);
 const toast = useToast();
 const productStore = useProductStore();
-console.log(props.produit);
+// console.log(props.produit);
 
 // Gestion du slider
 const currentSlideIndex = ref(0);
@@ -77,15 +77,16 @@ const handleFavorite = async () => {
     <div class="flex items-center justify-between mt-2 text-xs text-[var(--espace-gris)]">
       <div class="flex items-center gap-1">
         <i class="fas fa-eye text-[10px]"></i>
-        <span>{{ produit.raw_views_count || produit.raw_views_count }} vues</span>
+        <span>{{ produit.counts?.views_count??0  }} vues</span>
       </div>
+      <!-- {{ produit }} -->
       <div class="flex items-center gap-1">
         <button @click="handleFavorite"
           class="text-[var(--espace-vert)] hover:text-[var(--espace-or)] transition active:scale-95 focus:outline-none"
           :aria-label="produit.is_favorited_by ? 'Retirer des favoris' : 'Ajouter aux favoris'">
           <i class="fas fa-bookmark text-sm" :class="{ 'text-[var(--espace-or)]': produit.is_favorited_by }"></i>
         </button>
-        <span>{{ produit.favorites_count }} favoris</span>
+        <span>{{ produit.counts?.favorites_count ?? 0  }} favoris</span>
       </div>
     </div>
   </div>

@@ -86,7 +86,7 @@ const createCode = async () => {
 
     isCreating.value = true;
     try {
-        const response = await apiClient.post("/parrainages/create-code", { code: customCode.value.trim() });
+        const response = await apiClient.post("/parrainages/createCode", { code: customCode.value.trim() });
         code.value = response.data.code;
         link.value = response.data.link || `https://espacecameroun.cm/invite/${response.data.code}`;
         toast.success(response.data.message || "Code créé avec succès !");
@@ -133,12 +133,12 @@ onMounted(() => {
         <div class="container mx-auto max-w-4xl">
             <!-- Section des Niveaux de Parrainage -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h2 class="text-lg font-semibold text-[var(--espace-vert)] mb-4">Niveaux de Parrainage</h2>
-                <p class="text-[var(--espace-gris)] text-sm mb-2" :style="{ color: currentColor }">
+                <h2 class="text-lg font-semibold  mb-4" :style="{ color: currentColor }">Niveaux de Parrainage</h2>
+                <p class=" text-[var(--espace-gris)] text-sm mb-2" :style="{ color: currentColor }">
                     Votre niveau actuel : <strong>{{ niveauActuel ? niveauActuel.nom : "pas niveau" }} {{
                         niveauActuel?.emoji }}
                         ({{ parrainages.length }}/{{ niveauSuivant ? niveauSuivant.filleuls_requis :
-                            niveauActuel?.filleuls_requis
+                        niveauActuel?.filleuls_requis
                         }})</strong>
                     <span v-if="niveauActuel?.jetons_bonus > 0" class="ml-2">+{{ niveauActuel?.jetons_bonus }} jetons
                         bonus</span>
@@ -256,7 +256,8 @@ onMounted(() => {
                 </p>
                 <p class="text-[var(--espace-gris)] mt-2">
                     🎉 Vous avez invité <strong>{{ parrainages.length }}</strong> utilisateurs, dont
-                    <strong>{{parrainages.filter((p : Parrainage) => p.est_commerçant).length}}</strong> sont commerçants !
+                    <strong>{{parrainages.filter((p : Parrainage) => p.est_commerçant).length}}</strong> sont
+                    commerçants !
                 </p>
                 <p class="text-[var(--espace-gris)]">⬇️ Gagnez <strong>1 jeton</strong> par commerçant actif parrainé.
                 </p>

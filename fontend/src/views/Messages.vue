@@ -22,9 +22,8 @@ const offset = ref(0);
 const hasMore = ref(false);
 const isLoading = ref(false);
 const messagesContainer = ref<HTMLElement | null>(null);
-const productId = ref<number | null>(null);
-const isMobile = ref(window.innerWidth < 768);
 const product = ref<Product | null>(null);
+const isMobile = ref(window.innerWidth < 768);
 
 const scrollToBottom = () => {
     nextTick(() => {
@@ -36,14 +35,14 @@ const scrollToBottom = () => {
 };
 
 const clearProductTag = () => {
-    productId.value = null;
     product.value = null;
-    window.localStorage.removeItem('chatProductId');
+    localStorage.removeItem('chatProduct');
 };
 
 const fetchConversations = async () => {
     try {
         const res = await apiClient.get('/conversations');
+        console.log(res.data);
         conversations.value = res.data.conversations;
     } catch (e) {
         toast.error('Erreur lors de la récupération des conversations');
@@ -63,23 +62,21 @@ const fetchMessages = async (receiverId: number, resetOffset = true) => {
 
         isSidebarOpen.value = false;
         const res = await apiClient.get(`/chat/${receiverId}?offset=${offset.value}`);
-        // messages.value = resetOffset ? res.data.messages : [...res.data.messages, ...messages.value];
         messages.value = [...res.data.messages];
         console.log(res.data);
 
         hasMore.value = res.data.hasMore;
 
-        selectedConversation.value = conversations.value.find(c => c.user_id === receiverId) || {
+        // Utiliser les données du produit tagué pour le nom si disponible
+        const storedProduct = localStorage.getItem('chatProduct');
+        const conversation = conversations.value.find(c => c.user_id === receiverId);
+        selectedConversation.value = conversation || {
             user_id: receiverId,
-            name: `Utilisateur #${receiverId}`,
+            name: storedProduct ? JSON.parse(storedProduct).name_user : (res.data.user?.nom || 'Inconnu'),
         };
 
-        const storedProductId = localStorage.getItem('chatProductId');
-        if (storedProductId) {
-            productId.value = parseInt(storedProductId);
-            // Optionnel : Charger les détails du produit
-            const productRes = await apiClient.get(`/products/${productId.value}`);
-            product.value = productRes.data;
+        if (storedProduct) {
+            product.value = JSON.parse(storedProduct);
         }
 
         await markAllMessagesAsRead(receiverId);
@@ -114,7 +111,7 @@ const sendMessage = async () => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         is_read: false,
-        product_id: productId.value?.toString() || null,
+        product_id: product.value?.id || null,
         sender: {
             id: authStore.user?.id ?? 0,
             nom: authStore.user?.nom ?? "",
@@ -123,8 +120,7 @@ const sendMessage = async () => {
             ville: authStore.user?.ville ?? "",
             premium: authStore.user?.premium ?? false,
             parrain_id: authStore.user?.parrain_id ?? 0,
-        }
-        , // Utiliser l'utilisateur connecté
+        },
         receiver: {
             id: selectedConversation.value.user_id,
             nom: selectedConversation.value.name,
@@ -144,30 +140,25 @@ const sendMessage = async () => {
     try {
         const res = await apiClient.post(`/chat/${selectedConversation.value.user_id}`, {
             content,
-            product_id: productId.value,
+            product_id: product.value?.id,
         });
-        console.log(res.data)
-        if (productId.value) {
-            localStorage.removeItem('chatProductId');
-            productId.value = null;
-            product.value = null;
+        console.log(res.data);
+
+        if (product.value) {
+            clearProductTag();
         }
 
-        if (authStore.user?.id) {
-            window.Echo.channel(`chat.${authStore.user.id}`)
-                .listen('MessageSent', (event: any) => {
-
-                    // Si c’est bien dans la conversation ouverte, on ajoute direct
-                    if (selectedConversation.value?.user_id === event.sender_id) {
-                        console.log("📩 Nouveau message reçu :", event.message);
-                        messages.value.push(event.message);
-                        scrollToBottom();
-                    }
-
-                    // Mettre à jour les unread messages
-                    // userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
-                });
-        }
+        // if (authStore.user?.id) {
+        //     window.Echo.channel(`chat.${authStore.user.id}`)
+        //         .listen('MessageSent', (event: any) => {
+        //             if (selectedConversation.value?.user_id === event.sender_id) {
+        //                 console.log("📩 Nouveau message reçu :", event.message);
+        //                 messages.value.push(event.message);
+        //                 scrollToBottom();
+        //                 userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
+        //             }
+        //         });
+        // }
 
         // await fetchMessages(selectedConversation.value.user_id);
     } catch (e) {
@@ -187,7 +178,7 @@ const handleScroll = () => {
 
 const handleResize = () => {
     isMobile.value = window.innerWidth < 768;
-    isSidebarOpen.value = window.innerWidth > 768;
+    isSidebarOpen.value = window.innerWidth >= 768;
 };
 
 const markAllMessagesAsRead = async (receiverId: number) => {
@@ -200,7 +191,6 @@ const markAllMessagesAsRead = async (receiverId: number) => {
     }
 };
 
-
 const toggleSidebar = () => {
     isSidebarOpen.value = !isSidebarOpen.value;
 };
@@ -212,44 +202,23 @@ onMounted(() => {
     }
     window.addEventListener('resize', handleResize);
 
-    // Écouter les événements Reverb
-    // if (authStore.user?.id) {
-    //     window.Echo.private(`chat.${authStore.user.id}`)
-    //         .listen('.message.sent', (e: { message: Message }) => {
-    //             if (e.message.sender_id === selectedConversation.value?.user_id ||
-    //                 e.message.receiver_id === authStore.user.id) {
-    //                 messages.value.push(e.message);
-    //                 scrollToBottom();
-    //             }
-    //         });
-    if (authStore.user?.id) {
-        window.Echo.channel(`public-channel`)
-            // window.Echo.channel(`chat.${authStore.user.id}`)
-            .listen('.message.sent', (event: any) => {
-                
-                // si c’est bien la conversation ouverte → afficher
-                const message = JSON.parse(event.message
-            )
-                
-        if (selectedConversation.value?.user_id === message.sender?.id) {
-                    console.log("📩  receiver:", message.receiver)
-                    console.log("📩  sender:", message.sender)
-                    // console.log("📩  :", selectedConversation.value?.user_id);
-                    // console.log("📩 Nouveau message reçu :", event.unread_messages);
-                    messages.value.push(message);
-            scrollToBottom();
-            console.log(event.unread_messages)
-
-            userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
-    }
-
-
-    // mise à jour unread
-    // userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
-})
-    .error((error: any) => {
-        console.error("Erreur Echo:", error);
-    });
+    if (authStore.user?.id && window.Echo) {
+        try {
+            window.Echo.channel(`public-channel`)
+                .listen('.message.sent', (event: any) => {
+                    const message = typeof event.message === 'string' ? JSON.parse(event.message) : event.message;
+                    if (selectedConversation.value?.user_id === message.sender?.id) {
+                        messages.value.push(message);
+                        scrollToBottom();
+                        userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
+                    }
+                })
+                .error((error: any) => {
+                    console.warn("Connexion Echo échouée, les messages temps réel ne seront pas reçus.", error);
+                });
+        } catch (error) {
+            console.warn("Impossible de se connecter à Echo / Pusher.", error);
+        }
     }
 });
 
@@ -269,19 +238,23 @@ watch(() => route.params.receiverId, async (receiverId) => {
 
 <template>
     <div class="w-full flex relative px-0">
-        <!-- Sidebar -->
         <transition name="slide-fade">
             <div v-if="isSidebarOpen || !isMobile" class="bg-white pt-8 shadow-md p-4 overflow-y-auto transition-all"
                 :class="isMobile ? 'absolute top-0 left-0 h-full z-30 w-full' : 'w-[400px]'">
                 <h2 class="text-lg font-semibold text-[var(--espace-vert)] mb-4">Conversations</h2>
                 <div v-for="conv in conversations" :key="conv.user_id" @click="selectConversation(conv.user_id)"
-                    class="p-2 hover:bg-gray-100 cursor-pointer rounded flex items-center transition-colors">
-                    <div class="w-10 h-10 bg-[var(--espace-or)] rounded-full mr-2 flex items-center justify-center">
-                        <span class="text-white font-bold">{{ conv.name.charAt(0) }}</span>
+                    class="p-2 hover:bg-gray-100 cursor-pointer rounded flex items-center justify-between transition-colors">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-[var(--espace-or)] rounded-full mr-2 flex items-center justify-center">
+                            <span class="text-white font-bold">{{ conv.name.charAt(0) }}</span>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="font-semibold text-[var(--espace-vert)] truncate">{{ conv.name }}</p>
+                            <p class="text-xs text-[var(--espace-gris)] truncate">{{ conv.last_message }}</p>
+                        </div>
                     </div>
-                    <div class="min-w-0">
-                        <p class="font-semibold text-[var(--espace-vert)] truncate">{{ conv.name }}</p>
-                        <p class="text-xs text-[var(--espace-gris)] truncate">{{ conv.last_message }}</p>
+                    <div class="text-xs text-[var(--espace-gris)] ml-2 whitespace-nowrap">
+                        {{ new Date(conv.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
                     </div>
                 </div>
             </div>
@@ -290,12 +263,11 @@ watch(() => route.params.receiverId, async (receiverId) => {
         <div class="w-full grid grid-rows-[10%_86%]">
             <div class="flex border-b">
                 <button v-if="!isSidebarOpen && isMobile && selectedConversation" @click="toggleSidebar"
-                    class="text-green-900 p-2 rounded-full hover:bg-[var(--espace-or)] transition text-start md:hidden">
+                    class="text-green-900 p-2 rounded-full hover:bg-[var(--espace-or)] transition text-start">
                     <i class="fas fa-arrow-left text-2xl"></i>
                 </button>
-                <h2 v-if="selectedConversation"
-                    class="text-xl h-[10%] font-semibold text-[var(--espace-vert)] p-4 md:z-0">
-                    {{ selectedConversation.name }}
+                <h2 v-if="selectedConversation" class="text-xl h-[10%] font-semibold text-[var(--espace-vert)] p-4">
+                    {{ selectedConversation.name || 'Inconnu' }}
                 </h2>
             </div>
 
@@ -315,7 +287,7 @@ watch(() => route.params.receiverId, async (receiverId) => {
                                 <router-link v-if="message.product?.id"
                                     :to="{ name: 'produit', params: { id: message.product.id } }"
                                     class="text-blue-500 underline hover:text-blue-700 ml-1">[Produit {{
-                                    message.product.nom
+                                        message.product.nom
                                     }}]</router-link>
                                 {{ message.content }}
                             </p>
@@ -332,14 +304,15 @@ watch(() => route.params.receiverId, async (receiverId) => {
                             <span v-if="product?.id"
                                 class="bg-yellow-200 text-yellow-800 text-xs px-3 py-1 rounded-full flex items-center gap-2 ml-4">
                                 Produit {{ product?.nom }}
-                                <button @click="() => clearProductTag()"
+                                <button @click="clearProductTag"
                                     class="ml-2 text-yellow-800 hover:text-red-600 font-bold" title="Retirer le tag">
                                     &times;
                                 </button>
                             </span>
-                            <input v-model="newMessage" type="text" placeholder="Écrivez votre message..."
-                                class="flex-1 px-4 py-2 rounded-full focus:outline-none text-gray-700 text-sm placeholder-gray-400 min-w-[100px] md:min-w-[200px]" />
-                            <button @click="sendMessage" @keyup.enter="sendMessage"
+                            <input v-model="newMessage" @keyup.enter="sendMessage" type="text"
+                                placeholder="Écrivez votre message..."
+                                class="flex-1 px-4 py-2 rounded-full focus:outline-none text-gray-700 text-sm placeholder-gray-400 min-w-[100px] md:min-w[200px]" />
+                            <button @click="sendMessage"
                                 class="ml-2 p-3 rounded-full bg-[var(--espace-vert)] text-white hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)] transition">
                                 <i class="fas fa-location-arrow text-lg"></i>
                             </button>
@@ -391,4 +364,4 @@ button:active {
     transform: scale(0.95);
     transition: transform 0.1s ease-in-out;
 }
-</style>
+</style>    

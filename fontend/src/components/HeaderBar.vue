@@ -26,7 +26,7 @@ const navLinks = computed(() => {
         { to: '/', label: 'Accueil', icon: 'fa-home', badge: 0 },
         ...(authStore.user
             ? [
-                { to: '/profil', label: 'Profil', icon: 'fa-user-circle', badge: 0 },
+                { to: '/profil', label: 'Profil', icon: 'fa-user-circle' },
                 { to: '/messages', label: 'Messages', icon: 'fa-comment-dots', badge: userStateStore.unreadMessages },
                 ...(authStore.user.commercant
                     ? [{ to: '/commercant/produits', label: 'Mes Produits', icon: 'fa-box-open', badge: 0 }]
@@ -54,7 +54,7 @@ watch(
     () => authStore.user,
     (newUser) => {
         if (newUser) {
-            // fetchBadges();
+            fetchBadges();
             userStateStore.initializeState();
         }
     },
@@ -111,16 +111,39 @@ const toggleSearch = async () => {
     }
 };
 
+
+
 onMounted(() => {
+
+
     if (authStore.user) {
-        // fetchBadges();
+        fetchBadges();
         userStateStore.initializeState();
     }
+
+    
     document.addEventListener('click', handleClickOutside);
+    if (authStore.user?.id) {
+        window.Echo.channel(`chat.${authStore.user.id}`)
+            .listen('MessageSent', (event: any) => {
+
+                console.log("📩 header e reçu :", event.message);
+                // Si c’est bien dans la conversation ouverte, on ajoute direct
+                if (authStore.user?.id === event.receiver_id) {
+                    console.log("📩 header e reçu :", event.message);
+                    userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
+                }
+
+                // Mettre à jour les unread messages
+            });
+    }
 });
 
 onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside);
+    if (authStore.user?.id) {
+        window.Echo.leave(`chat.${authStore.user.id}`);
+    }
 });
 </script>
 

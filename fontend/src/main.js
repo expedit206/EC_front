@@ -12,7 +12,7 @@ import { fas } from "@fortawesome/free-solid-svg-icons";
 
 import axios from "axios";
 import Pusher from "pusher-js";
-
+import Echo from "laravel-echo";
 // 🔹 Config axios
 // axios.defaults.baseURL = "http://localhost:8000/api/v1"; // ton API
 axios.defaults.headers.common["Accept"] = "application/json";
@@ -26,17 +26,14 @@ if (token) {
 // 🔹 Echo (uniquement si besoin de Reverb/Pusher public)
 // Si tu veux écouter un canal public, pas besoin d'auth
 if (token) {
-  import("laravel-echo").then(({ default: Echo }) => {
       window.Pusher = Pusher;
 
       window.Echo = new Echo({
-        broadcaster: "reverb",
-        key: import.meta.env.VITE_REVERB_APP_KEY,
-        wsHost: import.meta.env.VITE_REVERB_HOST,
-        wsPort: import.meta.env.VITE_REVERB_PORT ?? 6001,
-        wssPort: import.meta.env.VITE_REVERB_PORT ?? 6001,
-        forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
-
+     broadcaster: "pusher",
+    key: import.meta.env.VITE_PUSHER_APP_KEY,
+    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+    // forceTLS: false,
+    forceTLS: true,
         enabledTransports: ["ws", "wss"],
         auth: {
           headers: {
@@ -45,15 +42,9 @@ if (token) {
         },
       });
 
-      // Exemple : écouter un canal public
-      window.Echo.channel("public-channel")
-        .listen(".message.sent", (event) => {
-          console.log("📩 Nouveau message reçu:", event.message);
-        })
-        .error((error) => {
-          console.error("Erreur Echo:", error);
-        });
-  });
+    
+  
+   
 }
 
 // 🔹 Boot Vue

@@ -73,32 +73,27 @@ onMounted(() => {
             </div>
 
             <!-- Liste des niveaux -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-lg font-semibold text-[var(--espace-vert)] mb-4">Détails des Niveaux</h2>
-                <div v-for="niveau in niveaux" :key="niveau.id" class="mb-6 p-4 border rounded-lg bg-gray-50">
-                    <h3 class="text-md font-semibold text-[var(--espace-vert)] flex items-center">
-                        {{ niveau.nom }} {{ niveau.emoji }} <span class="ml-2 text-sm text-[var(--espace-gris)]">({{
-                            niveau.filleuls_requis }} parrainages requis)</span>
-                    </h3>
-                    <p class="text-[var(--espace-gris)] text-sm mt-2">
-                        <strong>Bonus en jetons :</strong> {{ niveau.jetons_bonus }} jetons
-                    </p>
-                    <p v-if="niveau.avantages.length" class="text-[var(--espace-gris)] text-sm mt-1">
-                        <strong>Avantages exclusifs :</strong>
-                    <ul class="list-disc list-inside ml-4">
-                        <li v-for="avantage in niveau.avantages" :key="avantage">{{ avantage }}</li>
-                    </ul>
-                    </p>
-                    <p class="text-[var(--espace-gris)] text-xs mt-1 italic">
-                        * Les jetons bonus sont crédités une fois le niveau atteint et cumulables avec les jetons gagnés
-                        par commerçant.
-                    </p>
-                </div>
-                <p class="text-[var(--espace-gris)] text-sm mt-4">
-                    <strong>Note importante :</strong> Le niveau maximum ("Légende 🛡️") est atteint à 1000 parrainages.
-                    Continuez à inviter pour maximiser vos récompenses !
+            <div v-for="niveau in niveaux" :key="niveau.id" class="mb-6 p-4 border rounded-lg"
+                :style="{ backgroundColor: niveau.couleur || '#f0f0f0' }">
+                <h3 class="text-md font-semibold text-white flex items-center">
+                    {{ niveau.nom }} {{ niveau.emoji }}
+                    <span class="ml-2 text-sm text-white/80">({{ niveau.filleuls_requis }} parrainages requis)</span>
+                </h3>
+                <p class="text-white/90 text-sm mt-2">
+                    <strong>Bonus en jetons :</strong> {{ niveau.jetons_bonus }} jetons
+                </p>
+                <p v-if="niveau.avantages.length" class="text-white/90 text-sm mt-1">
+                    <strong>Avantages exclusifs :</strong>
+                <ul class="list-disc list-inside ml-4">
+                    <li v-for="avantage in niveau.avantages" :key="avantage">{{ avantage }}</li>
+                </ul>
+                </p>
+                <p class="text-white/70 text-xs mt-1 italic">
+                    * Les jetons bonus sont crédités une fois le niveau atteint et cumulables avec les jetons gagnés par
+                    commerçant.
                 </p>
             </div>
+            
         </div>
     </div>
 </template>

@@ -1,5 +1,5 @@
 <template>
-  <div class=" relative overflow-hidden grid  lg:grid-rows-[8%_90%]  grid-rows-[10%_83%_7%] h-full   
+  <div class=" relative overflow-hidden grid  lg:grid-rows-[8%_90%]  grid-rows-[10%_83%_7%] h-full bg-gray-100  
   ">
     <HeaderBar />
     <router-view />

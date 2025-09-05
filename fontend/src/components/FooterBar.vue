@@ -13,21 +13,21 @@ const animateMessagesBadge = ref(false); // Badge pour messages (facultatif)
 
 const navLinks = computed(() => {
     return [
-        { to: '/', label: 'Accueil', icon: 'fa-home', badge: 0 },
+        { to: '/', label: 'Accueil', icon: 'fa-home' },
         ...(authStore.user
             ? [
-                { to: '/profil', label: 'Profil', icon: 'fa-user-circle', badge: 0 },
+                { to: '/profil', label: 'Profil', icon: 'fa-user-circle' },
                 ...(authStore.user.commercant
-                    ? [{ to: '/commercant/produits', label: 'Mes Produits', icon: 'fa-box-open', badge: 0 }]
+                    ? [{ to: '/commercant/produits', label: 'Mes Produits', icon: 'fa-box-open' }]
                     : []),
                 { to: '/collaborations', label: 'Collaborations', icon: 'fa-handshake', badge: userStateStore.collaborationsPending },
-                { to: '/parrainage', label: 'Mon Parrainage', icon: 'fa-users', badge: 0 },
+                { to: '/parrainage', label: 'Mon Parrainage', icon: 'fa-users' },
                 // Ajout optionnel pour messages
-                { to: '/messages', label: 'Messages', icon: 'fa-comment-dots', badge: userStateStore.unreadMessages },
+                // { to: '/messages', label: 'Messages', icon: 'fa-comment-dots', badge: userStateStore.unreadMessages },
             ]
             : [
-                { to: '/login', label: 'Connexion', icon: 'fa-sign-in-alt', badge: 0 },
-                { to: '/register', label: 'Inscription', icon: 'fa-user-plus', badge: 0 },
+                { to: '/login', label: 'Connexion', icon: 'fa-sign-in-alt' },
+                { to: '/register', label: 'Inscription', icon: 'fa-user-plus' },
             ]),
     ];
 });

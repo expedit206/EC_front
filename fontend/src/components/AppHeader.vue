@@ -121,6 +121,22 @@ const toggleSearch = async () => {
 const goToMessages = () => {
     router.push('/messages');
 };
+
+console.log("📩 header e reçu :");
+if (authStore.user?.id) {
+    window.Echo.channel(`chat.${authStore.user.id}`)
+        .listen('MessageSent', (event: any) => {
+
+            console.log("📩 header e reçu :", event.message);
+            // Si c’est bien dans la conversation ouverte, on ajoute direct
+            if (authStore.user?.id === event.receiver_id) {
+                console.log("📩 header e reçu :", event.message);
+                userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
+            }
+
+            // Mettre à jour les unread messages
+        });
+}
 onMounted(() => {
     if (authStore.user) {
         fetchBadges();
@@ -149,7 +165,7 @@ onUnmounted(() => {
                         </div>
                     </RouterLink>
                     <h1 class="text-lg sm:text-xl font-bold font-poppins text-[var(--espace-blanc)]">
-                        Espace Cameroun
+                        <!-- Espace Cameroun -->
                     </h1>
                 </div>
 

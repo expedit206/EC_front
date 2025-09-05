@@ -1,27 +1,29 @@
 <template>
-  <div class="overflow-y-auto min-h-screen relative bg-gray-100 py-8 sm:px-6">
+  <div class="overflow-y-scroll min-h-screen relative bg-gray-100 py-8 sm:px-6">
     <!-- Header Profil -->
-    <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
+    <div class="flex flex-col sm:flex-row items-center overflow-y-scroll justify-between mb-8 gap-4">
       <div class="flex items-center space-x-4 relative w-full gap-1 px-3">
         <!-- Photo utilisateur -->
         <div class="relative ">
           <img v-if="user?.photo" :src="`http://localhost:8000/storage/${user?.photo}`" alt="Photo de profil"
             class=" w-16 h-16 rounded-full object-cover border-2 border-[var(--espace-vert)]" />
-          <div v-else class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-            <i class="fas fa-user-circle text-4xl"></i>
+          <div v-else class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 " :style="{
+            background: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#0af'}`
+          }">
+            <i class=" fas fa-user-circle text-4xl"></i>
           </div>
 
           <!-- Couronne -->
           <i v-if="user?.premium" class="fas fa-crown text-yellow-400 absolute -top-2 -right-2 text-lg p-1 rounded-full"
             :style="{
-  color : `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#000'}`  
-                             }"></i>
+              // color : `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#0af'}`  
+            }"></i>
 
           <!-- Bouton modifier -->
           <button @click="showEditMenu = !showEditMenu"
             class="absolute bottom-0 right-0 w-6 h-6 bg-[var(--espace-or)] text-[var(--espace-vert)] rounded-full flex items-center justify-center hover:bg-[var(--espace-vert)] hover:text-white"
             :style="{
-              background: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#000'}`
+              // background: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#0af'}`
             }">
             <i class="fas fa-pencil-alt text-xs"></i>
           </button>
@@ -42,16 +44,15 @@
         <input ref="galleryInput" type="file" accept="image/*" class="hidden" @change="handleFileChange" />
 
         <!-- Infos utilisateur -->
-        <div class="space-y-1">rr
-          <h1 class="text-2xl sm:text-3xl font-bold flex items-center gap-2 text-blue-500"
-            :style="{
-  color: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#000'}`  
-                             }">
-                             
+        <div class="space-y-1">
+          <h1 class="text-2xl sm:text-3xl font-bold flex items-center gap-2 text-blue-500" :style="{
+            color: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#0af'}`
+          }">
+
             {{ user?.nom }}
             <span v-if="user?.premium" class="text-black  text-xs px-3 py-1 rounded-full uppercase font-bold" :style="{
-                background: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#000'}`
-              }">
+              background: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#0af'}`
+            }">
               Premium
             </span>
           </h1>

@@ -208,7 +208,7 @@ onMounted(() => {
     <Loader :isLoading="isLoading" />
 
     <div class="h-full bg-gray-100 pt-5 px-4 sm:px-2">
-        <div class="h-full w-full">
+        <div class="h-full w-full overflow-y-scroll">
             <div class="flex justify-between items-center">
                 <h1 class="text-1xl md:text-2xl font-bold text-[var(--espace-vert)] text-md mb-2 font-poppins">
                     <i class="fas fa-box-open mr-1 text-[var(--espace-or)] text-md!important"></i> Mes Produits
@@ -225,64 +225,80 @@ onMounted(() => {
                 </div>
             </div>
             <div v-else-if="produits.length"
-                class="grid grid-cols-1 pt-4 pb-16 lg:pb-12 md:grid-cols-3 sm:grid-cols-2 overflow-y-scroll pt-4 h-full lg:grid-cols-4 gap-6">
+                class="grid grid-cols-1 pt-4 pb-2 lg:pb-12 md:grid-cols-3 sm:grid-cols-2  pt-4  lg:grid-cols-4 gap-6 ">
 
                 <div v-for="produit in produits" :key="produit.id"
-                    class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition relative">
-                    <router-link :to="`/produits/${produit.id}`" class="block relative">
-                        <div class="relative w-full h-40 overflow-hidden rounded-t-lg mb-2">
+                    class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition relative ">
+                    <div class="relative w-full h-40 overflow-hidden rounded-t-lg mb-2">
+
+                        <span v-if="produit.collaboratif"
+                            class="absolute z-12 top-2 left-2 bg-[var(--espace-or)] text-[var(--espace-vert)] text-[10px] font-semibold px-2 py-1 rounded-full font-poppins"
+                            aria-label="Produit collaboratif">
+                            Collaboratif
+                        </span>
+
+
+                        <router-link :to="`/produits/${produit.id}`" class="block relative">
                             <div class="flex w-full h-full slider-container"
                                 :style="{ transform: `translateX(-${currentSlideIndex(produit.id) * 100}%)` }">
                                 <img v-for="(photo, index) in produit.photos" :key="index" :src="photo"
-                                    class="h-40 object-contain flex-shrink-0 mx-auto" alt="Photo du produit" />
+                                    class="h-40 object-contain flex-shrink-0 mx-auto w-full" alt="Photo du produit" />
                             </div>
-                            <!-- Flèches visibles uniquement sur desktop -->
-                            <button v-if="produit.photos && produit.photos.length > 1" @click="prevSlide(produit.id)"
-                                class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-1 rounded-full hover:bg-opacity-75 hidden md:block">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-                            <button v-if="produit.photos && produit.photos.length > 1" @click="nextSlide(produit.id)"
-                                class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-1 rounded-full hover:bg-opacity-75 hidden md:block">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-                            <!-- Points (dots) pour la navigation -->
-                            <div v-if="produit.photos && produit.photos.length > 1"
-                                class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                                <span v-for="(photo, index) in produit.photos" :key="index"
-                                    class="w-2 h-2 rounded-full bg-gray-400"
-                                    :class="{ 'bg-[var(--espace-or)]': index === currentSlideIndex(produit.id) }"></span>
-                            </div>
+                        </router-link>
+
+                        <!-- Flèches visibles uniquement sur desktop -->
+                        <button v-if="produit.photos && produit.photos.length > 1" @click="prevSlide(produit.id)"
+                            class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-1 rounded-full hover:bg-opacity-75 hidden md:block">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+
+                        <button v-if="produit.photos && produit.photos.length > 1" @click="nextSlide(produit.id)"
+                            class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-1 rounded-full hover:bg-opacity-75 hidden md:block">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <!-- Points (dots) pour la navigation -->
+                        <div v-if="produit.photos && produit.photos.length > 1"
+                            class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                            <span v-for="(photo, index) in produit.photos" :key="index"
+                                class="w-2 h-2 rounded-full bg-gray-400"
+                                :class="{ 'bg-[var(--espace-or)]': index === currentSlideIndex(produit.id) }"></span>
                         </div>
-                        <div class="p-2">
-                            <h2 class="text-lg font-semibold flex justify-between text-[var(--espace-vert)] truncate">
+                    </div>
+                    <div class="p-2">
+                        <h2 class="text-lg font-semibold flex justify-between text-[var(--espace-vert)] truncate">
+                            <router-link :to="`/produits/${produit.id}`" class="block relative">
+
                                 {{ produit.nom }}
-                                <button @click="openEditModal(produit)"
-                                    class="text-[var(--espace-vert)] hover:text-[var(--espace-or)] p-1 rounded-full hover:bg-gray-100 transition">
-                                    <i class="fas fa-pencil text-sm"></i>
-                                </button>
-                            </h2>
-                            <p class="text-sm text-[var(--espace-gris)] line-clamp-2">
-                                {{ produit.description || "Aucune" }}
-                            </p>
-                            <p class="text-md font-bold text-[var(--espace-or)] mt-2">{{ produit.prix }} FCFA</p>
-                            <p class="text-sm text-[var(--espace-gris)]">Stock: {{ produit.quantite }}</p>
-                            <div class="text-sm text-[var(--espace-gris)] mt-2">
-                                <span><i class="fas fa-eye mr-1"></i> {{ produit.raw_views_count || 0 }} vues</span>
-                                <span class="ml-4"><i class="fas fa-heart mr-1"></i> {{ produit.favorites_count || 0 }}
-                                    favoris</span>
-                            </div>
-                        </div>
-                        <div class="absolute bottom-5 right-2 flex gap-2">
+
+                            </router-link>
+
                             <button @click="openEditModal(produit)"
                                 class="text-[var(--espace-vert)] hover:text-[var(--espace-or)] p-1 rounded-full hover:bg-gray-100 transition">
-                                <i class="fas fa-edit"></i>
+                                <i class="fas fa-pencil text-sm"></i>
                             </button>
-                            <button @click.stop="deleteProduit(produit.id)"
-                                class="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-gray-100 transition">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                        </h2>
+                        <p class="text-sm text-[var(--espace-gris)] line-clamp-2">
+                            {{ produit.description || "Aucune" }}
+                        </p>
+                        <p class="text-md font-bold text-[var(--espace-or)] mt-2">{{ produit.prix }} FCFA</p>
+                        <p class="text-sm text-[var(--espace-gris)]">Stock: {{ produit.quantite }}</p>
+                        <div class="text-sm text-[var(--espace-gris)] mt-2">
+
+                            <span><i class="fas fa-eye mr-1"></i> {{ produit.raw_views_count || 0 }} vues</span>
+                            <span class="ml-4"><i class="fas fa-heart mr-1"></i> {{ produit.favorites_count || 0 }}
+                                favoris</span>
                         </div>
-                    </router-link>
+                    </div>
+                    <!-- <div class="absolute bottom-5 right-2 flex gap-2">
+                        <button @click="openEditModal(produit)"
+                            class="text-[var(--espace-vert)] hover:text-[var(--espace-or)] p-1 rounded-full hover:bg-gray-100 transition">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button @click.stop="deleteProduit(produit.id)"
+                            class="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-gray-100 transition">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div> -->
 
                 </div>
             </div>

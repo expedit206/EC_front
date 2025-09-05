@@ -121,6 +121,7 @@ export interface Message {
     ville: string | null;
     premium: boolean;
     parrain_id: number | null;
+    
     role?: string; // Added
   };
   receiver: {
@@ -179,6 +180,7 @@ export interface Collaboration {
   statut: string;
   gains_totaux: string;
   user_id: number;
+  commercant: Commercant;
   created_at: string | null;
   updated_at: string | null;
 }

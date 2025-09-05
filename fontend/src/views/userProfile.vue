@@ -55,58 +55,90 @@
       </form>
     </section>
 
+    <!-- Merchant Information -->
+    <section v-if="user?.commercant" class="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-4">
+      <h2 class="text-lg sm:text-xl font-semibold text-[var(--espace-vert)]">Informations du Commerce</h2>
+      <div v-if="!editCommerce" class="space-y-2 text-[var(--espace-gris)]">
+        <div v-if="user.commercant.logo" class="w-24 h-24">
+          <img :src="`http://localhost:8000/storage/${user.commercant.logo}`" alt="Logo du commerce"
+            class="w-full h-full object-cover rounded-md shadow" />
+        </div>
+        <p><strong>Nom du commerce :</strong> {{ user.commercant.nom }}</p>
+        <p><strong>Description :</strong> {{ user.commercant.description || 'Non définie' }}</p>
+        <p><strong>Email :</strong> {{ user.commercant.email || 'Non défini' }}</p>
+        <p><strong>Téléphone :</strong> {{ user.commercant.telephone }}</p>
+        <p><strong>Ville :</strong> {{ user.commercant.ville }}</p>
+        <p><strong>Produits actifs :</strong> {{ user.commercant.active_products || 0 }}</p>
+        <button @click="editCommerce = true"
+          class="mt-2 w-full sm:w-auto bg-[var(--espace-or)] text-[var(--espace-vert)] font-medium px-4 py-2 rounded-md hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-colors">
+          Modifier
+        </button>
+      </div>
+      <form v-else @submit.prevent="updateCommerce" class="space-y-4">
+        <div>
+          <label class="block text-[var(--espace-gris)] text-sm font-medium" for="nom_commerce">Nom du commerce</label>
+          <input v-model="commerceForm.nom" id="nom_commerce" type="text" required
+            class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]"
+            placeholder="Nom du commerce" />
+        </div>
+        <div>
+          <label class="block text-[var(--espace-gris)] text-sm font-medium"
+            for="description_commerce">Description</label>
+          <textarea v-model="commerceForm.description" id="description_commerce" required
+            class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]"
+            placeholder="Description du commerce" rows="3"></textarea>
+        </div>
+        <div>
+          <label class="block text-[var(--espace-gris)] text-sm font-medium" for="email_commerce">Email</label>
+          <input v-model="commerceForm.email" id="email_commerce" type="email"
+            class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]"
+            placeholder="Email du commerce (optionnel)" />
+        </div>
+        <div>
+          <label class="block text-[var(--espace-gris)] text-sm font-medium" for="telephone_commerce">Téléphone</label>
+          <input v-model="commerceForm.telephone" id="telephone_commerce" type="tel" required
+            class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]"
+            placeholder="Téléphone du commerce" />
+        </div>
+        <div>
+          <label class="block text-[var(--espace-gris)] text-sm font-medium" for="ville_commerce">Ville</label>
+          <input v-model="commerceForm.ville" id="ville_commerce" type="text" required
+            class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]"
+            placeholder="Ville du commerce" />
+        </div>
+        <div>
+          <label class="block text-[var(--espace-gris)] text-sm font-medium" for="logo_commerce">Logo</label>
+          <input id="logo_commerce" type="file" accept="image/*" @change="handleLogoUpload"
+            class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]" />
+          <div v-if="commerceForm.logoPreview" class="mt-2 w-24 h-24">
+            <img :src="commerceForm.logoPreview" alt="Aperçu logo"
+              class="w-full h-full object-cover rounded-md shadow" />
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button type="submit"
+            class="w-full sm:w-auto bg-[var(--espace-or)] text-[var(--espace-vert)] font-medium px-4 py-2 rounded-md hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-colors">
+            Enregistrer
+          </button>
+          <button @click="editCommerce = false" type="button"
+            class="w-full sm:w-auto bg-gray-300 text-[var(--espace-vert)] font-medium px-4 py-2 rounded-md hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-colors">
+            Annuler
+          </button>
+        </div>
+      </form>
+    </section>
+
     <!-- Statistics -->
     <section class="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-4">
       <h2 class="text-lg sm:text-xl font-semibold text-[var(--espace-vert)]">Statistiques</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[var(--espace-gris)]">
-        <!-- <p><strong>Commandes totales :</strong> {{ stats?.commandes || 0 }}</p> -->
-        <!-- <p><strong>Parrainages actifs :</strong> {{ stats?.parrainages || 0 }}</p> -->
-        <!-- <p v-if="user.commercant"><strong>Revenus cumulés :</strong> {{ stats?.revenus || 0 }} FCFA</p>
-        <p v-if="user.commercant"><strong>Produits vendus :</strong> {{ stats?.produits_vendus || 0 }}</p> -->
         <p><strong>Dernière connexion :</strong> {{ user?.last_login || 'Non disponible' }}</p>
       </div>
     </section>
 
-    <!-- Collaborations -->
-    <!-- <section class="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-4">
-      <h2 class="text-lg sm:text-xl font-semibold text-[var(--espace-vert)]">Mes Collaborations</h2>
-      <div v-if="collaborations?.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div v-for="collab in collaborations" :key="collab.id" class="border rounded-md p-3 text-[var(--espace-gris)]">
-          <p><strong>Produit :</strong> {{ collab.produit.nom }}</p>
-          <p><strong>Prix :</strong> {{ collab.prix_revente }} FCFA</p>
-          <p><strong>Statut :</strong> {{ collab.statut }}</p>
-          <p><strong>Date :</strong> {{ new Date(collab.created_at).toLocaleDateString() }}</p>
-        </div>
-      </div>
-      <p v-else class="text-[var(--espace-gris)]">Aucune collaboration en cours.</p>
-    </section> -->
-
     <!-- Parrainage -->
     <section class="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-4">
       <h2 class="text-lg sm:text-xl font-semibold text-[var(--espace-vert)]">Mon Parrainage</h2>
-      <!-- <div v-if="parrainage?.niveau" class="space-y-4">
-        <p class="text-[var(--espace-gris)]">
-          <strong>Niveau actuel :</strong> {{ parrainage?.niveau.emoji }} {{ parrainage?.niveau.nom }}
-        </p>
-        <p class="text-[var(--espace-gris)]"><strong>Jetons :</strong> {{ user?.jetons }} jetons</p>
-        <div>
-          <p class="text-[var(--espace-gris)]"><strong>Avantages débloqués :</strong></p>
-          <ul class="list-disc list-inside text-[var(--espace-gris)]">
-            <li v-for="avantage in parrainage?.avantages" :key="avantage">{{ avantage }}</li>
-          </ul>
-        </div>
-        <div>
-          <p class="text-[var(--espace-gris)]">
-            <strong>Progression :</strong> {{ parrainage?.filleuls_commercants }} / {{ parrainage?.prochain_seuil }}
-            filleuls commerçants
-          </p>
-          <div class="w-full bg-gray-200 rounded-full h-2.5">
-            <div class="bg-[var(--espace-or)] h-2.5 rounded-full"
-              :style="{ width: `${(parrainage.filleuls_commercants / parrainage?.prochain_seuil * 100 || 0)}%` }"></div>
-          </div>
-        </div>
-      </div> -->
-      <!-- <p v-else class="text-[var(--espace-gris)]">Vous n'avez pas encore de niveau de parrainage?.</p> -->
     </section>
   </div>
 </template>
@@ -119,27 +151,48 @@ import apiClient from '../api/index';
 import { User } from "../components/types/index";
 
 const props = defineProps({
-  // user: null as User | null,
-  user: Object,
-  // collaborations: Array,
-  // stats: Object,
-  // parrainage: Object,
+  user: Object as () => User | null,
 });
-console.log(props);
 
 const authStore = useAuthStore();
 const toast = useToast();
 const editProfile = ref(false);
-// const user = authStore.user || props.user;
-const user = ref<User | null>(authStore.user || (props.user as User | null));
+const user = ref<User | null>(authStore.user || props.user);
 
 const profileForm = ref({
-  nom: authStore.user?.nom || '',
-  telephone: authStore.user?.telephone || '',
-  email: authStore.user?.email || '',
-  ville: authStore.user?.ville || '',
+  nom: user.value?.nom || '',
+  telephone: user.value?.telephone || '',
+  email: user.value?.email || '',
+  ville: user.value?.ville || '',
 });
 
+const editCommerce = ref(false);
+
+const commerceForm = ref({
+  nom: user.value?.commercant?.nom || '',
+  description: user.value?.commercant?.description || '',
+  email: user.value?.commercant?.email || '',
+  telephone: user.value?.commercant?.telephone || '',
+  ville: user.value?.commercant?.ville || '',
+  logo: null as File | null,
+  logoPreview: user.value?.commercant?.logo ? `http://localhost:8000/storage/${user.value.commercant.logo}` : null,
+});
+console.log(` com ${JSON.stringify(commerceForm.value)}`);
+const handleLogoUpload = (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0];
+  if (file) {
+    if (!file.type.startsWith('image/')) {
+      toast.error('Veuillez sélectionner une image.');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Image trop volumineuse (max 2Mo).');
+      return;
+    }
+    commerceForm.value.logo = file;
+    commerceForm.value.logoPreview = URL.createObjectURL(file);
+  }
+};
 
 const updateProfile = async () => {
   try {
@@ -150,9 +203,7 @@ const updateProfile = async () => {
       user.value.email = response.data.user.email || '';
       user.value.ville = response.data.user.ville || '';
     }
-    // authStore.user = user;
     authStore.user = response.data.user;
-
     editProfile.value = false;
     toast.success('Profil mis à jour avec succès.');
   } catch (error: any) {
@@ -160,12 +211,56 @@ const updateProfile = async () => {
   }
 };
 
-watch(() => user, (newUser) => {
+const updateCommerce = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('nom', commerceForm.value.nom);
+    formData.append('description', commerceForm.value.description);
+    formData.append('email', commerceForm.value.email);
+    formData.append('telephone', commerceForm.value.telephone);
+    formData.append('ville', commerceForm.value.ville);
+    if (commerceForm.value.logo) {
+      formData.append('logo', commerceForm.value.logo);
+    }
+    
+    const response = await apiClient.post('/commercant/update', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    console.log(` com ${JSON.stringify(response.data)}`);
+
+    if (user.value?.commercant) {
+      user.value.commercant.nom = response.data.commercant.nom;
+      user.value.commercant.description = response.data.commercant.description;
+      user.value.commercant.email = response.data.commercant.email;
+      user.value.commercant.telephone = response.data.commercant.telephone;
+      user.value.commercant.ville = response.data.commercant.ville;
+      user.value.commercant.logo = response.data.commercant.logo;
+    }
+    authStore.user = user.value;
+    commerceForm.value.logoPreview = response.data.commercant.logo ? `http://localhost:8000/storage/${response.data.commercant.logo}` : null;
+    editCommerce.value = false;
+    toast.success('Commerce mis à jour avec succès.');
+  } catch (error: any) {
+    toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour du commerce.');
+  }
+};
+
+watch(() => authStore.user, (newUser) => {
+  user.value = newUser || props.user;
   profileForm.value = {
-    nom: newUser?.value?.nom || '',
-    telephone: newUser?.value?.telephone || '',
-    email: newUser?.value?.email || '',
-    ville: newUser?.value?.ville || '',
+    nom: newUser?.nom || '',
+    telephone: newUser?.telephone || '',
+    email: newUser?.email || '',
+    ville: newUser?.ville || '',
+  };
+  commerceForm.value = {
+    nom: newUser?.commercant?.nom || '',
+    description: newUser?.commercant?.description || '',
+    email: newUser?.commercant?.email || '',
+    telephone: newUser?.commercant?.telephone || '',
+    ville: newUser?.commercant?.ville || '',
+    logo: null,
+    logoPreview: newUser?.commercant?.logo ? `http://localhost:8000/storage/${newUser.commercant.logo}` : null,
   };
 }, { immediate: true });
 </script>
