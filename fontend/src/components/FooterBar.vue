@@ -70,7 +70,7 @@ watch(
                                 'animate-scale': (link.to === '/collaborations' && animateCollaborationBadge) || (link.to === '/messages' && animateMessagesBadge),
                             }" :aria-label="link.to === '/collaborations'
                                 ? 'Collaborations en attente'
-                                : link.to === '/messages'
+                                : link.to === '/messages'   
                                     ? 'Messages non lus'
                                     : ''">
                             {{  link.badge }}

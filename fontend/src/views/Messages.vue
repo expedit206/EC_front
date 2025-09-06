@@ -42,7 +42,6 @@ const clearProductTag = () => {
 const fetchConversations = async () => {
     try {
         const res = await apiClient.get('/conversations');
-        console.log(res.data);
         conversations.value = res.data.conversations;
     } catch (e) {
         toast.error('Erreur lors de la récupération des conversations');
@@ -67,12 +66,28 @@ const fetchMessages = async (receiverId: number, resetOffset = true) => {
 
         hasMore.value = res.data.hasMore;
 
-        // Utiliser les données du produit tagué pour le nom si disponible
         const storedProduct = localStorage.getItem('chatProduct');
         const conversation = conversations.value.find(c => c.user_id === receiverId);
-        selectedConversation.value = conversation || {
+
+        // Priorité au commerçant si is_commercant est vrai
+        let name = '';
+        let profilePhoto = '/default-avatar.png';
+        if (conversation) {
+            name = conversation.is_commercant ? conversation.name : (res.data.user?.nom || '');
+            profilePhoto = conversation.profile_photo;
+        } else if (storedProduct) {
+            const productData = JSON.parse(storedProduct);
+            name = productData.commercant_name || res.data.user?.nom || '';
+            profilePhoto = conversation?.profile_photo || '/default-avatar.png';
+        } else {
+            name = res.data.user?.nom || '';
+        }
+
+        selectedConversation.value = {
             user_id: receiverId,
-            name: storedProduct ? JSON.parse(storedProduct).name_user : (res.data.user?.nom || 'Inconnu'),
+            name: name,
+            is_commercant: conversation?.is_commercant || false,
+            profile_photo: profilePhoto,
         };
 
         if (storedProduct) {
@@ -147,20 +162,6 @@ const sendMessage = async () => {
         if (product.value) {
             clearProductTag();
         }
-
-        // if (authStore.user?.id) {
-        //     window.Echo.channel(`chat.${authStore.user.id}`)
-        //         .listen('MessageSent', (event: any) => {
-        //             if (selectedConversation.value?.user_id === event.sender_id) {
-        //                 console.log("📩 Nouveau message reçu :", event.message);
-        //                 messages.value.push(event.message);
-        //                 scrollToBottom();
-        //                 userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
-        //             }
-        //         });
-        // }
-
-        // await fetchMessages(selectedConversation.value.user_id);
     } catch (e) {
         toast.error('Échec d\'envoi');
         console.error(e);
@@ -195,38 +196,21 @@ const toggleSidebar = () => {
     isSidebarOpen.value = !isSidebarOpen.value;
 };
 
+const viewProfile = (userId: number, isCommercant: boolean) => {
+    const profileRoute = isCommercant ? `/commercants/${userId}` : `/users/${userId}`;
+    router.push(profileRoute);
+};
+
 onMounted(() => {
     fetchConversations();
     if (route.params.receiverId) {
         fetchMessages(parseInt(route.params.receiverId as string));
     }
     window.addEventListener('resize', handleResize);
-
-    if (authStore.user?.id && window.Echo) {
-        try {
-            window.Echo.channel(`public-channel`)
-                .listen('.message.sent', (event: any) => {
-                    const message = typeof event.message === 'string' ? JSON.parse(event.message) : event.message;
-                    if (selectedConversation.value?.user_id === message.sender?.id) {
-                        messages.value.push(message);
-                        scrollToBottom();
-                        userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
-                    }
-                })
-                .error((error: any) => {
-                    console.warn("Connexion Echo échouée, les messages temps réel ne seront pas reçus.", error);
-                });
-        } catch (error) {
-            console.warn("Impossible de se connecter à Echo / Pusher.", error);
-        }
-    }
 });
 
 onUnmounted(() => {
     window.removeEventListener('resize', handleResize);
-    if (authStore.user?.id) {
-        window.Echo.leave(`chat.${authStore.user.id}`);
-    }
 });
 
 watch(() => route.params.receiverId, async (receiverId) => {
@@ -245,16 +229,24 @@ watch(() => route.params.receiverId, async (receiverId) => {
                 <div v-for="conv in conversations" :key="conv.user_id" @click="selectConversation(conv.user_id)"
                     class="p-2 hover:bg-gray-100 cursor-pointer rounded flex items-center justify-between transition-colors">
                     <div class="flex items-center">
-                        <div class="w-10 h-10 bg-[var(--espace-or)] rounded-full mr-2 flex items-center justify-center">
-                            <span class="text-white font-bold">{{ conv.name.charAt(0) }}</span>
+                        <div @click.stop="viewProfile(conv.user_id, conv.is_commercant)"
+                            class="w-10 h-10 bg-[var(--espace-or)] rounded-full mr-2 flex items-center justify-center overflow-hidden cursor-pointer">
+                            <img :src="conv.profile_photo" alt="Photo de profil" class="w-full h-full object-cover">
                         </div>
                         <div class="min-w-0">
                             <p class="font-semibold text-[var(--espace-vert)] truncate">{{ conv.name }}</p>
                             <p class="text-xs text-[var(--espace-gris)] truncate">{{ conv.last_message }}</p>
                         </div>
                     </div>
-                    <div class="text-xs text-[var(--espace-gris)] ml-2 whitespace-nowrap">
-                        {{ new Date(conv.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
+                    <div class="flex items-center">
+                        <div v-if="conv.unread_count > 0"
+                            class="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center mr-2">
+                            {{ conv.unread_count }}
+                        </div>
+                        <div class="text-xs text-[var(--espace-gris)] ml-2 whitespace-nowrap">
+                            {{ new Date(conv.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                            }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -267,7 +259,7 @@ watch(() => route.params.receiverId, async (receiverId) => {
                     <i class="fas fa-arrow-left text-2xl"></i>
                 </button>
                 <h2 v-if="selectedConversation" class="text-xl h-[10%] font-semibold text-[var(--espace-vert)] p-4">
-                    {{ selectedConversation.name || 'Inconnu' }}
+                    {{ selectedConversation.name }}
                 </h2>
             </div>
 
@@ -364,4 +356,4 @@ button:active {
     transform: scale(0.95);
     transition: transform 0.1s ease-in-out;
 }
-</style>    
+</style>
