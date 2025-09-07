@@ -129,12 +129,12 @@
     </section>
 
     <!-- Statistics -->
-    <section class="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-4">
+    <!-- <section class="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-4">
       <h2 class="text-lg sm:text-xl font-semibold text-[var(--espace-vert)]">Statistiques</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[var(--espace-gris)]">
         <p><strong>Dernière connexion :</strong> {{ user?.last_login || 'Non disponible' }}</p>
       </div>
-    </section>
+    </section> -->
 
     <!-- Parrainage -->
     <section class="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-4">

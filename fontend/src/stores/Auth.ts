@@ -30,14 +30,15 @@ export const useAuthStore = defineStore("auth", {
         `Bearer ${this.token}`;
     },
 
-    // Inscription
+    
+
     async register(data: {
       nom: string;
-      telephone: string;  
+      telephone: string;
       email?: string;
       ville: string;
       mot_de_passe: string;
-      parrain_id?: string;
+      parrain_code?: string; // Changé de parrain_id à parrain_code
     }) {
       const response = await apiClient.post("/register", data);
 
@@ -45,10 +46,9 @@ export const useAuthStore = defineStore("auth", {
       this.token = response.data.token;
 
       localStorage.setItem("token", this.token ?? "");
-      apiClient.defaults.headers.common["Authorization"] =
-        `Bearer ${this.token}`;
+      apiClient.defaults.headers.common["Authorization"] = `Bearer ${this.token}`;
     },
-
+    // Autres actions...
     // Vérifier l'authentification (profil)
     async checkAuth() {
       if (!this.token) return false;

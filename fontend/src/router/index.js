@@ -15,12 +15,13 @@ import CommercantDetails from "../views/CommercantDetails.vue";
 import CommercantCreate from "../views/CommercantCreate.vue";
 import ParrainageInfo from "../views/ParrainageInfo.vue";
 import Messages from "../views/Messages.vue";
-import JetonHistory from "../views/JetonHistory.vue";
 import AchatJetonModal from "../components/AchatJetonModal.vue";
+import JetonHistory from "../views/JetonHistory.vue";
+import ProfilePublic from "../views/ProfilePublic.vue";
 
 const routes = [
   { path: "/login", component: Login, name: "login" },
-  { path: "/register", component: Register, name: "register" },
+  { path: "/register/:code?", component: Register, name: "register" },
   {
     path: "/profil",
     component: Profile,
@@ -46,6 +47,7 @@ const routes = [
     path: "/commercants/:commercantId",
     component: CommercantDetails,
     meta: { requiresAuth: true },
+    name: "commercant-profile",
   },
 
   {
@@ -101,6 +103,12 @@ const routes = [
     name: "collaborations",
     component: Collaborations,
     meta: { requiresAuth: true },
+  },
+
+  {
+    path: "/profile/public/:id",
+    name: "public-profile",
+    component: ProfilePublic,
   },
 
   {

@@ -5,6 +5,7 @@ import { useAuthStore } from "../stores/Auth";
 import apiClient from "../api/index";
 import { useToast } from "vue-toastification";
 import { Parrainage } from "../components/types/index"; // Import de l'interface Parrainage
+
 const authStore = useAuthStore();
 const router = useRouter();
 const toast = useToast();
@@ -21,9 +22,22 @@ const isCreating = ref(false);
 const niveauActuel = ref<any>({});
 const niveauSuivant = ref<any>(null);
 const progression = ref(0);
+const totalParrainages = ref(0); // Total des filleuls
+const totalParrainagesCommercants = ref(0); // Total des commerçants
+const filter = ref<"all" | "commercants" | "nonCommercants">("all"); // État du filtre
 
 // Calcul de la couleur actuelle
 const currentColor = computed(() => niveauActuel.value?.couleur || "#6b7280"); // Couleur par défaut si non définie
+
+// Filtrer les parrainages selon l'état du filtre
+const filteredParrainages = computed(() => {
+    if (filter.value === "commercants") {
+        return parrainages.value.filter((p) => p.est_commercant);
+    } else if (filter.value === "nonCommercants") {
+        return parrainages.value.filter((p) => !p.est_commercant);
+    }
+    return parrainages.value; // "all"
+});
 
 // Récupérer les données de parrainage
 const fetchParrainageData = async () => {
@@ -36,16 +50,16 @@ const fetchParrainageData = async () => {
     try {
         const response = await apiClient.get("/parrainages/dashboard");
         const data = response.data;
+        console.log(data);
         code.value = data.code || "";
-        console.log(data)
-        link.value = data.code ? `https://espacecameroun.cm/invite/${data.code}` : "";
+        link.value = data.code ? `http://localhost:4000/register/${data.code}` : "";
         parrainages.value = data.parrainages || [];
-        totalGains.value = data.total_gains || 0; // Total en jetons
+        totalGains.value = data.total_gains || 0;
         niveauActuel.value = data.niveau_actuel;
-        console.log(niveauActuel.value)
-
         niveauSuivant.value = data.niveau_suivant;
         progression.value = data.progression;
+        totalParrainages.value = data.total_parrainages || 0;
+        totalParrainagesCommercants.value = data.total_parrainages_commercants || 0;
     } catch (error) {
         toast.error("Erreur lors de la récupération des données de parrainage");
         console.error(error);
@@ -88,7 +102,7 @@ const createCode = async () => {
     try {
         const response = await apiClient.post("/parrainages/createCode", { code: customCode.value.trim() });
         code.value = response.data.code;
-        link.value = response.data.link || `https://espacecameroun.cm/invite/${response.data.code}`;
+        link.value = response.data.link || `http://localhost:4000/register/${response.data.code}`;
         toast.success(response.data.message || "Code créé avec succès !");
         await fetchParrainageData();
     } catch (error: any) {
@@ -122,6 +136,17 @@ const shareLink = (platform: string) => {
     window.open(url, "_blank");
 };
 
+// Naviguer vers le profil
+const goToProfile = (parrainage: Parrainage) => {
+    if (parrainage.est_commercant) {
+        router.push(`/commercants/${parrainage.id}`); // Route pour commerçant
+    } else {
+        router.push({ name: "public-profile", params: { id: parrainage.id } });
+    }
+};
+
+
+
 // Initialisation au montage
 onMounted(() => {
     fetchParrainageData();
@@ -133,15 +158,17 @@ onMounted(() => {
         <div class="container mx-auto max-w-4xl">
             <!-- Section des Niveaux de Parrainage -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h2 class="text-lg font-semibold  mb-4" :style="{ color: currentColor }">Niveaux de Parrainage</h2>
-                <p class=" text-[var(--espace-gris)] text-sm mb-2" :style="{ color: currentColor }">
-                    Votre niveau actuel : <strong>{{ niveauActuel ? niveauActuel.nom : "pas niveau" }} {{
+                <h2 class="text-lg font-semibold mb-4" :style="{ color: currentColor }">Niveaux de Parrainage</h2>
+                <p class="text-[var(--espace-gris)] text-sm mb-2 flex justify-between" :style="{ color: currentColor }">
+                <div>
+                    Votre niveau actuel : <strong>{{ niveauActuel ? niveauActuel.nom : "Pas de niveau" }} {{
                         niveauActuel?.emoji }}
-                        ({{ parrainages.length }}/{{ niveauSuivant ? niveauSuivant.filleuls_requis :
-                        niveauActuel?.filleuls_requis
-                        }})</strong>
-                    <span v-if="niveauActuel?.jetons_bonus > 0" class="ml-2">+{{ niveauActuel?.jetons_bonus }} jetons
-                        bonus</span>
+                        ({{ totalParrainagesCommercants }}/{{ niveauSuivant ? niveauSuivant.filleuls_requis :
+                            niveauActuel?.filleuls_requis
+                        }} commerçants)</strong>
+                </div>
+                <span v-if="niveauSuivant?.jetons_bonus > 0" class="ml-2">+{{ niveauSuivant?.jetons_bonus }} jetons
+                </span>
                 </p>
                 <div class="w-full bg-gray-200 rounded-full h-4">
                     <div class="h-4 rounded-full bg-[var(--espace-or)] transition-all duration-300" :style="{
@@ -151,7 +178,7 @@ onMounted(() => {
                 </div>
                 <p class="text-[var(--espace-gris)] text-xs mt-2">
                     Prochain niveau : {{ niveauSuivant ? niveauSuivant.nom : "Légende 🏆" }} à
-                    {{ niveauSuivant ? niveauSuivant.filleuls_requis : "1000+" }} parrainages
+                    {{ niveauSuivant ? niveauSuivant.filleuls_requis : "1000+" }} commerçants
                 </p>
                 <p v-if="niveauActuel.avantages?.length" class="text-[var(--espace-gris)] text-xs mt-1">
                     Avantages : {{ niveauActuel.avantages.join(", ") }}
@@ -165,8 +192,8 @@ onMounted(() => {
             <!-- Bloc Explicatif -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-6">
                 <p class="text-[var(--espace-gris)] text-sm sm:text-base">
-                    Invitez des amis avec votre lien ou code unique et gagnez des récompenses ! Recevez
-                    <strong>1 jeton</strong> pour chaque commerçant actif parrainé.
+                    Invitez des amis avec votre lien ou code unique et gagnez des récompenses ! Atteignez des niveaux
+                    supérieurs pour débloquer des jetons et des avantages.
                 </p>
             </div>
 
@@ -220,10 +247,19 @@ onMounted(() => {
                 </div>
             </div>
 
-            <!-- Tableau des Parrainés -->
+            <!-- Tableau des Parrainés avec Filtre -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-6">
                 <h2 class="text-lg font-semibold text-[var(--espace-vert)] mb-4">Mes Utilisateurs Parrainés</h2>
-                <div v-if="parrainages.length" class="overflow-x-auto">
+                <!-- Filtre avec menu déroulant -->
+                <div class="mb-4">
+                    <select v-model="filter"
+                        class="w-full sm:w-1/3 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]">
+                        <option value="all">Tous</option>
+                        <option value="commercants">Commerçants</option>
+                        <option value="nonCommercants">Non Commerçants</option>
+                    </select>
+                </div>
+                <div v-if="filteredParrainages.length" class="overflow-x-auto">
                     <table class="w-full text-sm text-left text-[var(--espace-gris)]">
                         <thead class="bg-[var(--espace-vert)] text-[var(--espace-blanc)]">
                             <tr>
@@ -233,18 +269,20 @@ onMounted(() => {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="p in parrainages" :key="p.id" class="border-b hover:bg-gray-50">
-                                <td class="px-4 py-2">{{ p.filleul_nom || "Anonyme" }}</td>
+                            <tr v-for="p in filteredParrainages" :key="p.id" class="border-b hover:bg-gray-50">
+                                <td class="px-4 py-2 cursor-pointer text-blue-500 hover:underline"
+                                    @click="goToProfile(p)">
+                                    {{ p.filleul_nom || "Anonyme" }}
+                                </td>
                                 <td class="px-4 py-2">{{ new Date(p.date_inscription).toLocaleDateString("fr-FR") }}
                                 </td>
-                                <td class="px-4 py-2">{{ p.est_commerçant ? "Oui" : "Non" }}</td>
-                                <!-- Correction de est_commercant -->
+                                <td class="px-4 py-2">{{ p.est_commercant ? "Oui" : "Non" }}</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
                 <p v-else class="text-center text-[var(--espace-gris)] py-4">
-                    Aucun utilisateur parrainé pour le moment. Commencez à inviter dès maintenant !
+                    Aucun utilisateur parrainé correspondant au filtre. Commencez à inviter dès maintenant !
                 </p>
             </div>
 
@@ -255,11 +293,11 @@ onMounted(() => {
                     {{ totalGains }} jetons
                 </p>
                 <p class="text-[var(--espace-gris)] mt-2">
-                    🎉 Vous avez invité <strong>{{ parrainages.length }}</strong> utilisateurs, dont
-                    <strong>{{parrainages.filter((p : Parrainage) => p.est_commerçant).length}}</strong> sont
-                    commerçants !
+                    🎉 Vous avez invité <strong>{{ totalParrainages }}</strong> utilisateurs, dont
+                    <strong>{{ totalParrainagesCommercants }}</strong> sont commerçants !
                 </p>
-                <p class="text-[var(--espace-gris)]">⬇️ Gagnez <strong>1 jeton</strong> par commerçant actif parrainé.
+                <p class="text-[var(--espace-gris)] mt-2">
+                    Débloquez plus de jetons et d'avantages en atteignant les niveaux supérieurs.
                 </p>
             </div>
         </div>

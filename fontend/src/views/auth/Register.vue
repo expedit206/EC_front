@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { useToast } from 'vue-toastification';
 import { useAuthStore } from '../../stores/Auth';
 import FormField from '../../components/Form.vue';
@@ -11,7 +11,7 @@ const form = ref({
     email: '',
     ville: '',
     mot_de_passe: '',
-    parrain_id: '',
+    parrain_code: '', // Changé de parrain_id à parrain_code
 });
 
 const errors = ref<{
@@ -20,15 +20,23 @@ const errors = ref<{
     email?: string;
     ville?: string;
     mot_de_passe?: string;
-    parrain_id?: string;
+    parrain_code?: string; // Changé de parrain_id à parrain_code
 }>({});
 const router = useRouter();
+const route = useRoute();
 const toast = useToast();
 const authStore = useAuthStore();
 
+onMounted(() => {
+    // Extraire le code de parrainage depuis l'URL (ex: /register/DSFDSF)
+    const parrainCodeFromUrl = route.params.code as string;
+    if (parrainCodeFromUrl) {
+        form.value.parrain_code = parrainCodeFromUrl;
+    }
+});
+
 const register = async () => {
     try {
-
         console.log('Envoi des données d\'inscription:', form.value);
         await authStore.register(form.value);
         toast.success('Inscription réussie !');
@@ -64,8 +72,8 @@ const register = async () => {
                     :error="errors.ville" />
                 <FormField label="Mot de passe" icon="fa-lock" v-model="form.mot_de_passe" type="password" required
                     :error="errors.mot_de_passe" />
-                <FormField label="Code de parrainage (optionnel)" icon="fa-users" v-model="form.parrain_id" type="text"
-                    :error="errors.parrain_id" />
+                <FormField label="Code de parrainage (optionnel)" icon="fa-users" v-model="form.parrain_code"
+                    type="text" :error="errors.parrain_code" />
                 <button type="submit"
                     class="w-full bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold p-3 rounded-xl hover:bg-[var(--espace-vert)] hover:text-white transition flex items-center justify-center shadow-md">
                     <i class="fas fa-user-plus mr-2"></i> S'inscrire

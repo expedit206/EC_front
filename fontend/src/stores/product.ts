@@ -45,7 +45,7 @@ export const useProductStore = defineStore("product", {
           },
         });
         console.log(response.data.data);
-        console.log(response.data);
+        // console.log(response.data.data);
         // console.log(response.data.data[0].is_favorited_by);
 
         if (params.per_page === "all") {
@@ -185,5 +185,5 @@ export const useProductStore = defineStore("product", {
     setUserId(userId: any) {
       this.userId = userId;
     },
-  },
+  }
 });

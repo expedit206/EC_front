@@ -1,7 +1,7 @@
 <template>
   <div class="overflow-y-scroll min-h-screen relative bg-gray-100 py-8 sm:px-6">
     <!-- Header Profil -->
-    <div class="flex flex-col sm:flex-row items-center overflow-y-scroll justify-between mb-8 gap-4">
+    <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
       <div class="flex items-center space-x-4 relative w-full gap-1 px-3">
         <!-- Photo utilisateur -->
         <div class="relative ">

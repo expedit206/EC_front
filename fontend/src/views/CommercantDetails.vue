@@ -6,7 +6,6 @@ import apiClient from '../api/index';
 import AppHeader from '../components/AppHeader.vue';
 import Loader from '../components/Loader.vue';
 import ProductCard from '../components/ProductCard.vue';
-import { useProductStore } from '../stores/product';
 
 const route = useRoute();
 const toast = useToast();
@@ -17,20 +16,17 @@ const averageRating = ref<number>(0); // Note moyenne
 const voteCount = ref<number>(0); // Nombre de votes
 const showModal = ref(false); // Contrôle l'affichage du modal
 
-// Utilisation du store pour les produits
-const productStore = useProductStore();
-
 const fetchCommerçantDetails = async () => {
     isLoading.value = true;
     try {
         const response = await apiClient.get(`/commercant/${route.params.commercantId}`);
-        console.log(response.data);
+        console.log(response.data); // Pour déboguer la structure de la réponse
         commerçant.value = response.data.commercant;
         averageRating.value = response.data.average_rating || 0;
-        // Charger tous les produits dans le store si ce n'est pas déjà fait
         voteCount.value = response.data.vote_count || 0; // Ajout du nombre de votes
-        if (productStore.products.length === 0) {
-            await productStore.fetchProducts({ 'per_page': 'all' });
+        // Vérifier si les produits sont inclus dans la réponse (par exemple, commerçant.produits)
+        if (!commerçant.value.produits) {
+            console.warn('Aucun produit trouvé dans la réponse de l\'API pour ce commerçant.');
         }
     } catch (error) {
         toast.error('Erreur lors du chargement des détails du commerçant.');
@@ -61,16 +57,17 @@ const submitRating = async () => {
 
 const handleFavorite = async () => {
     try {
-        await productStore.toggleFavorite(productStore.product.id);
+        // Note : Cette fonction dépendait du store, à ajuster si nécessaire
+        console.warn('handleFavorite n\'est pas implémenté sans store. Ajustez selon votre backend.');
     } catch (error: any) {
         toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour des favoris.');
     }
 };
 
-// Filtrer les produits du commerçant depuis le store
-const commerçantProduits = computed(() =>
-    productStore.products.filter((p: any) => p.commercant_id === route.params.commercantId)
-);
+// Filtrer les produits du commerçant depuis la réponse API
+const commerçantProduits = computed(() => {
+    return commerçant.value?.produits || [];
+});
 
 // Ouvre le modal au clic sur les étoiles
 const openRatingModal = () => {
@@ -84,7 +81,7 @@ onMounted(async () => {
 
 <template>
     <Loader :isLoading="isLoading" />
-    <div class="min-h-screen bg-gray-100">
+    <div class="overflow-y-scroll bg-gray-100">
         <AppHeader />
         <div class="container mx-auto px-4 sm:px-6 py-8">
             <!-- Bannière du commerçant -->
@@ -98,7 +95,8 @@ onMounted(async () => {
                         <i v-else class="fas fa-user text-3xl text-[var(--espace-vert)]"></i>
                     </div>
                     <div class="flex-1">
-                        <h1 class="text-3xl font-bold text-[var(--espace-vert)] mb-2">{{ commerçant.nom }}</h1>
+                        <h1 class="text-3xl font-bold text-[var(--espace-vert)] mb-2 text-center">
+                            Commerçant : {{ commerçant.nom }}</h1>
                         <p class="text-sm text-[var(--espace-gris)] mb-1"><strong>Ville :</strong> {{ commerçant.ville
                         }}</p>
                         <p class="text-sm text-[var(--espace-gris)] mb-1"><strong>Inscrit depuis :</strong> {{ new
@@ -108,18 +106,42 @@ onMounted(async () => {
                         <p v-if="commerçant.telephone" class="text-sm text-[var(--espace-gris)]"><strong>Téléphone
                                 :</strong> {{ commerçant.telephone }}</p>
                         <!-- Note moyenne avec nombre de votes -->
-                        <div class="mt-2 flex  space-x-2 flex-col">
+                        <div class="mt-2 flex space-x-2 flex-col">
                             <div class="flex items-center space-x-1 cursor-pointer" @click="openRatingModal">
-                                <span v-for="star in 5" :key="star" class="text-yellow-400">
-                                    <i :class="star <= Math.round(averageRating) ? 'fas fa-star' : 'far fa-star'"></i>
+                                <span v-for="star in 5" :key="star" class="relative text-yellow-400 w-5 h-5">
+                                    <!-- Étoile vide -->
+                                    <i class="far fa-star absolute left-0 top-0"></i>
+
+                                    <!-- Étoile pleine, masquée partiellement si demi -->
+                                    <i class="fas fa-star absolute left-0 top-0 overflow-hidden" :style="{
+                                        width:
+                                            star <= Math.floor(averageRating)
+                                                ? '100%'
+                                                : star === Math.ceil(averageRating) && averageRating % 1 !== 0
+                                                    ? `${(averageRating % 1) * 100}%`
+                                                    : '0%',
+                                    }"></i>
                                 </span>
+
                                 <p class="text-sm text-[var(--espace-gris)]">
-                                    {{ averageRating.toFixed(1) }}/5
+                                    {{ Number(averageRating).toFixed(1) }}/5
                                 </p>
                             </div>
+
                             <span class="text-xs text-[var(--espace-gris)]">({{ voteCount }} votes)</span>
                         </div>
                     </div>
+                </div>
+                <!-- Liens vers le chat et le profil public avec style plat -->
+                <div class="mt-4 flex flex-col sm:flex-row gap-4">
+                    <router-link :to="`/chat/${commerçant.id}`"
+                        class="inline-flex items-center px-4 py-2 border-2 border-[var(--espace-or)] text-[var(--espace-vert)] rounded-lg hover:bg-[var(--espace-or)] hover:text-[var(--espace-blanc)] transition-colors duration-200">
+                        <i class="fas fa-comment mr-2"></i> Envoyer un message
+                    </router-link>
+                    <router-link :to="`/public-profile/${commerçant.user_id || commerçant.id}`"
+                        class="inline-flex items-center px-4 py-2 border-2 border-[var(--espace-or)] text-[var(--espace-vert)] rounded-lg hover:bg-[var(--espace-or)] hover:text-[var(--espace-blanc)] transition-colors duration-200">
+                        <i class="fas fa-user mr-2"></i> Voir Profil Public
+                    </router-link>
                 </div>
                 <div class="mt-4 flex flex-wrap gap-4">
                     <span
@@ -211,5 +233,14 @@ button:hover {
 
 button:active {
     transform: scale(0.95);
+}
+
+/* Style plat pour les liens */
+router-link {
+    text-decoration: none;
+}
+
+router-link:hover {
+    text-decoration: none;
 }
 </style>

@@ -317,7 +317,7 @@ watch(productStore.product, (newProduit) => {
                             </p>
                             <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4 text-xs text-[var(--espace-gris)]">
                                 <p><strong>Catégorie :</strong> {{ productStore.product.category?.nom || 'Non spécifiée'
-                                }}</p>
+                                    }}</p>
                                 <p><strong>Quantité :</strong> {{ productStore.product.quantite }}</p>
                                 <p><strong>Ville :</strong> {{ productStore.product.ville || 'Non spécifiée' }}</p>
                                 <p><strong>Ajouté le :</strong> {{ new
@@ -364,7 +364,9 @@ watch(productStore.product, (newProduit) => {
                                     }}
                                 </p>
                                 <p class="text-xs text-[var(--espace-gris)] mb-2">
-                                    <strong>Note :</strong> {{ productStore.product.commercant?.rating || 'Non évalué'
+                                    <strong>Note :</strong> {{
+                                     
+                                    Number(productStore.product.commercant?.rating).toFixed(1) || 'Non évalué'
                                     }} / 5
                                 </p>
                                 <router-link :to="`/commercants/${productStore.product.commercant_id}`"
@@ -429,7 +431,7 @@ watch(productStore.product, (newProduit) => {
                         </h2>
                         <p class="text-xs text-[var(--espace-gris)] mb-3">
                             Proposez un prix de revente (minimum : {{ productStore.product.prix +
-                                (productStore.product.marge_min || 0) }} XAF)
+                            (productStore.product.marge_min || 0) }} XAF)
                         </p>
                         <form @submit.prevent="submitCollaboration" class="space-y-3">
                             <div>
