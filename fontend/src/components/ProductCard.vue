@@ -13,7 +13,18 @@ const props = defineProps<{
 const emit = defineEmits(['toggle-favorite', 'handleToggleFavorite']);
 const toast = useToast();
 const productStore = useProductStore();
-// console.log(props.produit);
+
+// Fonction pour formater les nombres (vues et favoris)
+const formatNumber = (num: number | undefined): string => {
+  if (num == null || isNaN(num) || num === 0) return "0";
+
+  const absNum = Math.abs(num);
+  if (absNum < 1000) return num.toString();
+  if (absNum < 10000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + "k";
+  if (absNum < 1000000) return Math.floor(num / 1000) + "k";
+  if (absNum < 1000000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + "M";
+  return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + "B";
+};
 
 // Gestion du slider
 const currentSlideIndex = ref(0);
@@ -37,7 +48,7 @@ const handleFavorite = async () => {
 
 <template>
   <div
-    class=" bg-[var(--espace-blanc)] border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-all duration-200">
+    class="bg-[var(--espace-blanc)] border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-all duration-200">
     <router-link :to="`/produits/${produit.id}`" class="block relative">
       <!-- Slider pour les images du produit -->
       <div class="relative w-full h-32 overflow-hidden rounded-lg mb-2">
@@ -47,8 +58,6 @@ const handleFavorite = async () => {
             :key="index" :src="photo" class="w-full h-full object-contain flex-shrink-0 mx-auto"
             :alt="`Image de ${produit.nom} - ${index + 1}`" />
         </div>
-
-
         <!-- Points (dots) pour la navigation -->
         <div v-if="produit.photos && produit.photos.length > 1"
           class="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex space-x-1">
@@ -77,16 +86,15 @@ const handleFavorite = async () => {
     <div class="flex items-center justify-between mt-2 text-xs text-[var(--espace-gris)]">
       <div class="flex items-center gap-1">
         <i class="fas fa-eye text-[10px]"></i>
-        <span>{{ produit.counts?.views_count??0  }} vues</span>
+        <span>{{ formatNumber(produit.counts?.views_count) }}</span>
       </div>
-      <!-- {{ produit }} -->
       <div class="flex items-center gap-1">
         <button @click="handleFavorite"
           class="text-[var(--espace-vert)] hover:text-[var(--espace-or)] transition active:scale-95 focus:outline-none"
           :aria-label="produit.is_favorited_by ? 'Retirer des favoris' : 'Ajouter aux favoris'">
           <i class="fas fa-bookmark text-sm" :class="{ 'text-[var(--espace-or)]': produit.is_favorited_by }"></i>
         </button>
-        <span>{{ produit.counts?.favorites_count ?? 0  }} favoris</span>
+        <span>{{ formatNumber(produit.counts?.favorites_count) }}</span>
       </div>
     </div>
   </div>

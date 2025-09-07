@@ -3,7 +3,7 @@
         <h1 class="text-3xl font-bold text-[var(--espace-vert)]">Historique des Transactions de Jetons</h1>
 
         <!-- Liste des transactions -->
-        <div v-if="transactions.length > 0" class="overflow-scroll space-y-4">
+        <div v-if="transactions.length > 0" class="overflow-y-scroll space-y-4">
             <div v-for="transaction in transactions" :key="transaction.id"
                 class="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow">
                 <div class="flex justify-between items-center">
@@ -102,6 +102,9 @@ const redoTransaction = async (transaction: Transaction) => {
             payment_service: transaction.methode_paiement,
             phone_number: transaction.phone_number, // Utiliser le numéro existant
         });
+
+        // console.log(res.data);
+        
         toast.success(res.data.message);
         fetchTransactions(); // Rafraîchir la liste après achat
     } catch (e: any) {

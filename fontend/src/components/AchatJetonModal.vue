@@ -171,6 +171,8 @@ const acheterJetons = async () => {
             payment_service: selectedService.value,
             phone_number: phoneNumber.value,
         });
+
+        console.log(res.data)
         toast.success(res.data.message);
         emit("purchased", jetonQuantity.value);
         emit("close");

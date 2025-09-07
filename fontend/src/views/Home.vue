@@ -100,6 +100,7 @@ const recordView = async (productId: string) => {
                 product_id: productId,
                 user_id: userId?? null,
             });
+            console.log(response.data)
             toast.success(response.data.message);
         }, 1000);
 
@@ -192,7 +193,7 @@ onUnmounted(() => {
                         <div class="flex-1 min-w-[120px]">
                             <select v-model="filterForm.category" id="category"
                                 class="w-full h-10 pl-3 pr-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--espace-or)] transition bg-[var(--espace-blanc)]">
-                                <option value="">Catégorie</option>
+                                <option value="">Toutes les Catégories</option>
                                 <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.nom }}</option>
                             </select>
                         </div>
@@ -209,7 +210,7 @@ onUnmounted(() => {
                         <div class="flex-1 min-w-[120px]">
                             <select v-model="filterForm.ville" id="ville"
                                 class="w-full h-10 pl-3 pr-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--espace-or)] transition bg-[var(--espace-blanc)]">
-                                <option value="">Ville</option>
+                                <option value="">Tous les villes</option>
                                 <option v-for="ville in villes" :key="ville" :value="ville">{{ ville }}</option>
                             </select>
                         </div>

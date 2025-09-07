@@ -22,8 +22,14 @@ const showCollaborationModal = ref(false);
 const prixRevente = ref<number | null>(null);
 const observer = ref<IntersectionObserver | null>(null);
 const loadMoreTrigger = ref<HTMLElement | null>(null);
+const showBoostModal = ref(false); // Modale pour le boost
+const boostDuration = ref(1); // Durée en jours (1 à 20)
+const targetViewsIndex = ref(0); // Index pour les intervalles de vues
+const calculatedCost = ref(5); // Coût initial minimum (5 jetons)
 
-// Méthodes existantes
+const viewIntervals = [100, 500, 1000, 5000, 10000]; // Intervalles de vues
+const viewFactors = [5, 15, 25, 50, 75]; // Coût correspondant (jetons)
+
 const fetchProduit = async () => {
     try {
         productStore.isLoading = true;
@@ -106,21 +112,43 @@ const boostProduit = async () => {
         return;
     }
 
-    const cost = 20;
-    if (authStore.user.jetons < cost) {
-        toast.error(`Pas assez de Jetons. Il vous faut ${cost} Jetons pour booster ce produit.`);
+    if (authStore.user.jetons < calculatedCost.value) {
+        toast.error(`Pas assez de Jetons. Il vous faut ${calculatedCost.value} Jetons pour ce boost.`);
         return;
     }
 
     try {
-        const response = await apiClient.post(`/produits/${productStore.product.id}/boost`);
-        authStore.user.jetons -= cost;
+        const response = await apiClient.post(`/produits/${productStore.product.id}/boost`, {
+            duration_days: boostDuration.value,
+            target_views: viewIntervals[targetViewsIndex.value],
+        });
+        authStore.user.jetons -= calculatedCost.value;
         productStore.product.boosted_until = response.data.data.end_date;
         toast.success(response.data.message || 'Produit boosté avec succès !');
+        showBoostModal.value = false;
     } catch (error: any) {
         toast.error(error.response?.data?.message || 'Erreur lors du boostage du produit');
     }
 };
+
+const openBoostModal = () => {
+    if (!authStore.user || authStore.user.commercant?.id !== productStore.product.commercant_id) {
+        toast.error('Seul le commerçant propriétaire peut booster ce produit');
+        return;
+    }
+    showBoostModal.value = true;
+    calculateCost();
+};
+
+const calculateCost = () => {
+    const durationCost = boostDuration.value * 5; // 5 jetons par jour
+    const viewsCost = viewFactors[targetViewsIndex.value]; // Coût basé sur l'intervalle
+    calculatedCost.value = Math.max(5, durationCost + viewsCost); // Minimum 5 jetons
+};
+
+watch([boostDuration, targetViewsIndex], () => {
+    calculateCost();
+});
 
 const handleMouseOver = (productId: string) => {
     recordView(productId);
@@ -185,12 +213,11 @@ const initChatFromProduct = (productId: string, productName: string, receiverId:
         id: productId,
         name: productName,
         commercant_id: productStore.product.commercant_id,
-        name_user: authStore.user?.nom || 'Inconnu' // Ajout du nom du commerçant
+        name_user: authStore.user?.nom || 'Inconnu'
     };
     localStorage.setItem('chatProduct', JSON.stringify(productData));
     router.push(`/messages/${receiverId}`);
 };
-
 
 // Gestion du slider
 const currentSlideIndex = ref(0);
@@ -231,22 +258,21 @@ watch(
     (newId) => {
         if (newId) {
             fetchProduit();
-            currentSlideIndex.value = 0; // Réinitialiser le slider
+            currentSlideIndex.value = 0;
         }
     }
 );
 
 watch(productStore.product, (newProduit) => {
     if (newProduit) {
-        productStore.page = 1; // Réinitialiser la page quand un nouveau produit est chargé
+        productStore.page = 1;
         productStore.fetchProducts({ category: newProduit.category_id, per_page: 4 }, true);
-        currentSlideIndex.value = 0; // Réinitialiser le slider
+        currentSlideIndex.value = 0;
     }
 });
 </script>
 
 <template>
-    <!-- Template inchangé -->
     <Loader :isLoading="productStore.isLoading" />
     <div class="overflow-y-scroll bg-[var(--espace-blanc)] pt-16 pb-20 px-4 sm:px-6">
         <div class="container mx-auto max-w-5xl">
@@ -266,7 +292,6 @@ watch(productStore.product, (newProduit) => {
                                         class="w-full h-full object-contain flex-shrink-0 mx-auto"
                                         :alt="`Image de ${productStore.product.nom} - ${index + 1}`" />
                                 </div>
-                                <!-- Flèches visibles uniquement sur desktop -->
                                 <button v-if="productStore.product.photos && productStore.product.photos.length > 1"
                                     @click="prevSlide"
                                     class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-1 rounded-full hover:bg-opacity-75 hidden md:block"
@@ -279,7 +304,6 @@ watch(productStore.product, (newProduit) => {
                                     aria-label="Image suivante">
                                     <i class="fas fa-chevron-right"></i>
                                 </button>
-                                <!-- Points (dots) pour la navigation -->
                                 <div v-if="productStore.product.photos && productStore.product.photos.length > 1"
                                     class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2">
                                     <span v-for="(photo, index) in productStore.product.photos" :key="index"
@@ -317,7 +341,7 @@ watch(productStore.product, (newProduit) => {
                             </p>
                             <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4 text-xs text-[var(--espace-gris)]">
                                 <p><strong>Catégorie :</strong> {{ productStore.product.category?.nom || 'Non spécifiée'
-                                    }}</p>
+                                }}</p>
                                 <p><strong>Quantité :</strong> {{ productStore.product.quantite }}</p>
                                 <p><strong>Ville :</strong> {{ productStore.product.ville || 'Non spécifiée' }}</p>
                                 <p><strong>Ajouté le :</strong> {{ new
@@ -365,8 +389,7 @@ watch(productStore.product, (newProduit) => {
                                 </p>
                                 <p class="text-xs text-[var(--espace-gris)] mb-2">
                                     <strong>Note :</strong> {{
-                                     
-                                    Number(productStore.product.commercant?.rating).toFixed(1) || 'Non évalué'
+                                        Number(productStore.product.commercant?.rating).toFixed(1) || 'Non évalué'
                                     }} / 5
                                 </p>
                                 <router-link :to="`/commercants/${productStore.product.commercant_id}`"
@@ -397,11 +420,11 @@ watch(productStore.product, (newProduit) => {
                                     <i class="fas fa-edit mr-2 text-sm"></i> Modifier le produit
                                 </button>
                                 <button v-if="authStore.user?.commercant?.id === productStore.product.commercant_id"
-                                    @click="boostProduit"
+                                    @click="openBoostModal"
                                     class="flex-1 bg-[var(--espace-or)] text-[var(--espace-vert)] flex items-center justify-center gap-1 font-semibold px-4 py-2 rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-all duration-200 active:scale-95 text-sm"
                                     :disabled="!!productStore.product.boosted_until && new Date(productStore.product.boosted_until) > new Date()"
-                                    :aria-label="productStore.product.boosted_until && new Date(productStore.product.boosted_until) > new Date() ? 'Boost déjà actif' : 'Booster ce produit'">
-                                    <span class="md:flex">Booster</span>
+                                    :aria-label="productStore.product.boosted_until && new Date(productStore.product.boosted_until) > new Date() ? 'Boost déjà actif' : 'Personnaliser le boost'">
+                                    <span class="md:flex">Boost</span>
                                     <i class="fas fa-rocket mr-2 text-sm"></i>
                                 </button>
                                 <button v-if="authStore.user?.commercant?.id !== productStore.product.commercant_id"
@@ -431,7 +454,7 @@ watch(productStore.product, (newProduit) => {
                         </h2>
                         <p class="text-xs text-[var(--espace-gris)] mb-3">
                             Proposez un prix de revente (minimum : {{ productStore.product.prix +
-                            (productStore.product.marge_min || 0) }} XAF)
+                                (productStore.product.marge_min || 0) }} XAF)
                         </p>
                         <form @submit.prevent="submitCollaboration" class="space-y-3">
                             <div>
@@ -452,6 +475,57 @@ watch(productStore.product, (newProduit) => {
                                 </button>
                                 <button type="button" @click="closeCollaborationModal"
                                     class="flex-1 bg-[var(--espace-gris)] text-[var(--espace-blanc)] font-semibold px-4 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 active:scale-95 text-sm"
+                                    aria-label="Annuler">
+                                    Annuler
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </Transition>
+
+            <!-- Modale de boost personnalisé -->
+            <Transition name="fade">
+                <div v-if="showBoostModal"
+                    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                    @click.self="showBoostModal = false" role="dialog" aria-modal="true"
+                    aria-label="Personnaliser le boost du produit">
+                    <div
+                        class="bg-[var(--espace-blanc)] rounded-lg p-6 w-full max-w-md mx-4 shadow-lg border border-[var(--espace-or)]">
+                        <h2 class="text-lg font-semibold text-[var(--espace-vert)] mb-4 font-poppins">
+                            Personnaliser le Boost
+                        </h2>
+                        <form @submit.prevent="boostProduit" class="space-y-6">
+                            <div>
+                                <label class="text-sm text-[var(--espace-vert)] font-medium mb-2 block">Durée
+                                    (jours)</label>
+                                <input type="range" v-model.number="boostDuration" min="1" max="20"
+                                    class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[var(--espace-or)]"
+                                    @input="calculateCost" />
+                                <p class="text-xs text-[var(--espace-gris)] mt-1 text-center">{{ boostDuration }} jours
+                                </p>
+                            </div>
+                            <div>
+                                <label class="text-sm text-[var(--espace-vert)] font-medium mb-2 block">Objectif de
+                                    vues</label>
+                                <input type="range" v-model.number="targetViewsIndex" min="0" max="4"
+                                    class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[var(--espace-or)]"
+                                    @input="calculateCost" />
+                                <p class="text-xs text-[var(--espace-gris)] mt-1 text-center">
+                                    {{ viewIntervals[targetViewsIndex] }} vues
+                                </p>
+                            </div>
+                            <p class="text-sm text-[var(--espace-gris)]">Coût estimé : <strong
+                                    class="text-[var(--espace-or)]">{{ calculatedCost }}</strong> Jetons</p>
+                            <div class="flex gap-4">
+                                <button type="submit"
+                                    class="flex-1 bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold py-2 rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-all duration-200 active:scale-95 text-sm"
+                                    
+                                    :aria-label="authStore.user?.jetons < calculatedCost ? 'Jetons insuffisants' : 'Confirmer le boost'">
+                                    Confirmer
+                                </button>
+                                <button type="button" @click="showBoostModal = false"
+                                    class="flex-1 bg-[var(--espace-gris)] text-[var(--espace-blanc)] font-semibold py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 active:scale-95 text-sm"
                                     aria-label="Annuler">
                                     Annuler
                                 </button>
@@ -525,7 +599,6 @@ button:disabled {
     cursor: not-allowed;
 }
 
-/* Styles pour le slider */
 .slider-container {
     display: flex;
     transition: transform 0.3s ease;
@@ -536,7 +609,6 @@ button:disabled {
 @media (max-width: 768px) {
     .slider-button {
         display: none;
-        /* Masquer les flèches sur mobile */
     }
 }
 </style>
