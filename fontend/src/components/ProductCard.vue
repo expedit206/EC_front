@@ -120,6 +120,7 @@ const handleFavorite = async () => {
   height: 100%;
 }
 
+
 @media (max-width: 768px) {
   .slider-button {
     display: none;
