@@ -1,6 +1,5 @@
 <template>
-    <div class="space-y-6">
-        <!-- Merchant Information -->
+    <!-- <div class="space-y-6">
         <section class="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-4">
             <h2 class="text-lg sm:text-xl font-semibold text-[var(--espace-vert)]">
                 Informations du Commerce
@@ -20,7 +19,6 @@
             </div>
         </section>
 
-        <!-- Products -->
         <section class="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-4">
             <h2 class="text-lg sm:text-xl font-semibold text-[var(--espace-vert)]">
                 Mes Produits
@@ -48,7 +46,7 @@
 
             <p v-else class="text-[var(--espace-gris)]">Aucun produit enregistré.</p>
         </section>
-    </div>
+    </div> -->
 </template>
 
 <script setup lang="ts">

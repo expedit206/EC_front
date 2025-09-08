@@ -306,11 +306,11 @@ onMounted(() => {
                                 </div>
                                 <input ref="fileInput" type="file" multiple @change="handleFileChange" class="hidden"
                                     accept="image/*" />
-                                <button v-if="!imagePreviews.length" @click="fileInput.click()"
+                                <button v-if="!imagePreviews.length" @click="fileInput?.click()"
                                     class="w-full bg-[var(--espace-or)] text-[var(--espace-vert)] px-4 py-2 rounded-lg hover:bg-[var(--espace-vert)] hover:text-white transition flex items-center justify-center">
                                     <i class="fas fa-camera mr-2"></i> Ajouter une photo
                                 </button>
-                                <button v-else @click="fileInput.click()"
+                                <button v-else @click="fileInput?.click()"
                                     class="w-full bg-[var(--espace-or)] text-[var(--espace-vert)] px-4 py-2 rounded-lg hover:bg-[var(--espace-vert)] hover:text-white transition flex items-center justify-center">
                                     <i class="fas fa-plus mr-2"></i> Ajouter une autre photo
                                 </button>

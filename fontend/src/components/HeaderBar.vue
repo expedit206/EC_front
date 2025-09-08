@@ -168,7 +168,10 @@ onUnmounted(() => {
                         active-class="text-[var(--espace-or)]">
                         <i class="fas" :class="link.icon"></i>
                         {{ link.label }}
-                        <span v-if=" link.badge > -1"
+                        <span v-if=" 
+                        
+                        link?.badge ?link.badge  > -1 :false
+                        "
                             class="cart-badge bg-[var(--espace-or)] text-[var(--espace-vert)] text-xs rounded-full h-5 w-5 flex items-center justify-center"
                             :class="{
                                 'animate-scale': (link.to === '/collaborations' && animateCollaborationBadge) || (link.to === '/messages' && animateMessagesBadge),

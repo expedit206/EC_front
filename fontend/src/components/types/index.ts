@@ -98,7 +98,7 @@ export interface Parrainage {
   id: number;
   filleul_nom: string | null;
   date_inscription: string;
-  est_commerçant: boolean;
+  est_commercant: boolean;
   // Ajoutez d'autres propriétés si nécessaire (par exemple, id, email, etc.)
 }
 
@@ -144,7 +144,7 @@ export interface Commercant {
   ville?: string;
   logo?: string | null;
   user_id: number;
-  
+  email : string | null;
   telephone: string | null;
   created_at: string;
   updated_at: string;

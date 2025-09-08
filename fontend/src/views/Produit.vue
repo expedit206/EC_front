@@ -519,9 +519,7 @@ watch(productStore.product, (newProduit) => {
                                     class="text-[var(--espace-or)]">{{ calculatedCost }}</strong> Jetons</p>
                             <div class="flex gap-4">
                                 <button type="submit"
-                                    class="flex-1 bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold py-2 rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-all duration-200 active:scale-95 text-sm"
-                                    
-                                    :aria-label="authStore.user?.jetons < calculatedCost ? 'Jetons insuffisants' : 'Confirmer le boost'">
+                                    class="flex-1 bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold py-2 rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-all duration-200 active:scale-95 text-sm">
                                     Confirmer
                                 </button>
                                 <button type="button" @click="showBoostModal = false"

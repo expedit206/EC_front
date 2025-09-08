@@ -68,7 +68,7 @@
         <p><strong>Email :</strong> {{ user.commercant.email || 'Non défini' }}</p>
         <p><strong>Téléphone :</strong> {{ user.commercant.telephone }}</p>
         <p><strong>Ville :</strong> {{ user.commercant.ville }}</p>
-        <p><strong>Produits actifs :</strong> {{ user.commercant.active_products || 0 }}</p>
+        <!-- <p><strong>Produits actifs :</strong> {{ user.commercant.active_products || 0 }}</p> -->
         <button @click="editCommerce = true"
           class="mt-2 w-full sm:w-auto bg-[var(--espace-or)] text-[var(--espace-vert)] font-medium px-4 py-2 rounded-md hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-colors">
           Modifier
@@ -128,13 +128,7 @@
       </form>
     </section>
 
-    <!-- Statistics -->
-    <!-- <section class="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-4">
-      <h2 class="text-lg sm:text-xl font-semibold text-[var(--espace-vert)]">Statistiques</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[var(--espace-gris)]">
-        <p><strong>Dernière connexion :</strong> {{ user?.last_login || 'Non disponible' }}</p>
-      </div>
-    </section> -->
+  
 
     <!-- Parrainage -->
     <section class="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-4">
@@ -157,7 +151,7 @@ const props = defineProps({
 const authStore = useAuthStore();
 const toast = useToast();
 const editProfile = ref(false);
-const user = ref<User | null>(authStore.user || props.user);
+const user = ref<User | null>(authStore.user);
 
 const profileForm = ref({
   nom: user.value?.nom || '',
@@ -246,7 +240,7 @@ const updateCommerce = async () => {
 };
 
 watch(() => authStore.user, (newUser) => {
-  user.value = newUser || props.user;
+  user.value = newUser || null;
   profileForm.value = {
     nom: newUser?.nom || '',
     telephone: newUser?.telephone || '',
