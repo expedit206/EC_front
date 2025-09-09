@@ -1,64 +1,70 @@
 <template>
-  <div class="overflow-y-scroll min-h-screen relative bg-gray-100 py-8 sm:px-6">
+  <div class="overflow-y-scroll min-h-screen relative bg-gray-100 py-8 sm:px-6 ">
     <!-- Header Profil -->
     <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
-      <div class="flex items-center space-x-4 relative w-full gap-1 px-3">
-        <!-- Photo utilisateur -->
-        <div class="relative ">
-          <img v-if="user?.photo" :src="`http://localhost:8000/storage/${user?.photo}`" alt="Photo de profil"
-            class=" w-16 h-16 rounded-full object-cover border-2 border-[var(--espace-vert)]" />
-          <div v-else class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 " :style="{
+      <div class="flex flex-col space-x-4 relative w-full gap-1 px-3">
+
+        <div class="flex items-center space-x-4 relative w-full gap-1 px-3">
+
+          <!-- Photo utilisateur -->
+          <div class="relative">
+            <!-- {{user.photo}} -->
+            <img v-if="user?.photo" :src="storageUrl + user?.photo" alt="Photo de profil"
+              class=" w-16 h-16 rounded-full object-cover border-2 border-[var(--espace-vert)]" />
+            <div v-else class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 "
+              :style="{
             background: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#0af'}`
           }">
-            <i class=" fas fa-user-circle text-4xl"></i>
-          </div>
+              <i class=" fas fa-user-circle text-4xl"></i>
+            </div>
 
-          <!-- Couronne -->
-          <i v-if="user?.premium" class="fas fa-crown text-yellow-400 absolute -top-2 -right-2 text-lg p-1 rounded-full"
-            :style="{
+            <!-- Couronne -->
+            <i v-if="user?.premium"
+              class="fas fa-crown text-yellow-400 absolute -top-2 -right-2 text-lg p-1 rounded-full" :style="{
               // color : `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#0af'}`  
             }"></i>
 
-          <!-- Bouton modifier -->
-          <button @click="showEditMenu = !showEditMenu"
-            class="absolute bottom-0 right-0 w-6 h-6 bg-[var(--espace-or)] text-[var(--espace-vert)] rounded-full flex items-center justify-center hover:bg-[var(--espace-vert)] hover:text-white"
-            :style="{
+            <!-- Bouton modifier -->
+            <button @click="showEditMenu = !showEditMenu"
+              class="absolute bottom-0 right-0 w-6 h-6 bg-[var(--espace-or)] text-[var(--espace-vert)] rounded-full flex items-center justify-center hover:bg-[var(--espace-vert)] hover:text-white"
+              :style="{
               // background: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#0af'}`
             }">
-            <i class="fas fa-pencil-alt text-xs"></i>
-          </button>
+              <i class="fas fa-pencil-alt text-xs"></i>
+            </button>
 
-          <!-- Menu édition -->
-          <div v-if="showEditMenu"
-            class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-36 bg-white border rounded-md shadow z-10">
-            <button @click="openCamera" class="w-full text-left px-4 py-2 hover:bg-gray-100">
-              Caméra
-            </button>
-            <button @click="openGallery" class="w-full text-left px-4 py-2 hover:bg-gray-100">
-              Galerie
-            </button>
+            <!-- Menu édition -->
+            <div v-if="showEditMenu"
+              class="absolute top-full left-0 transform -ranslate-x-1/2 mt-2 w-42 bg-white border rounded-md shadow z-10">
+              <button @click="openCamera" class="w-full text-left px-4 py-2 hover:bg-gray-100 ">
+                Caméra
+              </button>
+              <button @click="openGallery" class="w-full text-left px-4 py-2 hover:bg-gray-200">
+                Galerie
+              </button>
+            </div>
           </div>
-        </div>
 
-        <!-- Input caché galerie -->
-        <input ref="galleryInput" type="file" accept="image/*" class="hidden" @change="handleFileChange" />
+          <!-- Input caché galerie -->
+          <input ref="galleryInput" type="file" accept="image/*" class="hidden" @change="handleFileChange" />
 
-        <!-- Infos utilisateur -->
-        <div class="space-y-1">
-          <h1 class="text-2xl sm:text-3xl font-bold flex items-center gap-2 text-blue-500" :style="{
+          <!-- Infos utilisateur -->
+          <div class="space-y-1">
+            <h1 class="text-2xl sm:text-3xl font-bold flex items-center gap-2 text-blue-500" :style="{
             color: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#0af'}`
           }">
 
-            {{ user?.nom }}
-            <span v-if="user?.premium" class="text-black  text-xs px-3 py-1 rounded-full uppercase font-bold" :style="{
+              {{ user?.nom }}
+              <span v-if="user?.premium" class="text-black  text-xs px-3 py-1 rounded-full uppercase font-bold" :style="{
               background: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#0af'}`
             }">
-              Premium
+                Premium
+              </span>
+            </h1>
+            <span v-if="user?.subscription_ends_at" class="text-sm text-gray-500">
+              Jusqu'au {{ new Date(user?.subscription_ends_at).toLocaleDateString() }}
             </span>
-          </h1>
-          <span v-if="user?.subscription_ends_at" class="text-sm text-gray-500">
-            Jusqu'au {{ new Date(user?.subscription_ends_at).toLocaleDateString() }}
-          </span>
+          </div>
         </div>
 
         <!-- Preview et confirmation -->
@@ -77,11 +83,8 @@
 
       <!-- Actions -->
       <div class="flex flex-col sm:flex-row gap-2 items-center">
-        <button v-if="user?.commercant" @click="isMerchantProfile = !isMerchantProfile"
-          class="text-[var(--espace-or)] hover:text-[var(--espace-vert)] font-medium flex items-center gap-1">
-          <i class="fas fa-store"></i> Compte Commerçant
-        </button>
-        <button v-else @click="router.push('/commercant/create')"
+      
+        <button v-if="!user?.commercant" @click="router.push('/commercant/create')"
           class="bg-[var(--espace-or)] text-[var(--espace-vert)] px-4 py-2 rounded-md font-semibold hover:bg-[var(--espace-vert)] hover:text-white">
           Devenir commerçant
         </button>
@@ -133,6 +136,18 @@ import SubscriptionModal from "../components/SubscriptionModal.vue";
 import AchatJetonModal from "../components/AchatJetonModal.vue"; // Importer le nouveau composant
 import UserProfile from "./userProfile.vue";
 import MerchantProfile from "./MerchantProfile.vue";
+
+// Fonction pour générer l'URL de base du stockage dynamiquement
+const getStorageBaseUrl = () => {
+  const host = window.location.hostname;
+  if (host === "localhost" || host === "127.0.0.1") {
+    return "http://localhost:8000/storage/";
+  }
+  return "https://espacecameroun.devfack.com/storage/"; // URL de production (à ajuster selon votre domaine)
+};
+
+// Computed property pour l'URL du stockage
+const storageUrl = computed(() => getStorageBaseUrl());
 
 const router = useRouter();
 const toast = useToast();
@@ -246,7 +261,6 @@ const uploadProfilePicture = async () => {
         user.value.photo = response.data.photo;
         authStore.user = user.value;
       }
-
       toast.success("Photo mise à jour.");
       cancelUpload();
     }

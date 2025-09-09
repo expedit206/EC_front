@@ -13,16 +13,21 @@ const animateMessagesBadge = ref(false); // Badge pour messages (facultatif)
 
 const navLinks = computed(() => {
     return [
-        { to: '/', label: 'Accueil', icon: 'fa-home' },
         ...(authStore.user
             ? [
-                { to: '/profil', label: 'Profil', icon: 'fa-user-circle' },
-                ...(authStore.user.commercant
-                    ? [{ to: '/commercant/produits', label: 'Mes Produits', icon: 'fa-box-open' }]
-                    : []),
+                { to: '/', label: 'Accueil', icon: 'fa-home' },
+
+            ...(authStore.user.commercant
+                ? [{ to: '/commercant/produits', label: 'Mes Produits', icon: 'fa-box-open' },
+
                 { to: '/collaborations', label: 'Collaborations', icon: 'fa-handshake', badge: userStateStore.collaborationsPending },
+                
+            ]
+            : []),
                 { to: '/parrainage', label: 'Mon Parrainage', icon: 'fa-users' },
                 // Ajout optionnel pour messages
+                { to: '/parametres', label: 'Parametres', icon: 'fa-cog' },
+
                 // { to: '/messages', label: 'Messages', icon: 'fa-comment-dots', badge: userStateStore.unreadMessages },
             ]
             : [
@@ -73,9 +78,23 @@ watch(
                                 : link.to === '/messages'   
                                     ? 'Messages non lus'
                                     : ''">
-                            {{  link.badge }}
+                            {{ link.badge }}
                         </span>
                     </RouterLink>
+
+
+                    <router-link to="/jetonMarket" aria-label="Aller au marché" class="fixed bottom-17 right-5 w-12 h-12 rounded-full
+         flex items-center justify-center
+         bg-[var(--espace-vert)] text-yellow-300
+         shadow-lg hover:scale-110 active:scale-95 transition-all
+         ring-2 ring-yellow-400/60">
+                        <i class="fas fa-coins text-xl "></i>
+                    </router-link>
+
+
+
+
+
                 </div>
             </nav>
         </Transition>

@@ -10,6 +10,15 @@ const authStore = useAuthStore();
 const router = useRouter();
 const toast = useToast();
 
+// Fonction pour détecter l'environnement et générer l'URL de base
+const getBaseReferralUrl = () => {
+    const host = window.location.hostname;
+    if (host === "localhost" || host === "127.0.0.1") {
+        return "http://localhost:4000/register";
+    }
+    return "https://espacecameroun.devfack.com/register"; // URL de production
+};
+
 // Données réactives
 const code = ref("");
 const link = ref("");
@@ -39,7 +48,7 @@ const filteredParrainages = computed(() => {
     return parrainages.value; // "all"
 });
 
-// Récupérer les données de parrainage
+// Récupérer les données de parrainage avec lien dynamique
 const fetchParrainageData = async () => {
     if (!authStore.user) {
         toast.error("Veuillez vous connecter pour accéder à cette page");
@@ -50,9 +59,8 @@ const fetchParrainageData = async () => {
     try {
         const response = await apiClient.get("/parrainages/dashboard");
         const data = response.data;
-        console.log(data);
         code.value = data.code || "";
-        link.value = data.code ? `http://localhost:4000/register/${data.code}` : "";
+        link.value = code.value ? `${getBaseReferralUrl()}/${code.value}` : "";
         parrainages.value = data.parrainages || [];
         totalGains.value = data.total_gains || 0;
         niveauActuel.value = data.niveau_actuel;
@@ -79,6 +87,8 @@ const generateCodeSuggestion = async () => {
         suggestedCode.value = response.data.suggested_code;
         customCode.value = suggestedCode.value;
         toast.success("Nouveau code suggéré avec succès !");
+        // Mettre à jour le lien après génération
+        if (code.value) link.value = `${getBaseReferralUrl()}/${code.value}`;
     } catch (error) {
         toast.error("Erreur lors de la génération du code");
         console.error(error);
@@ -102,7 +112,7 @@ const createCode = async () => {
     try {
         const response = await apiClient.post("/parrainages/createCode", { code: customCode.value.trim() });
         code.value = response.data.code;
-        link.value = response.data.link || `http://localhost:4000/register/${response.data.code}`;
+        link.value = response.data.link || `${getBaseReferralUrl()}/${response.data.code}`;
         toast.success(response.data.message || "Code créé avec succès !");
         await fetchParrainageData();
     } catch (error: any) {
@@ -145,8 +155,6 @@ const goToProfile = (parrainage: Parrainage) => {
     }
 };
 
-
-
 // Initialisation au montage
 onMounted(() => {
     fetchParrainageData();
@@ -154,6 +162,7 @@ onMounted(() => {
 </script>
 
 <template>
+    <!-- Le reste du template reste inchangé -->
     <div class="overflow-y-scroll bg-gray-100 pt-2 pb-12 px-4 sm:px-6">
         <div class="container mx-auto max-w-4xl">
             <!-- Section des Niveaux de Parrainage -->

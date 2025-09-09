@@ -100,8 +100,8 @@ const recordView = async (productId: string) => {
                 product_id: productId,
                 user_id: userId?? null,
             });
-            console.log(response.data)
-            toast.success(response.data.message);
+            // console.log(response.data)
+            // toast.success(response.data.message);
         }, 1000);
 
 

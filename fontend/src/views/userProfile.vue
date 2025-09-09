@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 pb-16">
     <!-- Personal Information -->
     <section class="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-4">
       <h2 class="text-lg sm:text-xl font-semibold text-[var(--espace-vert)]">Informations personnelles</h2>
@@ -41,9 +41,11 @@
             placeholder="Votre ville" />
         </div>
         <div class="flex gap-2">
-          <button type="submit"
-            class="w-full sm:w-auto bg-[var(--espace-or)] text-[var(--espace-vert)] font-medium px-4 py-2 rounded-md hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-colors"
-            aria-label="Enregistrer les modifications">
+          <button type="submit" :disabled="loadingProfile" :class="[
+            'w-full sm:w-auto bg-[var(--espace-or)] text-[var(--espace-vert)] font-medium px-4 py-2 rounded-md transition-colors',
+            loadingProfile ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)]'
+          ]" aria-label="Enregistrer les modifications">
+            <i v-if="loadingProfile" class="fas fa-spinner fa-spin mr-2"></i>
             Enregistrer
           </button>
           <button @click="editProfile = false"
@@ -74,7 +76,7 @@
           Modifier
         </button>
       </div>
-      <form v-else @submit.prevent="updateCommerce" class="space-y-4">
+      <form v-else @submit.prevent="updateCommerce" class=" space-y-4">
         <div>
           <label class="block text-[var(--espace-gris)] text-sm font-medium" for="nom_commerce">Nom du commerce</label>
           <input v-model="commerceForm.nom" id="nom_commerce" type="text" required
@@ -116,24 +118,22 @@
           </div>
         </div>
         <div class="flex gap-2">
-          <button type="submit"
-            class="w-full sm:w-auto bg-[var(--espace-or)] text-[var(--espace-vert)] font-medium px-4 py-2 rounded-md hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-colors">
+          <button type="submit" :disabled="loadingCommerce" :class="[
+            'w-full sm:w-auto bg-[var(--espace-or)] text-[var(--espace-vert)] font-medium px-4 py-2 rounded-md transition-colors',
+            loadingCommerce ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)]'
+          ]" aria-label="Enregistrer les modifications">
+            <i v-if="loadingCommerce" class="fas fa-spinner fa-spin mr-2"></i>
             Enregistrer
           </button>
           <button @click="editCommerce = false" type="button"
-            class="w-full sm:w-auto bg-gray-300 text-[var(--espace-vert)] font-medium px-4 py-2 rounded-md hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-colors">
+            class="w-full sm:w-auto bg-gray-300 text-[var(--espace-vert)] font-medium px-4 py-2 rounded-md hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-colors"
+            aria-label="Annuler">
             Annuler
           </button>
         </div>
       </form>
     </section>
 
-  
-
-    <!-- Parrainage -->
-    <section class="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-4">
-      <h2 class="text-lg sm:text-xl font-semibold text-[var(--espace-vert)]">Mon Parrainage</h2>
-    </section>
   </div>
 </template>
 
@@ -152,6 +152,8 @@ const authStore = useAuthStore();
 const toast = useToast();
 const editProfile = ref(false);
 const user = ref<User | null>(authStore.user);
+const loadingProfile = ref(false); // Nouvel état pour le chargement du profil
+const loadingCommerce = ref(false); // Nouvel état pour le chargement du commerce
 
 const profileForm = ref({
   nom: user.value?.nom || '',
@@ -171,7 +173,8 @@ const commerceForm = ref({
   logo: null as File | null,
   logoPreview: user.value?.commercant?.logo ? `http://localhost:8000/storage/${user.value.commercant.logo}` : null,
 });
-console.log(` com ${JSON.stringify(commerceForm.value)}`);
+console.log(`com ${JSON.stringify(commerceForm.value)}`);
+
 const handleLogoUpload = (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0];
   if (file) {
@@ -189,8 +192,9 @@ const handleLogoUpload = (e: Event) => {
 };
 
 const updateProfile = async () => {
+  loadingProfile.value = true; // Activer le chargement
   try {
-    const response = await apiClient.put('/profile', profileForm.value);
+    const response = await apiClient.post('/updateProfile', profileForm.value);
     if (user.value) {
       user.value.nom = response.data.user.nom || '';
       user.value.telephone = response.data.user.telephone || '';
@@ -202,10 +206,13 @@ const updateProfile = async () => {
     toast.success('Profil mis à jour avec succès.');
   } catch (error: any) {
     toast.error(error.response?.data.message || 'Erreur lors de la mise à jour.');
+  } finally {
+    loadingProfile.value = false; // Désactiver le chargement, même en cas d'erreur
   }
 };
 
 const updateCommerce = async () => {
+  loadingCommerce.value = true; // Activer le chargement
   try {
     const formData = new FormData();
     formData.append('nom', commerceForm.value.nom);
@@ -216,11 +223,11 @@ const updateCommerce = async () => {
     if (commerceForm.value.logo) {
       formData.append('logo', commerceForm.value.logo);
     }
-    
+
     const response = await apiClient.post('/commercant/update', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    console.log(` com ${JSON.stringify(response.data)}`);
+    console.log(`com ${JSON.stringify(response.data)}`);
 
     if (user.value?.commercant) {
       user.value.commercant.nom = response.data.commercant.nom;
@@ -236,6 +243,8 @@ const updateCommerce = async () => {
     toast.success('Commerce mis à jour avec succès.');
   } catch (error: any) {
     toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour du commerce.');
+  } finally {
+    loadingCommerce.value = false; // Désactiver le chargement, même en cas d'erreur
   }
 };
 

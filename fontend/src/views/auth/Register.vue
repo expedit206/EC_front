@@ -35,9 +35,15 @@ onMounted(() => {
     }
 });
 
+const isLoading = ref(false);
+
+
 const register = async () => {
     try {
-        console.log('Envoi des données d\'inscription:', form.value);
+
+        isLoading.value = true;
+
+        // console.log('Envoi des données d\'inscription:', form.value);
         await authStore.register(form.value);
         toast.success('Inscription réussie !');
         router.push({ name: 'home' });
@@ -48,13 +54,16 @@ const register = async () => {
         if (error.response?.status === 422) {
             errors.value = error.response.data.errors;
         }
+    } finally {
+        isLoading.value = false;
+
     }
 };
 </script>
 
 <template>
-    <div class="overflow-y-scroll bg-white flex justify-center px-4 ">
-        <div class=" flex  flex-col w-full max-w-lg  rounded-2xl  pb-16 sm:p-10">
+    <div class="overflow-y-scroll bg-white flex justify-center px-4 pt-8 ">
+        <div class=" flex  flex-col w-full max-w-lg  rounded-2xl  sm:p-10">
             <h1 class="text-3xl sm:text-4xl font-bold text-center text-[var(--espace-vert)] mb-6">
                 <i class="fas fa-user-plus mr-2 text-[var(--espace-or)]"></i> Créez votre compte
             </h1>
@@ -74,10 +83,12 @@ const register = async () => {
                     :error="errors.mot_de_passe" />
                 <FormField label="Code de parrainage (optionnel)" icon="fa-users" v-model="form.parrain_code"
                     type="text" :error="errors.parrain_code" />
-                <button type="submit"
-                    class="w-full bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold p-3 rounded-xl hover:bg-[var(--espace-vert)] hover:text-white transition flex items-center justify-center shadow-md">
-                    <i class="fas fa-user-plus mr-2"></i> S'inscrire
+                <button type="submit" :disabled="isLoading"
+                    class="w-full bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold p-3 rounded-xl hover:bg-[var(--espace-vert)] hover:text-white transition flex items-center justify-center shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
+                    <i :class="[isLoading ? 'fas fa-spinner fa-spin' : 'fas fa-user-plus', 'mr-2']"></i>
+                    <span>{{ isLoading ? "Inscription..." : "S'inscrire" }}</span>
                 </button>
+
             </form>
             <p class="text-center text-sm text-gray-600 mt-6">
                 Vous avez déjà un compte ?
@@ -85,7 +96,7 @@ const register = async () => {
                     Connectez-vous ici
                 </router-link>
             </p>
-            <p class="text-center text-xs text-gray-400 mt-2 pb-4">
+            <p class="text-center text-xs text-gray-400 mt-2 pb-24 ">
                 En vous inscrivant, vous acceptez nos
                 <a href="/conditions" class="hover:underline text-[var(--espace-vert)]">conditions d'utilisation</a>
                 et notre

@@ -8,13 +8,26 @@ import apiClient from '../api/index';
 import { useProductStore } from '../stores/product';
 import SoldeUser from './SoldeUser.vue';
 
+// Fonction pour générer l'URL de base du stockage dynamiquement
+const getStorageBaseUrl = () => {
+  const host = window.location.hostname;
+  if (host === "localhost" || host === "127.0.0.1") {
+    return "http://localhost:8000/storage/";
+  }
+  return "https://espacecameroun.devfack.com/storage/"; // URL de production (à ajuster selon votre domaine)
+};
+
+// Computed property pour l'URL du stockage
+const storageUrl = computed(() => getStorageBaseUrl());
+
 const authStore = useAuthStore();
 const userStateStore = useUserStateStore();
 const router = useRouter();
-const user = authStore.user;
+
+const user = computed(() => authStore.user); // Utilisation de computed pour garantir la réactivité
 const route = useRoute();
-const animateCollaborationBadge = ref(false); // Renommé pour clarté
-const animateMessagesBadge = ref(false); // Nouveau pour messages
+const animateCollaborationBadge = ref(false);
+const animateMessagesBadge = ref(false);
 const searchQuery = ref('');
 const productStore = useProductStore();
 const showSearch = ref(false);
@@ -23,16 +36,16 @@ const ignoreNextClick = ref(false);
 
 const navLinks = computed(() => {
     return [
-        { to: '/', label: 'Accueil', icon: 'fa-home', badge: 0 },
-        ...(authStore.user
-            ? [
+        ...(user.value
+        ? [
+            { to: '/', label: 'Accueil', icon: 'fa-home', badge: 0 },
                 { to: '/profil', label: 'Profil', icon: 'fa-user-circle' },
-                { to: '/messages', label: 'Messages', icon: 'fa-comment-dots', badge: userStateStore.unreadMessages },
-                ...(authStore.user.commercant
+                { to: '/messages', label: 'Chat', icon: 'fa-comment-dots', badge: userStateStore.unreadMessages },
+                ...(user.value.commercant
                     ? [{ to: '/commercant/produits', label: 'Mes Produits', icon: 'fa-box-open', badge: 0 }]
                     : []),
                 { to: '/collaborations', label: 'Collaborations', icon: 'fa-handshake', badge: userStateStore.collaborationsPending },
-                { to: '/parrainage', label: 'Mon Parrainage', icon: 'fa-users', badge: 0 },
+                { to: '/parrainage', label: 'Mon equipe', icon: 'fa-users', badge: 0 },
             ]
             : [
                 { to: '/login', label: 'Connexion', icon: 'fa-sign-in-alt', badge: 0 },
@@ -42,24 +55,28 @@ const navLinks = computed(() => {
 });
 
 const fetchBadges = async () => {
-    if (!authStore.user) return;
+    if (!user.value) return;
     try {
-        await userStateStore.syncCollaborationsWithBackend(); // Utilise la méthode unifiée
+        await userStateStore.syncCollaborationsWithBackend(); // Synchronisation des collaborations
+        // Pas besoin d'appeler initializeState ici si déjà fait au montage
     } catch (error) {
         console.error('Erreur lors du chargement des badges:', error);
     }
 };
 
-watch(
-    () => authStore.user,
-    (newUser) => {
-        if (newUser) {
-            fetchBadges();
-            userStateStore.initializeState();
+const initializeUserData = async () => {
+    if (!user.value && authStore.token) {
+        try {
+            await authStore.checkAuth(); // Forcer la récupération de l'utilisateur si le token existe
+        } catch (error) {
+            console.error('Erreur lors de la récupération de l\'utilisateur:', error);
+            authStore.logout(); // Déconnexion en cas d'échec
         }
-    },
-    { immediate: true }
-);
+    }
+    if (user.value) {
+        await fetchBadges();
+    }
+};
 
 watch(
     () => userStateStore.collaborationsPending,
@@ -111,30 +128,17 @@ const toggleSearch = async () => {
     }
 };
 
-
-
-onMounted(() => {
-
-
-    if (authStore.user) {
-        fetchBadges();
-        userStateStore.initializeState();
-    }
-
-    
+onMounted(async () => {
+    await initializeUserData(); // Initialisation des données utilisateur au montage
     document.addEventListener('click', handleClickOutside);
     if (authStore.user?.id) {
         window.Echo.channel(`chat.${authStore.user.id}`)
             .listen('MessageSent', (event: any) => {
-
                 console.log("📩 header e reçu :", event.message);
-                // Si c’est bien dans la conversation ouverte, on ajoute direct
                 if (authStore.user?.id === event.receiver_id) {
                     console.log("📩 header e reçu :", event.message);
                     userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
                 }
-
-                // Mettre à jour les unread messages
             });
     }
 });
@@ -168,11 +172,7 @@ onUnmounted(() => {
                         active-class="text-[var(--espace-or)]">
                         <i class="fas" :class="link.icon"></i>
                         {{ link.label }}
-                        <span v-if=" 
-                        
-                        link?.badge ?link.badge  > -1 :false
-                        "
-                            class="cart-badge bg-[var(--espace-or)] text-[var(--espace-vert)] text-xs rounded-full h-5 w-5 flex items-center justify-center"
+                        <span v-if="link?.badge && link.badge > -1" class="cart-badge bg-[var(--espace-or)] text-[var(--espace-vert)] text-xs rounded-full h-5 w-5 flex items-center justify-center"
                             :class="{
                                 'animate-scale': (link.to === '/collaborations' && animateCollaborationBadge) || (link.to === '/messages' && animateMessagesBadge),
                             }" :aria-label="link.to === '/collaborations'
@@ -180,32 +180,31 @@ onUnmounted(() => {
                                 : link.to === '/messages'
                                     ? 'Messages non lus'
                                     : ''">
-                            {{  link.badge }}
+                            {{ link.badge }}
                         </span>
                     </RouterLink>
                 </nav>
                 <SoldeUser />
-                <div class="flex items-center gap-2">
-                    <button v-if="user" @click="toggleSearch"
+                <div class="flex items-center gap-2 ">
+                    <!-- <button v-if="user" @click="toggleSearch"
                         class="text-[var(--espace-blanc)] hover:text-[var(--espace-or)] transition-colors duration-300"
                         aria-label="Ouvrir la recherche">
                         <i class="fas fa-search text-2xl"></i>
-                    </button>
+                    </button> -->
                     <!-- Séparer la logique pour profil et messages -->
-                    <RouterLink v-if="authStore.user" :to="'/profil'" class="relative flex items-center justify-center"
+                    <RouterLink v-if="user" :to="'/profil'" class="relative flex items-center justify-center"
                         aria-label="Profil">
-                        <img v-if="user?.photo" :src="`http://localhost:8000/storage/${user.photo}`"
-                            alt="Photo de profil"
+                        <img v-if="user?.photo" :src="storageUrl + user.photo" alt="Photo de profil"
                             class="w-10 h-10 rounded-full object-cover border-2 border-[var(--espace-vert)]" />
                         <div v-else
-                            class="w-10 h-10 rounded-full  flex items-center justify-center text-[var(--espace-gris)]">
-                            <i class="fas fa-user-circle text-2xl text-gray-100"></i>
+                            class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-[var(--espace-gris)]">
+                            <i class="fas fa-user-circle text-2xl text-gray-500"></i>
                         </div>
                     </RouterLink>
-                    <RouterLink v-if="authStore.user" :to="'/messages'"
+                    <RouterLink v-if="user" :to="'/messages'"
                         class="relative flex items-center justify-center" aria-label="Messages">
                         <div class="w-10 h-10 rounded-full  flex items-center justify-center text-[var(--espace-gris)]">
-                            <i class="fas fa-comment-dots text-2xl text-gray-100"></i>
+                            <i class="fas fa-comment-dots text-2xl text-white"></i>
                         </div>
                         <span v-if="userStateStore.unreadMessages > -1"
                             class="cart-badge absolute top-0 right-0 bg-[var(--espace-or)] text-[var(--espace-vert)] text-xs rounded-full h-5 w-5 flex items-center justify-center"
@@ -213,7 +212,6 @@ onUnmounted(() => {
                             {{ userStateStore.unreadMessages }}
                         </span>
                     </RouterLink>
-
                 </div>
             </div>
             <!-- Search Overlay -->

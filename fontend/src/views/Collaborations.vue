@@ -101,7 +101,7 @@ onMounted(() => {
 
             <!-- Contenu des onglets -->
             <div v-if="activeTab === 'received'">
-                <div v-if="collaborations.received_collaborations.length" class="grid grid-cols-1 gap-4">
+                <div v-if="collaborations?.received_collaborations?.length" class="grid grid-cols-1 gap-4">
                     <div v-for="collaboration in collaborations.received_collaborations" :key="collaboration.id"
                         class="bg-[var(--espace-blanc)] rounded-lg shadow-md p-4 hover:shadow-lg transition">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -155,11 +155,13 @@ onMounted(() => {
                 </div>
                 <p v-else class="text-center text-[var(--espace-gris)]">
                     Aucune collaboration reçue pour le moment.
+                    
                 </p>
             </div>
 
             <div v-if="activeTab === 'sent'">
-                <div v-if="collaborations.sent_collaborations.length" class="grid grid-cols-1 gap-4">
+
+                <div v-if="collaborations?.sent_collaborations?.length" class="grid grid-cols-1 gap-4">
                     <div v-for="collaboration in collaborations.sent_collaborations" :key="collaboration.id"
                         class="bg-[var(--espace-blanc)] rounded-lg shadow-md p-4 hover:shadow-lg transition">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

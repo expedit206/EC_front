@@ -165,7 +165,7 @@ onUnmounted(() => {
                         </div>
                     </RouterLink>
                     <h1 class="text-lg sm:text-xl font-bold font-poppins text-[var(--espace-blanc)]">
-                        <!-- Espace Cameroun -->
+                        <!-- Espace Camerouno -->
                     </h1>
                 </div>
 

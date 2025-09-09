@@ -13,6 +13,7 @@ const router = useRouter();
 const toast = useToast();
 
 const isLoading = ref(false);
+const loadingSubmit = ref(false); // Nouvel état pour le chargement de la soumission
 const produits = ref<Product[]>([]);
 const categories = ref<Category[]>([]);
 const showAddModal = ref(false);
@@ -41,7 +42,7 @@ const fetchProduits = async () => {
             ...p,
             photo_url: p.photos && p.photos.length > 0 ? p.photos[0] : "https://via.placeholder.com/150",
         }));
-        console.log(response.data)
+        console.log(response.data);
         produits.value.forEach((p) => {
             if (!slideIndexes.value[p.id]) slideIndexes.value[p.id] = 0;
         });
@@ -130,7 +131,7 @@ const deleteProduit = async (produitId: string) => {
 };
 
 const submitProduit = async () => {
-    isLoading.value = true;
+    loadingSubmit.value = true; // Activer le chargement pour la soumission
     const formData = new FormData();
     formData.append("nom", form.value.nom);
     formData.append("description", form.value.description);
@@ -145,13 +146,10 @@ const submitProduit = async () => {
     }
     try {
         if (showAddModal.value) {
-
-            // console.log(form.value)
             const response = await apiClient.post("/commercant/produits", formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
             console.log(response.data);
-            
             toast.success("Produit ajouté avec succès");
         } else {
             const response = await apiClient.post(
@@ -168,7 +166,7 @@ const submitProduit = async () => {
     } catch (error: any) {
         toast.error(error.response?.data.message || "Erreur lors de la sauvegarde du produit");
     } finally {
-        isLoading.value = false;
+        loadingSubmit.value = false; // Désactiver le chargement, même en cas d'erreur
     }
 };
 
@@ -306,11 +304,11 @@ onMounted(() => {
                                 </div>
                                 <input ref="fileInput" type="file" multiple @change="handleFileChange" class="hidden"
                                     accept="image/*" />
-                                <button v-if="!imagePreviews.length" @click="fileInput?.click()"
+                                <button type="button" @click="fileInput?.click()" v-if="!imagePreviews.length"
                                     class="w-full bg-[var(--espace-or)] text-[var(--espace-vert)] px-4 py-2 rounded-lg hover:bg-[var(--espace-vert)] hover:text-white transition flex items-center justify-center">
                                     <i class="fas fa-camera mr-2"></i> Ajouter une photo
                                 </button>
-                                <button v-else @click="fileInput?.click()"
+                                <button type="button" @click="fileInput?.click()" v-else
                                     class="w-full bg-[var(--espace-or)] text-[var(--espace-vert)] px-4 py-2 rounded-lg hover:bg-[var(--espace-vert)] hover:text-white transition flex items-center justify-center">
                                     <i class="fas fa-plus mr-2"></i> Ajouter une autre photo
                                 </button>
@@ -347,8 +345,11 @@ onMounted(() => {
                             <label for="collaboratif" class="text-sm text-[var(--espace-vert)]">Collaboratif</label>
                         </div>
                         <div class="flex gap-4 pt-2">
-                            <button type="submit"
-                                class="flex-1 bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold px-4 py-2 rounded hover:bg-[var(--espace-vert)] hover:text-white transition">
+                            <button type="submit" :disabled="loadingSubmit" :class="[
+                                'flex-1 bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold px-4 py-2 rounded transition-colors',
+                                loadingSubmit ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[var(--espace-vert)] hover:text-white'
+                            ]">
+                                <i v-if="loadingSubmit" class="fas fa-spinner fa-spin mr-2"></i>
                                 {{ showAddModal ? "Ajouter" : "Modifier" }}
                             </button>
                             <button type="button" @click="closeModal"

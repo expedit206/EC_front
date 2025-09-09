@@ -32,7 +32,7 @@ authStore.user = {
 const passwordForm = ref({
     current_password: '',
     new_password: '',
-    confirm_password: '',
+    confirm_new_password: '',
 });
 const notifications = ref({
     // email_notifications: user?.email_notifications || false,
@@ -42,17 +42,17 @@ const passwordStrength = ref(''); // Force du mot de passe
 
 const settingsLinks = computed(() => [
     ...(user?.commercant
-        ? [{ to: '/commercant', label: 'Espace Commerçant', icon: 'fa-store-alt', description: 'Gérez votre boutique et vos produits' }]
+        ? [{ to: '/commercant/produits', label: 'Espace Commerçant', icon: 'fa-store-alt', description: 'Gérez votre boutique et vos produits' }]
         : []),
-    { to: '/parrainage', label: 'Parrainage', icon: 'fa-users', description: 'Invitez des amis et gagnez des récompenses' },
-    { to: '/abonnements', label: 'Abonnements', icon: 'fa-star', description: 'Gérez vos abonnements premium' },
+    { to: '/parrainages', label: 'Parrainage', icon: 'fa-users', description: 'Invitez des amis et gagnez des récompenses' },
+    { to: '/profile', label: 'Abonnements', icon: 'fa-star', description: 'Gérez vos abonnements premium' },
     { to: '/collaborations', label: 'Collaborations', icon: 'fa-handshake', description: 'Gérez vos collaborations sur des produits' },
 ]);
 
 const updateProfile = async () => {
     isLoading.value = true;
     try {
-        await apiClient.put('/user/profile', profileForm.value);
+        await apiClient.post('/updateProfile', profileForm.value);
         // authStore.user = { ...authStore.user, ...profileForm.value };
         localStorage.setItem('user', JSON.stringify(authStore.user));
         toast.success('Profil mis à jour avec succès', { timeout: 3000 });
@@ -66,17 +66,17 @@ const updateProfile = async () => {
 const updatePassword = async () => {
     isLoading.value = true;
     try {
-        if (passwordForm.value.new_password !== passwordForm.value.confirm_password) {
+        if (passwordForm.value.new_password !== passwordForm.value.confirm_new_password) {
             toast.error('Les mots de passe ne correspondent pas');
             return;
         }
-        if (passwordStrength.value === 'weak') {
-            toast.error('Le mot de passe est trop faible. Utilisez au moins 8 caractères avec des lettres, chiffres et symboles.');
-            return;
-        }
-        await apiClient.put('/user/password', passwordForm.value);
+        // if (passwordStrength.value === 'weak') {
+        //     toast.error('Le mot de passe est trop faible. Utilisez au moins 8 caractères avec des lettres, chiffres et symboles.');
+        //     return;
+        // }
+        await apiClient.post('/updatePassword', passwordForm.value);
         toast.success('Mot de passe mis à jour avec succès', { timeout: 3000 });
-        passwordForm.value = { current_password: '', new_password: '', confirm_password: '' };
+        passwordForm.value = { current_password: '', new_password: '', confirm_new_password: '' };
         passwordStrength.value = '';
     } catch (error: any) {
         toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour du mot de passe');
@@ -124,7 +124,7 @@ watch(() => passwordForm.value.new_password, checkPasswordStrength);
 
 <template>
     <Loader :isLoading="isLoading" />
-    <div class="min-h-screen bg-gray-100 pt-16 pb-20 px-4 sm:px-6 flex flex-col lg:flex-row gap-4">
+    <div class="overflow-y-scroll bg-gray-100 pt-16 pb-20 px-4 sm:px-6 flex flex-col lg:flex-row gap-4">
         <!-- Sidebar (Desktop) -->
         <aside class="hidden lg:block w-full max-w-xs bg-[var(--espace-blanc)] rounded-lg shadow-md p-4">
             <h2 class="text-xl font-semibold text-[var(--espace-vert)] mb-4 font-poppins">Paramètres</h2>
@@ -132,7 +132,7 @@ watch(() => passwordForm.value.new_password, checkPasswordStrength);
                 <button v-for="section in [
                     { id: 'profile', label: 'Profil', icon: 'fa-user' },
                     { id: 'security', label: 'Sécurité', icon: 'fa-lock' },
-                    { id: 'notifications', label: 'Notifications', icon: 'fa-bell' },
+                    // { id: 'notifications', label: 'Notifications', icon: 'fa-bell' },
                     { id: 'links', label: 'Autres options', icon: 'fa-cog' },
                     { id: 'logout', label: 'Déconnexion', icon: 'fa-sign-out-alt' },
                 ]" :key="section.id" @click="section.id === 'logout' ? logout() : (activeSection = section.id)"
@@ -230,7 +230,7 @@ watch(() => passwordForm.value.new_password, checkPasswordStrength);
                                 'medium' ? 'Moyen' : 'Fort' }}
                         </div>
                         <FormField label="Confirmer le nouveau mot de passe" icon="fa-lock"
-                            v-model="passwordForm.confirm_password" type="password" required
+                            v-model="passwordForm.confirm_new_password" type="password" required
                             placeholder="Confirmer le mot de passe" />
                         <button type="submit"
                             class="w-full bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold px-4 py-2 rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-transform hover:scale-105">

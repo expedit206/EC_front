@@ -30,6 +30,18 @@ const calculatedCost = ref(5); // Coût initial minimum (5 jetons)
 const viewIntervals = [100, 500, 1000, 5000, 10000]; // Intervalles de vues
 const viewFactors = [5, 15, 25, 50, 75]; // Coût correspondant (jetons)
 
+// Fonction pour formater les nombres (vues et favoris)
+const formatNumber = (num: number | undefined): string => {
+    if (num == null || isNaN(num) || num === 0) return "0";
+
+    const absNum = Math.abs(num);
+    if (absNum < 1000) return num.toString();
+    if (absNum < 10000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + "k";
+    if (absNum < 1000000) return Math.floor(num / 1000) + "k";
+    if (absNum < 1000000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + "M";
+    return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + "B";
+};
+
 const fetchProduit = async () => {
     try {
         productStore.isLoading = true;
@@ -39,7 +51,8 @@ const fetchProduit = async () => {
             productStore.product.photo_url = productStore.product.photos[0];
         }
         await productStore.fetchProducts({ category: productStore.product.category_id, per_page: 8 }, true);
-        console.log(productStore.product);
+        // console.log(productStore.product);
+
     } catch (error: any) {
         toast.error(error || 'Erreur lors du chargement du produit');
         router.push({ name: 'home' });
@@ -184,7 +197,7 @@ const recordView = async (productId: string) => {
                 product_id: productId,
                 user_id: userId,
             });
-            toast.success(response.data.message);
+            // toast.success(response.data.message);
         }, 1000);
 
         viewedProducts[productId] = true;
@@ -341,7 +354,7 @@ watch(productStore.product, (newProduit) => {
                             </p>
                             <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4 text-xs text-[var(--espace-gris)]">
                                 <p><strong>Catégorie :</strong> {{ productStore.product.category?.nom || 'Non spécifiée'
-                                }}</p>
+                                    }}</p>
                                 <p><strong>Quantité :</strong> {{ productStore.product.quantite }}</p>
                                 <p><strong>Ville :</strong> {{ productStore.product.ville || 'Non spécifiée' }}</p>
                                 <p><strong>Ajouté le :</strong> {{ new
@@ -349,12 +362,13 @@ watch(productStore.product, (newProduit) => {
                                 <div class="flex items-center gap-3">
                                     <div class="flex items-center gap-1">
                                         <i class="fas fa-eye text-[10px]"></i>
-                                        <span>{{ productStore.product.counts?.views_count }} vues</span>
+                                        <span>{{ formatNumber(productStore.product.counts?.views_count) }} vues</span>
                                     </div>
                                     <div class="flex items-center gap-1">
                                         <i class="fas fa-heart text-[10px]"
                                             :class="{ 'text-[var(--espace-or)]': productStore.product.is_favorited_by }"></i>
-                                        <span>{{ productStore.product.counts?.favorites_count }} favoris</span>
+                                        <span>{{ formatNumber(productStore.product.counts?.favorites_count) }}
+                                            favoris</span>
                                     </div>
                                 </div>
                             </div>

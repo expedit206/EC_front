@@ -1,38 +1,33 @@
 import axios from "axios";
 
-axios.defaults.withCredentials = true;
+// Définir le baseURL de manière dynamique
+const getBaseUrl = () => {
+  const host = window.location.hostname;
+  if (host === "localhost" || host === "127.0.0.1") {
+    return "http://localhost:8000/api/v1"; // URL locale
+  }
+  return "https://espacecameroun.devfack.com/api/v1"; // URL de production (à ajuster selon votre domaine)
+};
 
+axios.defaults.withCredentials = true;
 axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 axios.defaults.withXSRFToken = true;
-export const apiClient = axios.create({
-  withCredentials: true, 
 
-  baseURL: "http://localhost:8000/api/v1",
-  // baseURL: "https://espacecameroun.devfack.com/api/v1",
+export const apiClient = axios.create({
+  withCredentials: true,
+  baseURL: getBaseUrl(), // Utilisation de la fonction dynamique
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",
   },
 });
-// const apiClient = axios.create({
-//   withCredentials: true,
-
-//   baseURL: "http://localhost:8000",
-//   headers: {
-//     Accept: "application/json",
-//     "Content-Type": "application/json",
-//   },
-// });
-
 
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem("auth_token"); // ou Pinia si tu stockes là
   if (token) {
-    // config.headers.Authorization = `Bearer ${token}`;
+    // config.headers.Authorization = `Bearer ${token}`; // Décommenter si tu utilises un token Bearer
   }
   return config;
 });
-
-
 
 export default apiClient;
