@@ -1,4 +1,3 @@
-
 export interface User {
   id: number;
   nom: string;
@@ -21,8 +20,6 @@ export interface User {
   commercant?: Commercant;
   niveaux_users: NiveauUser[];
 }
-
-
 
 // src/types/niveauUser.ts
 
@@ -102,7 +99,6 @@ export interface Parrainage {
   // Ajoutez d'autres propriétés si nécessaire (par exemple, id, email, etc.)
 }
 
-
 export interface Message {
   id: number;
   content: string;
@@ -121,7 +117,7 @@ export interface Message {
     ville: string | null;
     premium: boolean;
     parrain_id: number | null;
-    
+
     role?: string; // Added
   };
   receiver: {
@@ -144,7 +140,7 @@ export interface Commercant {
   ville?: string;
   logo?: string | null;
   user_id: number;
-  email : string | null;
+  email: string | null;
   telephone: string | null;
   created_at: string;
   updated_at: string;
@@ -183,4 +179,23 @@ export interface Collaboration {
   commercant: Commercant;
   created_at: string | null;
   updated_at: string | null;
+}
+
+export interface Wallet {
+  id: number;
+  phone_number: string; // Numéro de téléphone associé
+  payment_service: "ORANGE" | "MTN"; // Service de paiement (enumération)
+  is_active?: boolean; // Statut actif (optionnel)
+  created_at?: string; // Date de création (optionnel)
+  updated_at?: string; // Date de mise à jour (optionnel)
+}
+
+export interface Offer {
+  id: number;
+  user: User; // L'utilisateur qui propose l'offre
+  nombre_jetons: number; // Nombre de jetons proposés
+  prix_unitaire: number; // Prix par jeton en FCFA
+  total_prix: number; // Prix total de l'offre
+  date_creation: string; // Date de publication
+  wallet?: Wallet; // Portefeuille associé (optionnel)
 }
