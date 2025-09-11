@@ -227,7 +227,7 @@ onUnmounted(() => {
                     <i class="fas fa-coins text-xl "></i>
                 </router-link>
 
-                <div class="fixed bottom-30 right-6 z-50 bg-blue-300 w-10 h-10 rounded-full flex items-center justify-center
+                <div class="fixed bottom-33 right-6 z-50 bg-blue-300 w-10 h-10 rounded-full flex items-center justify-center
                 hover:bg-blue-400 active:scale-95 transition-all shadow-lg">
                     <router-link to="/doc"
                         class="text-[var(--espace-vert)] text-3xl hover:text-[var(--espace-or)] transition-transform transform hover:scale-110">

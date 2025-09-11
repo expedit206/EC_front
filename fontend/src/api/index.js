@@ -22,12 +22,5 @@ export const apiClient = axios.create({
   },
 });
 
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("auth_token"); // ou Pinia si tu stockes là
-  if (token) {
-    // config.headers.Authorization = `Bearer ${token}`; // Décommenter si tu utilises un token Bearer
-  }
-  return config;
-});
 
 export default apiClient;

@@ -44,6 +44,7 @@ export const useProductStore = defineStore("product", {
             sort: this.sort,
           },
         });
+        console.log(response.data)
         //console.log(response.data.data);
         // //console.log(response.data.data);
         // //console.log(response.data.data[0].is_favorited_by);
@@ -83,10 +84,6 @@ export const useProductStore = defineStore("product", {
           return;
         }
       }
-
-      const user = authStore.user;
-      //console.log(`user ${JSON.stringify(user)}`);
-
       // Mettre à jour localement avant l'appel API (optimisation UI)
       const product = this.products.find((p) => p.id === produitId);
       let localUpdate = false;

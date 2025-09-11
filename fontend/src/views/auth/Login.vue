@@ -29,22 +29,10 @@
     const login = async () => {
         try {
             isLoading.value = true; // activation du loader
-
-
-            // await axios.get("http://localhost:8000/sanctum/csrf-cookie", {
-            //     withCredentials: true,
-            // });
-
             await authStore.login({
                 login: credentials.value.login,
                 mot_de_passe: credentials.value.mot_de_passe,
             })
-
-            // const response = await apiClient.post("/login", {
-            //     login: credentials.value.login,
-            //     mot_de_passe: credentials.value.mot_de_passe,
-            // });
-
 
             toast.success('Connexion réussie !');
             // router.push(authStore.user?.commercant ? { name: 'commercant' } : { name: 'profil' });

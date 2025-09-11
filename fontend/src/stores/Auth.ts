@@ -13,10 +13,7 @@ export const useAuthStore = defineStore("auth", {
     // Connexion
 
     async login(credentials: { login: string; mot_de_passe: string }) {
-      // await axios.get("http://localhost:8000/sanctum/csrf-cookie", {
-      // await axios.get("https://espacecameroun.devfack.com/sanctum/csrf-cookie", {
-      //   withCredentials: true,
-      // });
+   
 
       const response = await apiClient.post("/login", credentials);
 
@@ -54,6 +51,9 @@ export const useAuthStore = defineStore("auth", {
       if (!this.token) return false;
 
       try {
+      apiClient.defaults.headers.common["Authorization"] =
+        `Bearer ${this.token}`;
+
 
         const response = await apiClient.get("/user");
 
@@ -71,8 +71,6 @@ export const useAuthStore = defineStore("auth", {
     async logout() {
       try {
         if (this.token) {
-          apiClient.defaults.headers.common["Authorization"] =
-            `Bearer ${this.token}`;
           await apiClient.post("/logout");
         }
       } catch {

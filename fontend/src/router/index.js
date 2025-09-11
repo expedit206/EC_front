@@ -130,29 +130,29 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
-  const authStore = useAuthStore();
-  const isAuthenticated =   await authStore.checkAuth();
-console.log(authStore.user);
-  // // Si l'utilisateur est connecté et tente d'accéder à /login ou /register
-  if (authStore.user && (to.name === "login" || to.name === "register")) {
-    next({ name: "home" }); // Rediriger vers la page d'accueil
-  }
-  // // Si la route nécessite une authentification et que l'utilisateur n'est pas connecté
-  else if (to.meta.requiresAuth && !isAuthenticated) {
-    next({ name: "login" });
-  }
-  // // Si la route nécessite un statut commerçant
-  else if (
-    to.meta.requiresCommercant &&
-    (!isAuthenticated || !authStore.user?.commercant)
-  ) {
-    next({ name: "home" });
-  }
-  // Autoriser l'accès dans les autres cas
-  else {
-      next();
-    }
-      next();
+//   const authStore = useAuthStore();
+//   const isAuthenticated =   await authStore.checkAuth();
+// console.log(authStore.user);
+//   // // Si l'utilisateur est connecté et tente d'accéder à /login ou /register
+//   if (authStore.user && (to.name === "login" || to.name === "register")) {
+//     next({ name: "home" }); // Rediriger vers la page d'accueil
+//   }
+//   // // Si la route nécessite une authentification et que l'utilisateur n'est pas connecté
+//   else if (to.meta.requiresAuth && !isAuthenticated) {
+//     next({ name: "login" });
+//   }
+//   // // Si la route nécessite un statut commerçant
+//   else if (
+//     to.meta.requiresCommercant &&
+//     (!isAuthenticated || !authStore.user?.commercant)
+//   ) {
+//     next({ name: "home" });
+//   }
+//   // Autoriser l'accès dans les autres cas
+//   else {
+//       next();
+//     }
+next();
 });
 
 export default router;

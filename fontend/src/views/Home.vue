@@ -116,6 +116,7 @@ const recordView = async (productId: string) => {
     }
 };
 
+
 onMounted(async () => {
     try {
         await productStore.fetchProducts();

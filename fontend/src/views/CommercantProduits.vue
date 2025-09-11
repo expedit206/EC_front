@@ -6,6 +6,8 @@ import { useAuthStore } from "../stores/Auth";
 import apiClient from "../api/index";
 import Loader from "../components/Loader.vue";
 import { Product, Category } from "../components/types/index";
+import { useProductStore } from '../stores/product';
+const productStore = useProductStore();
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -182,6 +184,9 @@ const submitProduit = async () => {
             toast.success("Produit modifié avec succès");
         }
         await fetchProduits();
+
+        productStore.fetchProducts();
+
         closeModal();
     } catch (error: any) {
         toast.error(
