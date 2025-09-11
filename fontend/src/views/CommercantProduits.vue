@@ -1,19 +1,18 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 import { useAuthStore } from "../stores/Auth";
 import apiClient from "../api/index";
 import Loader from "../components/Loader.vue";
-import { Product } from "../components/types/index";
-import { Category } from "../components/types/index";
+import { Product, Category } from "../components/types/index";
 
 const authStore = useAuthStore();
 const router = useRouter();
 const toast = useToast();
 
 const isLoading = ref(false);
-const loadingSubmit = ref(false); // Nouvel état pour le chargement de la soumission
+const loadingSubmit = ref(false);
 const produits = ref<Product[]>([]);
 const categories = ref<Category[]>([]);
 const showAddModal = ref(false);
@@ -21,6 +20,7 @@ const showEditModal = ref(false);
 const currentProduit = ref<Product | null>(null);
 const slideIndexes = ref<{ [key: string]: number }>({});
 
+// Formulaire
 const form = ref({
     nom: "",
     description: "",
@@ -30,19 +30,29 @@ const form = ref({
     collaboratif: false,
     marge_min: 0,
 });
-const images = ref<File[]>([]); // Stocke les fichiers d'image
-const imagePreviews = ref<string[]>([]); // Stocke les URLs de prévisualisation
+
+// Images
+const oldImages = ref<string[]>([]); // anciennes en BDD
+const newImages = ref<File[]>([]); // nouvelles uploadées
 const fileInput = ref<HTMLInputElement | null>(null);
 
+const imagePreviews = computed(() => [
+    ...oldImages.value,
+    ...newImages.value.map((f) => URL.createObjectURL(f)),
+]);
+
+// 📌 Charger les produits
 const fetchProduits = async () => {
     isLoading.value = true;
     try {
         const response = await apiClient.get("/commercant/produits");
         produits.value = response.data.produits.map((p: any) => ({
             ...p,
-            photo_url: p.photos && p.photos.length > 0 ? p.photos[0] : "https://via.placeholder.com/150",
+            photo_url:
+                p.photos && p.photos.length > 0
+                    ? p.photos[0]
+                    : "https://via.placeholder.com/150",
         }));
-        console.log(response.data);
         produits.value.forEach((p) => {
             if (!slideIndexes.value[p.id]) slideIndexes.value[p.id] = 0;
         });
@@ -53,18 +63,20 @@ const fetchProduits = async () => {
     }
 };
 
+// 📌 Charger catégories
 const fetchCategories = async () => {
     isLoading.value = true;
     try {
         const response = await apiClient.get("/categories");
         categories.value = response.data.categories;
     } catch (error) {
-        toast.error("Erreur lors de la chargement des catégories");
+        toast.error("Erreur lors du chargement des catégories");
     } finally {
         isLoading.value = false;
     }
 };
 
+// 📌 Ouvrir modal ajout
 const openAddModal = () => {
     form.value = {
         nom: "",
@@ -75,11 +87,12 @@ const openAddModal = () => {
         collaboratif: false,
         marge_min: 0,
     };
-    images.value = [];
-    imagePreviews.value = [];
+    oldImages.value = [];
+    newImages.value = [];
     showAddModal.value = true;
 };
 
+// 📌 Ouvrir modal édition
 const openEditModal = (produit: Product) => {
     currentProduit.value = produit;
     form.value = {
@@ -88,33 +101,36 @@ const openEditModal = (produit: Product) => {
         prix: produit.prix,
         stock: produit.quantite,
         category_id: produit.category_id,
-        collaboratif: produit.collaboratif ? true : false,
+        collaboratif: !!produit.collaboratif,
         marge_min: produit.marge_min || 0,
     };
-    images.value = [];
-    imagePreviews.value = produit.photos || [];
+    oldImages.value = produit.photos ? [...produit.photos] : [];
+    newImages.value = [];
     if (!slideIndexes.value[produit.id]) slideIndexes.value[produit.id] = 0;
     showEditModal.value = true;
 };
 
+// 📌 Upload fichier
 const handleFileChange = (event: Event) => {
     const target = event.target as HTMLInputElement;
     if (target.files) {
         const files = Array.from(target.files);
-        images.value = [...images.value, ...files]; // Ajouter les nouveaux fichiers
-        imagePreviews.value = [
-            ...imagePreviews.value,
-            ...files.map((file) => URL.createObjectURL(file)),
-        ]; // Ajouter les prévisualisations
-        if (fileInput.value) fileInput.value.value = ""; // Réinitialiser l'input
+        newImages.value.push(...files);
+        if (fileInput.value) fileInput.value.value = "";
     }
 };
 
+// 📌 Supprimer une image
 const removeImage = (index: number) => {
-    images.value.splice(index, 1);
-    imagePreviews.value.splice(index, 1);
+    if (index < oldImages.value.length) {
+        oldImages.value.splice(index, 1);
+    } else {
+        const newIndex = index - oldImages.value.length;
+        newImages.value.splice(newIndex, 1);
+    }
 };
 
+// 📌 Supprimer produit
 const deleteProduit = async (produitId: string) => {
     if (!confirm("Voulez-vous vraiment supprimer ce produit ?")) return;
     isLoading.value = true;
@@ -130,8 +146,9 @@ const deleteProduit = async (produitId: string) => {
     }
 };
 
+// 📌 Soumettre produit
 const submitProduit = async () => {
-    loadingSubmit.value = true; // Activer le chargement pour la soumission
+    loadingSubmit.value = true;
     const formData = new FormData();
     formData.append("nom", form.value.nom);
     formData.append("description", form.value.description);
@@ -140,42 +157,48 @@ const submitProduit = async () => {
     formData.append("category_id", form.value.category_id);
     formData.append("collaboratif", form.value.collaboratif ? "1" : "0");
     formData.append("marge_min", form.value.marge_min.toString());
-    images.value.forEach((image) => formData.append("photos[]", image));
-    for (let [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
-    }
+
+    // Anciennes restantes
+    oldImages.value.forEach((photo) =>
+        formData.append("old_photos[]", photo)
+    );
+
+    // Nouvelles images
+    newImages.value.forEach((image) => formData.append("photos[]", image));
+
     try {
         if (showAddModal.value) {
-            const response = await apiClient.post("/commercant/produits", formData, {
+            await apiClient.post("/commercant/produits", formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
-            console.log(response.data);
             toast.success("Produit ajouté avec succès");
         } else {
-            const response = await apiClient.post(
+            const res = await apiClient.post(
                 `/commercant/produits/${currentProduit.value?.id}`,
                 formData,
-                {
-                    headers: { "Content-Type": "multipart/form-data" },
-                }
+                { headers: { "Content-Type": "multipart/form-data" } }
             );
+            console.log(res.data);
             toast.success("Produit modifié avec succès");
         }
         await fetchProduits();
         closeModal();
     } catch (error: any) {
-        toast.error(error.response?.data.message || "Erreur lors de la sauvegarde du produit");
+        toast.error(
+            error.response?.data.message || "Erreur lors de la sauvegarde du produit"
+        );
     } finally {
-        loadingSubmit.value = false; // Désactiver le chargement, même en cas d'erreur
+        loadingSubmit.value = false;
     }
 };
 
+// 📌 Fermer modale
 const closeModal = () => {
     showAddModal.value = false;
     showEditModal.value = false;
     currentProduit.value = null;
-    images.value = [];
-    imagePreviews.value = [];
+    oldImages.value = [];
+    newImages.value = [];
 };
 
 const currentSlideIndex = computed(() => (id: string) => slideIndexes.value[id] || 0);
@@ -198,6 +221,7 @@ onMounted(() => {
     fetchCategories();
 });
 </script>
+
 
 <template>
     <Loader :isLoading="isLoading" />
@@ -252,12 +276,12 @@ onMounted(() => {
                         </div>
                     </div>
                     <div class="p-2">
-                        <h2 class="text-lg font-semibold flex justify-between text-[var(--espace-vert)] truncate">
+                        <h2 class="text-lg font-semibold flex justify-between text-[var(--espace-vert)] ">
                             <router-link :to="`/produits/${produit.id}`" class="block relative">
                                 {{ produit.nom }}
                             </router-link>
                             <button @click="openEditModal(produit)"
-                                class="text-[var(--espace-vert)] hover:text-[var(--espace-or)] p-1 rounded-full hover:bg-gray-100 transition">
+                                class="text-[var(--espace-vert)] hover:text-[var(--espace-or)] p-1 rounded-full hover:bg-gray-100 transition ">
                                 <i class="fas fa-pencil text-sm"></i>
                             </button>
                         </h2>
@@ -286,7 +310,7 @@ onMounted(() => {
                     <h2 class="text-lg font-semibold text-[var(--espace-vert)] mb-4">
                         {{ showAddModal ? "Ajouter un produit" : "Modifier le produit" }}
                     </h2>
-                    <form @submit.prevent="submitProduit" class="space-y-4">
+                    <form @submit.prevent="submitProduit" class="space-y-4 pt-12">
                         <!-- Champ des photos en haut -->
                         <div>
                             <label class="text-sm text-[var(--espace-vert)]">Photos du produit</label>

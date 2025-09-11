@@ -54,8 +54,7 @@ export const useAuthStore = defineStore("auth", {
       if (!this.token) return false;
 
       try {
-        apiClient.defaults.headers.common["Authorization"] =
-          `Bearer ${this.token}`;
+
         const response = await apiClient.get("/user");
 
         this.user = response.data.user;

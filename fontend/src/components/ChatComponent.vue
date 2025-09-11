@@ -47,7 +47,7 @@ const fetchMessages = async () => {
     if (authStore.user && receiverId.value && productId.value) {
         const response = await apiClient.get(`/chat/${productId.value}/${receiverId.value}`);
         messages.value = response.data.messages;
-        console.log(response.data)
+        //console.log(response.data)
     }
 };
 

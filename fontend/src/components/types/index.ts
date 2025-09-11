@@ -184,7 +184,7 @@ export interface Collaboration {
 export interface Wallet {
   id: number;
   phone_number: string; // Numéro de téléphone associé
-  payment_service: "ORANGE" | "MTN"; // Service de paiement (enumération)
+  payment_service: string; // Service de paiement (enumération)
   is_active?: boolean; // Statut actif (optionnel)
   created_at?: string; // Date de création (optionnel)
   updated_at?: string; // Date de mise à jour (optionnel)

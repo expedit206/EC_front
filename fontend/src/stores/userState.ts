@@ -30,7 +30,6 @@ export const useUserStateStore = defineStore("userState", () => {
 
   // Sauvegarder les messages non lus
   const saveUnreadMessagesToLocalStorage = (count: number) => {
-    
     localStorage.setItem("unread_messages", count.toString());
     unreadMessages.value = count;
   };
@@ -82,7 +81,7 @@ export const useUserStateStore = defineStore("userState", () => {
       const response = await apiClient.get("/user/badges");
       // Utiliser directement le compteur collaborations_pending
       collaborationsPending.value = response.data.collaborations_pending;
-      console.log(response.data);
+      //console.log(response.data);
 
       // Mettre à jour les messages non lus
       saveUnreadMessagesToLocalStorage(response.data.unread_messages || 0);

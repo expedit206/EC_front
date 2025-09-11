@@ -43,7 +43,7 @@ const register = async () => {
 
         isLoading.value = true;
 
-        // console.log('Envoi des données d\'inscription:', form.value);
+        // //console.log('Envoi des données d\'inscription:', form.value);
         await authStore.register(form.value);
         toast.success('Inscription réussie !');
         router.push({ name: 'home' });
@@ -97,10 +97,8 @@ const register = async () => {
                 </router-link>
             </p>
             <p class="text-center text-xs text-gray-400 mt-2 pb-24 ">
-                En vous inscrivant, vous acceptez nos
-                <a href="/conditions" class="hover:underline text-[var(--espace-vert)]">conditions d'utilisation</a>
-                et notre
-                <a href="/confidentialite" class="hover:underline text-[var(--espace-vert)]">politique de
+                En vous inscrivant, vous acceptez notre
+                <a href="/politique" class="hover:underline text-[var(--espace-vert)]">politique de
                     confidentialité</a>.
             </p>
         </div>

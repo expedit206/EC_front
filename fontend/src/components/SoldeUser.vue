@@ -13,7 +13,7 @@ const fetchJetons = async () => {
     if (authStore.user) {
         try {
             jetons.value = authStore.user.jetons;
-            console.log(jetons.value)
+            //console.log(jetons.value)
         } catch (error) {
             console.error('Erreur lors de la récupération des jetons:', error);
         }
@@ -38,7 +38,7 @@ const logout = () => {
 </script>
 
 <template>
-    <div v-if="authStore.user" class="fixed top-14 right-4 z-50 flex items-center gap-2  rounded-full px-4 py-2">
+    <div v-if="authStore.user" class="fixed top-16 right-4 z-50 flex items-center gap-2  rounded-full px-4 py-2">
 
         <i class="fas fa-coins text-[var(--espace-or)] text-lg"></i>
         <span class="text-sm font-semibold text-[var(--espace-vert)]">

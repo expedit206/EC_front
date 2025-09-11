@@ -58,7 +58,7 @@ const fetchConversations = async () => {
     try {
         const res = await apiClient.get('/conversations');
         conversations.value = res.data.conversations;
-        console.log(res.data);
+        //console.log(res.data);
     } catch (e) {
         toast.error('Erreur lors de la récupération des conversations');
         console.error(e);
@@ -78,7 +78,7 @@ const fetchMessages = async (receiverId: number, resetOffset = true) => {
         isSidebarOpen.value = false;
         const res = await apiClient.get(`/chat/${receiverId}?offset=${offset.value}`);
         messages.value = [...res.data.messages];
-        // console.log(res.data);
+        // //console.log(res.data);
 
         hasMore.value = res.data.hasMore;
 
@@ -173,7 +173,7 @@ const sendMessage = async () => {
             content,
             product_id: product.value?.id,
         });
-        console.log(res.data);
+        //console.log(res.data);
 
         if (product.value) {
             clearProductTag();
@@ -224,10 +224,10 @@ const subscribeToChannel = (receiverId: number) => {
         window.Echo.leave(`chat.${currentChannel.params.receiverId}`);
     }
     if (receiverId && authStore.user?.id) {
-        console.log("🔔 Abonnement au canal chat." + receiverId);
+        //console.log("🔔 Abonnement au canal chat." + receiverId);
         currentChannel = window.Echo.channel(`public-channel`)
             .listen('message.sent', (event: any) => {
-                console.log("📩 Nouveau message reçu :", event.message);
+                //console.log("📩 Nouveau message reçu :", event.message);
                 if (selectedConversation.value?.user_id === receiverId && event.sender_id !== authStore.user?.id) {
                     const newMessage: Message = {
                         id: event.message.id,

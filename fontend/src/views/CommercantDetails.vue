@@ -20,7 +20,7 @@ const fetchCommerçantDetails = async () => {
     isLoading.value = true;
     try {
         const response = await apiClient.get(`/commercant/${route.params.commercantId}`);
-        console.log(response.data); // Pour déboguer la structure de la réponse
+        //console.log(response.data); // Pour déboguer la structure de la réponse
         commerçant.value = response.data.commercant;
         averageRating.value = response.data.average_rating || 0;
         voteCount.value = response.data.vote_count || 0; // Ajout du nombre de votes
@@ -98,7 +98,7 @@ onMounted(async () => {
                         <h1 class="text-3xl font-bold text-[var(--espace-vert)] mb-2 text-center">
                             Commerçant : {{ commerçant.nom }}</h1>
                         <p class="text-sm text-[var(--espace-gris)] mb-1"><strong>Ville :</strong> {{ commerçant.ville
-                        }}</p>
+                            }}</p>
                         <p class="text-sm text-[var(--espace-gris)] mb-1"><strong>Inscrit depuis :</strong> {{ new
                             Date(commerçant.created_at).toLocaleDateString() }}</p>
                         <p class="text-sm text-[var(--espace-gris)]"><strong>Contact :</strong> {{ commerçant.email ||

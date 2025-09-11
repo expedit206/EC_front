@@ -173,7 +173,7 @@ const commerceForm = ref({
   logo: null as File | null,
   logoPreview: user.value?.commercant?.logo ? `http://localhost:8000/storage/${user.value.commercant.logo}` : null,
 });
-console.log(`com ${JSON.stringify(commerceForm.value)}`);
+//console.log(`com ${JSON.stringify(commerceForm.value)}`);
 
 const handleLogoUpload = (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0];
@@ -227,7 +227,7 @@ const updateCommerce = async () => {
     const response = await apiClient.post('/commercant/update', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    console.log(`com ${JSON.stringify(response.data)}`);
+    //console.log(`com ${JSON.stringify(response.data)}`);
 
     if (user.value?.commercant) {
       user.value.commercant.nom = response.data.commercant.nom;

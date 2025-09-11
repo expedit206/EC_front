@@ -10,11 +10,11 @@ import SoldeUser from './SoldeUser.vue';
 
 // Fonction pour générer l'URL de base du stockage dynamiquement
 const getStorageBaseUrl = () => {
-  const host = window.location.hostname;
-  if (host === "localhost" || host === "127.0.0.1") {
-    return "http://localhost:8000/storage/";
-  }
-  return "https://espacecameroun.devfack.com/storage/"; // URL de production (à ajuster selon votre domaine)
+    const host = window.location.hostname;
+    if (host === "localhost" || host === "127.0.0.1") {
+        return "http://localhost:8000/storage/";
+    }
+    return "https://espacecameroun.devfack.com/storage/"; // URL de production (à ajuster selon votre domaine)
 };
 
 // Computed property pour l'URL du stockage
@@ -37,15 +37,15 @@ const ignoreNextClick = ref(false);
 const navLinks = computed(() => {
     return [
         ...(user.value
-        ? [
-            { to: '/', label: 'Accueil', icon: 'fa-home', badge: 0 },
-                { to: '/profil', label: 'Profil', icon: 'fa-user-circle' },
+            ? [
+                { to: '/', label: 'Accueil', icon: 'fa-home', badge: 0 },
                 { to: '/messages', label: 'Chat', icon: 'fa-comment-dots', badge: userStateStore.unreadMessages },
                 ...(user.value.commercant
-                    ? [{ to: '/commercant/produits', label: 'Mes Produits', icon: 'fa-box-open', badge: 0 }]
+                    ? [{ to: '/commercant/produits', label: 'Produits', icon: 'fa-box-open', badge: 0 }]
                     : []),
                 { to: '/collaborations', label: 'Collaborations', icon: 'fa-handshake', badge: userStateStore.collaborationsPending },
-                { to: '/parrainage', label: 'Mon equipe', icon: 'fa-users', badge: 0 },
+                { to: '/parrainage', label: 'equipe', icon: 'fa-users', badge: 0 },
+                { to: '/parametres', label: 'Parametres', icon: 'fa-cog' },
             ]
             : [
                 { to: '/login', label: 'Connexion', icon: 'fa-sign-in-alt', badge: 0 },
@@ -134,9 +134,9 @@ onMounted(async () => {
     if (authStore.user?.id) {
         window.Echo.channel(`chat.${authStore.user.id}`)
             .listen('MessageSent', (event: any) => {
-                console.log("📩 header e reçu :", event.message);
+                //console.log("📩 header e reçu :", event.message);
                 if (authStore.user?.id === event.receiver_id) {
-                    console.log("📩 header e reçu :", event.message);
+                    //console.log("📩 header e reçu :", event.message);
                     userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
                 }
             });
@@ -152,9 +152,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="relative">
-        <header class="bg-[var(--espace-vert)] text-[var(--espace-blanc)] top-0 left-0 w-full z-50 shadow-md">
-            <div class="container mx-auto px-2 sm:px-3 py-2 flex justify-between items-center gap-4">
+    <div class="relative bg-[var(--espace-vert)] w-full h-full">
+        <header class="bg-[var(--espace-vert)] text-[var(--espace-blanc)] top-0 left-0  z-50 shadow-md h-full">
+            <!-- <a href="../views/Doc.vue">docu</a> -->
+            <div class="  px-2 w-full sm:px-3 py-2 flex justify-between items-center gap-4 mb-4">
                 <div class="flex items-center gap-1 sm:gap-3">
                     <RouterLink to="/" aria-label="Retour à l'accueil">
                         <div class="rounded-full pb-1 pt-1">
@@ -172,7 +173,8 @@ onUnmounted(() => {
                         active-class="text-[var(--espace-or)]">
                         <i class="fas" :class="link.icon"></i>
                         {{ link.label }}
-                        <span v-if="link?.badge && link.badge > -1" class="cart-badge bg-[var(--espace-or)] text-[var(--espace-vert)] text-xs rounded-full h-5 w-5 flex items-center justify-center"
+                        <span v-if="link?.badge && link.badge > -1"
+                            class="cart-badge bg-[var(--espace-or)] text-[var(--espace-vert)] text-xs rounded-full h-5 w-5 flex items-center justify-center"
                             :class="{
                                 'animate-scale': (link.to === '/collaborations' && animateCollaborationBadge) || (link.to === '/messages' && animateMessagesBadge),
                             }" :aria-label="link.to === '/collaborations'
@@ -192,17 +194,9 @@ onUnmounted(() => {
                         <i class="fas fa-search text-2xl"></i>
                     </button> -->
                     <!-- Séparer la logique pour profil et messages -->
-                    <RouterLink v-if="user" :to="'/profil'" class="relative flex items-center justify-center"
-                        aria-label="Profil">
-                        <img v-if="user?.photo" :src="storageUrl + user.photo" alt="Photo de profil"
-                            class="w-10 h-10 rounded-full object-cover border-2 border-[var(--espace-vert)]" />
-                        <div v-else
-                            class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-[var(--espace-gris)]">
-                            <i class="fas fa-user-circle text-2xl text-gray-500"></i>
-                        </div>
-                    </RouterLink>
-                    <RouterLink v-if="user" :to="'/messages'"
-                        class="relative flex items-center justify-center" aria-label="Messages">
+
+                    <RouterLink v-if="user" :to="'/messages'" class="relative flex items-center justify-center"
+                        aria-label="Messages">
                         <div class="w-10 h-10 rounded-full  flex items-center justify-center text-[var(--espace-gris)]">
                             <i class="fas fa-comment-dots text-2xl text-white"></i>
                         </div>
@@ -212,26 +206,39 @@ onUnmounted(() => {
                             {{ userStateStore.unreadMessages }}
                         </span>
                     </RouterLink>
+
+                    <RouterLink v-if="user" :to="'/profil'" class="relative flex items-center justify-center"
+                        aria-label="Profil">
+                        <img v-if="user?.photo" :src="storageUrl + user.photo" alt="Photo de profil"
+                            class="w-10 h-10 rounded-full object-cover border-2 border-[var(--espace-vert)]" />
+                        <div v-else
+                            class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-[var(--espace-gris)]">
+                            <i class="fas fa-user-circle text-2xl text-gray-500"></i>
+                        </div>
+                    </RouterLink>
                 </div>
+
+
+                <router-link v-if="user" to="/jetonMarket" aria-label="Aller au marché" class="fixed  bottom-17 z-10 right-5 w-12 h-12 rounded-full
+                flex items-center justify-center
+                bg-[var(--espace-vert)] text-yellow-300
+                shadow-lg hover:scale-110 active:scale-95 transition-all
+                ring-2 ring-yellow-400/60">
+                    <i class="fas fa-coins text-xl "></i>
+                </router-link>
+
+                <div class="fixed bottom-30 right-6 z-50 bg-blue-300 w-10 h-10 rounded-full flex items-center justify-center
+                hover:bg-blue-400 active:scale-95 transition-all shadow-lg">
+                    <router-link to="/doc"
+                        class="text-[var(--espace-vert)] text-3xl hover:text-[var(--espace-or)] transition-transform transform hover:scale-110">
+                        ?
+                    </router-link>
+                </div>
+
             </div>
             <!-- Search Overlay -->
-            <div v-if="showSearch" ref="searchOverlayRef"
-                class="fixed bg-[var(--espace-vert)] bg-opacity-50 flex items-center top-10 w-full justify-center z-50 p-4">
-                <div class="relative w-full max-w-md bg-[var(--espace-blanc)] rounded-lg p-4 shadow-lg">
-                    <input v-model="searchQuery" type="text" placeholder="Rechercher un produit..."
-                        class="w-full px-4 py-2 rounded-full text-[var(--espace-vert)] focus:outline-none focus:ring-2 focus:ring-[var(--espace-or)] text-base"
-                        @keyup.enter="performSearch" />
-                    <button @click="performSearch"
-                        class="absolute right-6 top-1/2 transform -translate-y-1/2 text-[var(--espace-vert)] hover:text-[var(--espace-or)]">
-                        <i class="fas fa-search text-lg"></i>
-                    </button>
-                    <button @click="showSearch = false"
-                        class="absolute left-4 top-1/2 transform -translate-y-1/2 text-[var(--espace-vert)] hover:text-[var(--espace-or)]"
-                        aria-label="Fermer la recherche">
-                        <i class="fas fa-times text-lg"></i>
-                    </button>
-                </div>
-            </div>
+
+
         </header>
     </div>
 </template>

@@ -10,6 +10,7 @@
                 </p>
             </div>
 
+
             <div class="p-6">
                 <!-- Étape 1 : Choix du pack -->
                 <div v-if="!selectedPlan" class="grid md:grid-cols-3 gap-6">
@@ -97,6 +98,11 @@
                             Choisir ce plan
                         </button>
                     </div>
+                    <router-link to="home"
+                        class="w-full text-center text-gray-500 hover:text-[var(--espace-vert)] text-bold transition">
+                        ← Retour
+                    </router-link>
+
                 </div>
 
                 <!-- Étape 2 : Formulaire d'inscription -->
@@ -114,13 +120,17 @@
                             </h4>
                             <p class="mb-2 text-sm opacity-90">
                                 {{ selectedPlan === 'monthly'
-                                    ? 'Accès complet à toutes les fonctionnalités.'
-                                    : 'Payez moins, profitez plus avec 16% d’économie !' }}
+                                ? 'Accès complet à toutes les fonctionnalités.'
+                                : 'Payez moins, profitez plus avec 16% d’économie !' }}
                             </p>
                             <div class="text-3xl font-extrabold">
                                 {{ selectedPlan === 'monthly' ? '5 000 FCFA' : '50 000 FCFA' }}
+                                <!-- ghjghjg -->
                             </div>
+
+
                         </div>
+
                     </div>
 
                     <!-- Formulaire paiement -->
@@ -251,35 +261,35 @@ const confirmUpgrade = async () => {
 
     isLoading.value = true;
     try {
-        console.log({
-            subscription_type: selectedPlan.value,
-            payment_service: selectedService.value,
-            phone_number: phoneNumber.value,
-        });
-        const res = await apiClient.post('/upgrade-to-premium', {
-            subscription_type: selectedPlan.value,
-            payment_service: selectedService.value,
-            phone_number: phoneNumber.value,
-        });
-        isLoading.value = false;
+        //console.log({
+        // subscription_type: selectedPlan.value,
+        //     payment_service: selectedService.value,
+        //         phone_number: phoneNumber.value,
+        // });
+    const res = await apiClient.post('/upgrade-to-premium', {
+        subscription_type: selectedPlan.value,
+        payment_service: selectedService.value,
+        phone_number: phoneNumber.value,
+    });
+    isLoading.value = false;
 
-        toast.success(res.data.message);
-        emit('upgraded');
-        emit('close');
-    } catch (e: any) {
-        if (e.response && e.response.data) {
-            const errorData = e.response.data;
-            toast.error(
-                `Paiement échoué :Verifiez vos informations et réessayer`
-            );
-        } else {
-            toast.error('Verifiez vos informations et réessayer.');
-        }
-        console.error(e);
-    } finally {
-        isLoading.value = false;
-
+    toast.success(res.data.message);
+    emit('upgraded');
+    emit('close');
+} catch (e: any) {
+    if (e.response && e.response.data) {
+        const errorData = e.response.data;
+        toast.error(
+            `Paiement échoué :Verifiez vos informations et réessayer`
+        );
+    } else {
+        toast.error('Verifiez vos informations et réessayer.');
     }
+    console.error(e);
+} finally {
+    isLoading.value = false;
+
+}
 };
 </script>
 

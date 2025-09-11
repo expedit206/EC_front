@@ -44,9 +44,9 @@ export const useProductStore = defineStore("product", {
             sort: this.sort,
           },
         });
-        console.log(response.data.data);
-        // console.log(response.data.data);
-        // console.log(response.data.data[0].is_favorited_by);
+        //console.log(response.data.data);
+        // //console.log(response.data.data);
+        // //console.log(response.data.data[0].is_favorited_by);
 
         if (params.per_page === "all") {
           this.products = reset
@@ -85,7 +85,7 @@ export const useProductStore = defineStore("product", {
       }
 
       const user = authStore.user;
-      console.log(`user ${JSON.stringify(user)}`);
+      //console.log(`user ${JSON.stringify(user)}`);
 
       // Mettre à jour localement avant l'appel API (optimisation UI)
       const product = this.products.find((p) => p.id === produitId);
@@ -130,6 +130,8 @@ export const useProductStore = defineStore("product", {
 
         return response.data.message;
       } catch (error: any) {
+        console.log(error);
+      
         // Revenir à l'état précédent en cas d'erreur
         if (localUpdate) {
           const product = this.products.find((p) => p.id === produitId);
@@ -146,10 +148,10 @@ export const useProductStore = defineStore("product", {
               : this.product.counts.favorites_count + 1;
           }
         }
-        throw (
-          error.response?.data?.message ||
-          "Erreur lors de la mise à jour des favoris"
-        );
+        // throw (
+        //   error ||
+        //   "Erreur lors de la mise à jour des favris"
+        // );
       }
     },
 
@@ -185,5 +187,5 @@ export const useProductStore = defineStore("product", {
     setUserId(userId: any) {
       this.userId = userId;
     },
-  }
+  },
 });

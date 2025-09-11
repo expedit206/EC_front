@@ -44,7 +44,7 @@ const submitForm = async () => {
         const response = await apiClient.post('/commercants', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
-        console.log(response.data.message)
+        //console.log(response.data.message)
         toast.success('Commerçant créé avec succès !');
         router.push('/profil'); // Rediriger vers la liste des commerçants
     } catch (error: any) {

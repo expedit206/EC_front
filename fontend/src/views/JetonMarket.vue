@@ -50,7 +50,7 @@
                 </p>
                 <p class="text-xs text-gray-500 mt-3">📅 Publiée le {{ new
                     Date(offer.date_creation).toLocaleDateString() }}</p>
-                <button @click="openPaymentModal(offer.id, offer.wallet?.phone_number, offer.wallet?.service)"
+                <button @click="openPaymentModal(offer.id, offer.wallet?.phone_number, offer.wallet?.payment_service)"
                     class="mt-6 w-full bg-gradient-to-r from-[var(--espace-or)] to-yellow-400 text-[var(--espace-vert)] px-3 py-2 sm:px-4 sm:py-3 rounded-xl font-bold shadow hover:from-[var(--espace-vert)] hover:to-green-700 hover:text-white transition text-sm sm:text-base">
                     ⚡ Acheter
                 </button>
@@ -155,11 +155,11 @@
                             </select>
                         </div>
                         <p class="text-sm text-[var(--espace-gris)]">Montant total : <span class="font-bold">{{
-                                selectedOfferTotal }}</span> FCFA</p>
+                            selectedOfferTotal }}</span> FCFA</p>
                         <button type="submit" :disabled="loading"
                             class="w-full bg-gradient-to-r from-[var(--espace-or)] to-yellow-400 text-[var(--espace-vert)] py-3 rounded-xl font-bold shadow hover:from-[var(--espace-vert)] hover:to-green-700 hover:text-white transition">
-                            <i v-if="loading" class="fas fa-spinner fa-spin mr-2"></i> 
-                            <span v-if="loading" class="">Veuillez patienter</span> 
+                            <i v-if="loading" class="fas fa-spinner fa-spin mr-2"></i>
+                            <span v-if="loading" class="">Veuillez patienter</span>
                             <span v-else class="">Confirmer le paiement</span>
                         </button>
                     </form>
@@ -226,8 +226,8 @@
                 <span class="hidden md:inline font-semibold">Actualiser</span>
             </button>
             <button @click="closeAllModals(); // ✅ ferme tout
-        showWalletManager = true;
-    
+            showWalletManager = true;
+
             "
                 class="flex items-center gap-1 rounded-xl p-2 hover:bg-[var(--espace-or)] transition  bg-[var(--espace-ver)] text-[var(--espace-vert)]">
                 <i class="fas fa-wallet text-xl"></i>
@@ -290,7 +290,11 @@ const selectedOfferId = ref<number | null>(null);
 const selectedOfferTotal = ref(0);
 const userWallets = ref<any[]>([]);
 const showCreateWallet = ref(false);
-const newWallet = ref<Wallet | null>(null);
+const newWallet = ref<Wallet>({
+    id: 0,
+    phone_number: '',
+    payment_service: ''
+});
 
 const showWalletManager = ref(false);
 const showOfferManager = ref(false);
@@ -354,7 +358,7 @@ const createWallet = async () => {
         console.error('Erreur:', error);
     } finally {
         loading.value = false;
-        newWallet.value = { phone_number: '', payment_service: '' };
+        newWallet.value = { id: 0, phone_number: '', payment_service: '' };
     }
 };
 
@@ -483,8 +487,8 @@ const buyOffer = async (offerId: number) => {
 };
 
 // Nouvelle méthode pour déterminer la route du profil
-const getProfileRoute = (offer : any) => {
-    console.log(offer.user_id);
+const getProfileRoute = (offer: any) => {
+    //console.log(offer.user_id);
     return offer.user?.commercant ? `/commercants/${offer.user.commercant.id}` : `/profile/public/${offer.user_id}`;
 };
 

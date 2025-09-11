@@ -56,7 +56,7 @@ const fetchBadges = async () => {
                 created_at: item.created_at,
             }))
         );
-     
+
     } catch (error) {
         console.error('Erreur lors du chargement des badges:', error);
     }
@@ -122,15 +122,15 @@ const goToMessages = () => {
     router.push('/messages');
 };
 
-console.log("📩 header e reçu :");
+//console.log("📩 header e reçu :");
 if (authStore.user?.id) {
     window.Echo.channel(`chat.${authStore.user.id}`)
         .listen('MessageSent', (event: any) => {
 
-            console.log("📩 header e reçu :", event.message);
+            //console.log("📩 header e reçu :", event.message);
             // Si c’est bien dans la conversation ouverte, on ajoute direct
             if (authStore.user?.id === event.receiver_id) {
-                console.log("📩 header e reçu :", event.message);
+                //console.log("📩 header e reçu :", event.message);
                 userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
             }
 
@@ -176,7 +176,7 @@ onUnmounted(() => {
                         active-class="text-[var(--espace-or)]">
                         <i class="fas" :class="link.icon"></i>
                         {{ link.label }}
-                        <span v-if="( link.badge) > 0"
+                        <span v-if="(link.badge) > 0"
                             class="cart-badge bg-[var(--espace-or)] text-[var(--espace-vert)] text-xs rounded-full h-5 w-5 flex items-center justify-center"
                             :class="{
                                 'animate-scale':
@@ -228,8 +228,7 @@ onUnmounted(() => {
                             <!-- Pas de photo -->
                             <i :class="`fas ${link.icon}`" class="text-2xl text-gray-100"></i>
                         </div>
-                        <span
-                            v-if="( link.badge) > 0 && link.to === '/collaborations'"
+                        <span v-if="(link.badge) > 0 && link.to === '/collaborations'"
                             class="cart-badge absolute top-0 right-0 bg-[var(--espace-or)] text-[var(--espace-vert)] text-xs rounded-full h-5 w-5 flex items-center justify-center"
                             :class="{ 'animate-scale': link.to === '/collaborations' && animateCollaborationBadge }"
                             aria-label="Collaborations en attente">
@@ -267,7 +266,7 @@ onUnmounted(() => {
                         class="relative flex items-center justify-center w-10 h-10 hover:text-[var(--espace-or)] transition-colors duration-300"
                         active-class="text-[var(--espace-or)]">
                         <i class="fas text-lg" :class="link.icon"></i>
-                        <span v-if="( link.badge) > 0"
+                        <span v-if="(link.badge) > 0"
                             class="cart-badge absolute top-0 right-0 bg-[var(--espace-or)] text-[var(--espace-vert)] text-xs rounded-full h-5 w-5 flex items-center justify-center"
                             :class="{
                                 'animate-scale':
@@ -280,7 +279,7 @@ onUnmounted(() => {
                                     ? 'Collaborations en attente'
                                     : 'Commandes en attente'
                                 ">
-                            {{  link.badge }}
+                            {{ link.badge }}
                         </span>
                     </RouterLink>
                 </div>

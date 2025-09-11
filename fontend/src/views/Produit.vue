@@ -51,7 +51,7 @@ const fetchProduit = async () => {
             productStore.product.photo_url = productStore.product.photos[0];
         }
         await productStore.fetchProducts({ category: productStore.product.category_id, per_page: 8 }, true);
-        // console.log(productStore.product);
+        // //console.log(productStore.product);
 
     } catch (error: any) {
         toast.error(error || 'Erreur lors du chargement du produit');
@@ -287,7 +287,7 @@ watch(productStore.product, (newProduit) => {
 
 <template>
     <Loader :isLoading="productStore.isLoading" />
-    <div class="overflow-y-scroll bg-[var(--espace-blanc)] pt-16 pb-20 px-4 sm:px-6">
+    <div class="relative h-full overflow-y-scroll bg-[var(--espace-blanc)] pt-16 pb-0 px-4 sm:px-6">
         <div class="container mx-auto max-w-5xl">
             <div v-if="productStore.isLoading" class="text-center text-[var(--espace-gris)]">
                 <!-- Loader géré par Loader.vue -->
@@ -354,7 +354,7 @@ watch(productStore.product, (newProduit) => {
                             </p>
                             <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4 text-xs text-[var(--espace-gris)]">
                                 <p><strong>Catégorie :</strong> {{ productStore.product.category?.nom || 'Non spécifiée'
-                                    }}</p>
+                                }}</p>
                                 <p><strong>Quantité :</strong> {{ productStore.product.quantite }}</p>
                                 <p><strong>Ville :</strong> {{ productStore.product.ville || 'Non spécifiée' }}</p>
                                 <p><strong>Ajouté le :</strong> {{ new
@@ -444,8 +444,8 @@ watch(productStore.product, (newProduit) => {
                                 <button v-if="authStore.user?.commercant?.id !== productStore.product.commercant_id"
                                     @click="initChatFromProduct(productStore.product.id, productStore.product.nom, productStore.product.commercant.user.id)"
                                     class="flex-1 bg-green-500 text-[var(--espace-blanc)] font-semibold px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-200 active:scale-95 text-sm"
-                                    aria-label="Contacter le vendeur">
-                                    <i class="fas fa-comment mr-2 text-sm"></i> Contacter le vendeur
+                                    aria-label="Envoyer un message ">
+                                    <i class="fas fa-comment mr-2 text-sm"></i> Envoyerun message
                                 </button>
                             </div>
                         </div>

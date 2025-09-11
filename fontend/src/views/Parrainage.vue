@@ -170,11 +170,15 @@ onMounted(() => {
                 <h2 class="text-lg font-semibold mb-4" :style="{ color: currentColor }">Niveaux de Parrainage</h2>
                 <p class="text-[var(--espace-gris)] text-sm mb-2 flex justify-between" :style="{ color: currentColor }">
                 <div>
-                    Votre niveau actuel : <strong>{{ niveauActuel ? niveauActuel.nom : "Pas de niveau" }} {{
-                        niveauActuel?.emoji }}
-                        ({{ totalParrainagesCommercants }}/{{ niveauSuivant ? niveauSuivant.filleuls_requis :
+                     niveau  : <strong>{{ niveauActuel ? niveauActuel.nom : "Pas de niveau" }} {{
+                         niveauActuel?.emoji }}
+                         <div>
+
+                            ({{ totalParrainagesCommercants }}/{{ niveauSuivant ? niveauSuivant.filleuls_requis :
                             niveauActuel?.filleuls_requis
-                        }} commerçants)</strong>
+                        }} commerçants)
+                        </div>
+                        </strong>
                 </div>
                 <span v-if="niveauSuivant?.jetons_bonus > 0" class="ml-2">+{{ niveauSuivant?.jetons_bonus }} jetons
                 </span>

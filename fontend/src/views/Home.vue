@@ -30,7 +30,7 @@ const fetchCategories = async () => {
     try {
         const response = await apiClient.get('/categories');
         categories.value = response.data.categories;
-    } catch (error:any) {
+    } catch (error: any) {
         console.error('Erreur lors du chargement des catégories:', error);
         toast.error('Erreur lors du chargement des catégories.');
     }
@@ -49,7 +49,9 @@ const applyFilters = () => {
 
 const resetFilters = () => {
     filterForm.value = { search: '', category: '', prix_min: '', prix_max: '', ville: '', collaboratif: '' };
-    productStore.fetchProducts({}, true);
+    // productStore.fetchProducts({}, true);
+    showFilters.value = false;
+
 };
 
 const changeSort = (newSort: string) => {
@@ -92,15 +94,15 @@ const recordView = async (productId: string) => {
         return; // Pas d'appel API si déjà vu aujourd'hui
     }
 
-    // console.log(viewedProducts);
+    // //console.log(viewedProducts);
     try {
         setTimeout(async () => {
 
             const response = await apiClient.post(`/record_view`, {
                 product_id: productId,
-                user_id: userId?? null,
+                user_id: userId ?? null,
             });
-            // console.log(response.data)
+            // //console.log(response.data)
             // toast.success(response.data.message);
         }, 1000);
 
@@ -118,7 +120,7 @@ onMounted(async () => {
     try {
         await productStore.fetchProducts();
         await fetchCategories();
-    } catch (error:any) {
+    } catch (error: any) {
         console.error('Erreur lors du chargement des produits ou catégories:', error);
         toast.error('Erreur lors du chargement des produits. Veuillez réessayer.');
     }
@@ -164,21 +166,20 @@ onUnmounted(() => {
                     <i class="fas" :class="option.icon"></i>
                     {{ option.label }}
                 </button>
+                <!-- Bouton toggle filtres -->
+                    <button @click="showFilters = !showFilters"
+                        class="relative flex items-center justify-center w-10 h-10 bg-[var(--espace-o)] text-[var(--espace-vert)] rounded-full hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition active:scale-95"
+                        :aria-label="showFilters ? 'Masquer les filtres' : 'Afficher les filtres'"
+                        :aria-expanded="showFilters">
+                        <i class="fas fa-filter text-sm"></i>
+                        <span v-if="activeFiltersCount() > 0"
+                            class="absolute -top-1 -right-1 bg-[var(--espace-vert)] text-[var(--espace-blanc)] text-[10px] rounded-full h-5 w-5 flex items-center justify-center">
+                            {{ activeFiltersCount() }}
+                        </span>
+                    </button>
             </div>
 
-            <!-- Bouton toggle filtres -->
-            <div class=" fixed  right-10 z-5 flex justify-end items-center mb-3">
-                <button @click="showFilters = !showFilters"
-                    class="relative flex items-center justify-center w-10 h-10 bg-[var(--espace-or)] text-[var(--espace-vert)] rounded-full hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition active:scale-95"
-                    :aria-label="showFilters ? 'Masquer les filtres' : 'Afficher les filtres'"
-                    :aria-expanded="showFilters">
-                    <i class="fas fa-filter text-sm"></i>
-                    <span v-if="activeFiltersCount() > 0"
-                        class="absolute -top-1 -right-1 bg-[var(--espace-vert)] text-[var(--espace-blanc)] text-[10px] rounded-full h-5 w-5 flex items-center justify-center">
-                        {{ activeFiltersCount() }}
-                    </span>
-                </button>
-            </div>
+
 
             <!-- Filtres -->
             <Transition name="slide-up">

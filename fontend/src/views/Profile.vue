@@ -8,28 +8,30 @@
 
           <!-- Photo utilisateur -->
           <div class="relative">
+            <!-- {{ user }} -->
             <!-- {{user.photo}} -->
             <img v-if="user?.photo" :src="storageUrl + user?.photo" alt="Photo de profil"
               class=" w-16 h-16 rounded-full object-cover border-2 border-[var(--espace-vert)]" />
             <div v-else class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 "
               :style="{
-            background: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#0af'}`
-          }">
+                background: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#0af'}`
+              }">
               <i class=" fas fa-user-circle text-4xl"></i>
             </div>
+            <!-- niveau -->
 
             <!-- Couronne -->
             <i v-if="user?.premium"
               class="fas fa-crown text-yellow-400 absolute -top-2 -right-2 text-lg p-1 rounded-full" :style="{
-              // color : `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#0af'}`  
-            }"></i>
+                // color : `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#0af'}`  
+              }"></i>
 
             <!-- Bouton modifier -->
             <button @click="showEditMenu = !showEditMenu"
               class="absolute bottom-0 right-0 w-6 h-6 bg-[var(--espace-or)] text-[var(--espace-vert)] rounded-full flex items-center justify-center hover:bg-[var(--espace-vert)] hover:text-white"
               :style="{
-              // background: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#0af'}`
-            }">
+                // background: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#0af'}`
+              }">
               <i class="fas fa-pencil-alt text-xs"></i>
             </button>
 
@@ -51,13 +53,13 @@
           <!-- Infos utilisateur -->
           <div class="space-y-1">
             <h1 class="text-2xl sm:text-3xl font-bold flex items-center gap-2 text-blue-500" :style="{
-            color: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#0af'}`
-          }">
+              color: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#0af'}`
+            }">
 
               {{ user?.nom }}
               <span v-if="user?.premium" class="text-black  text-xs px-3 py-1 rounded-full uppercase font-bold" :style="{
-              background: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#0af'}`
-            }">
+                background: `${user?.niveaux_users?.at(-1)?.parrainage_niveau?.couleur || '#0af'}`
+              }">
                 Premium
               </span>
             </h1>
@@ -83,7 +85,7 @@
 
       <!-- Actions -->
       <div class="flex flex-col sm:flex-row gap-2 items-center">
-      
+
         <button v-if="!user?.commercant" @click="router.push('/commercant/create')"
           class="bg-[var(--espace-or)] text-[var(--espace-vert)] px-4 py-2 rounded-md font-semibold hover:bg-[var(--espace-vert)] hover:text-white">
           Devenir commerçant
@@ -92,8 +94,8 @@
           class="bg-[var(--espace-vert)] text-white px-4 py-2 rounded-md font-semibold hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)]">
           Passer Premium
         </button>
-
       </div>
+      <!-- <div class="text-start  bg-blue-500 w-full">niveau : {{ user.niveaux_user }}</div> -->
     </div>
 
     <!-- Composant dynamique -->
@@ -154,7 +156,7 @@ const toast = useToast();
 const authStore = useAuthStore();
 
 const user = ref(authStore.user);
-console.log(user?.value)
+//console.log(user?.value)
 const showEditMenu = ref(false);
 const uploading = ref(false);
 const previewUrl = ref<string | null>(null);

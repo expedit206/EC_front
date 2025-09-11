@@ -83,13 +83,6 @@ watch(
                     </RouterLink>
 
 
-                    <router-link to="/jetonMarket" aria-label="Aller au marché" class="fixed bottom-17 right-5 w-12 h-12 rounded-full
-         flex items-center justify-center
-         bg-[var(--espace-vert)] text-yellow-300
-         shadow-lg hover:scale-110 active:scale-95 transition-all
-         ring-2 ring-yellow-400/60">
-                        <i class="fas fa-coins text-xl "></i>
-                    </router-link>
 
 
 

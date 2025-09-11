@@ -18,6 +18,8 @@ import Messages from "../views/Messages.vue";
 import AchatJetonModal from "../components/AchatJetonModal.vue";
 import JetonHistory from "../views/JetonHistory.vue";
 import ProfilePublic from "../views/ProfilePublic.vue";
+import Doc from "../views/Doc.vue";
+import Politique from "../views/Politique.vue";
 
 const routes = [
   { path: "/login", component: Login, name: "login" },
@@ -56,6 +58,11 @@ const routes = [
     path: "/commercant/monProfil",
     component: CommercantDashboard,
     meta: { requiresAuth: true },
+  },
+  {
+    path: "/doc",
+    name: "doc",
+    component: Doc,
   },
   {
     path: "/parametres",
@@ -110,6 +117,11 @@ const routes = [
     component: JetonMarket,
     meta: { requiresAuth: true },
   },
+  {
+    path: "/politique",
+    name: "politique",
+    component: Politique,
+  },
 ];
 
 const router = createRouter({
@@ -119,17 +131,17 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
-  const isAuthenticated = await authStore.checkAuth();
-
-  // Si l'utilisateur est connecté et tente d'accéder à /login ou /register
-  if (isAuthenticated && (to.name === "login" || to.name === "register")) {
+  const isAuthenticated =   await authStore.checkAuth();
+console.log(authStore.user);
+  // // Si l'utilisateur est connecté et tente d'accéder à /login ou /register
+  if (authStore.user && (to.name === "login" || to.name === "register")) {
     next({ name: "home" }); // Rediriger vers la page d'accueil
   }
-  // Si la route nécessite une authentification et que l'utilisateur n'est pas connecté
+  // // Si la route nécessite une authentification et que l'utilisateur n'est pas connecté
   else if (to.meta.requiresAuth && !isAuthenticated) {
     next({ name: "login" });
   }
-  // Si la route nécessite un statut commerçant
+  // // Si la route nécessite un statut commerçant
   else if (
     to.meta.requiresCommercant &&
     (!isAuthenticated || !authStore.user?.commercant)
@@ -138,8 +150,9 @@ router.beforeEach(async (to, from, next) => {
   }
   // Autoriser l'accès dans les autres cas
   else {
-    next();
-  }
+      next();
+    }
+      next();
 });
 
 export default router;

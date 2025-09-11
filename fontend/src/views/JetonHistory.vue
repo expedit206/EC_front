@@ -71,7 +71,7 @@ const toast = useToast();
 const fetchTransactions = async () => {
     try {
         const response = await apiClient.get(`/jeton-transactions/${user?.id}`);
-        console.log(response.data);
+        //console.log(response.data);
         transactions.value = response.data;
     } catch (error) {
         console.error("Erreur lors du chargement des transactions:", error);
@@ -89,7 +89,7 @@ const formatDate = (dateString: string) => {
 };
 
 const redoTransaction = async (transaction: Transaction) => {
-    console.log("Refaire la transaction:", transaction);
+    //console.log("Refaire la transaction:", transaction);
     if (!confirm(`Refaire l'achat de ${transaction.nombre_jetons} jetons avec le même service (${transaction.methode_paiement}) ?`)) {
         return;
     }
@@ -103,8 +103,8 @@ const redoTransaction = async (transaction: Transaction) => {
             phone_number: transaction.phone_number, // Utiliser le numéro existant
         });
 
-        // console.log(res.data);
-        
+        // //console.log(res.data);
+
         toast.success(res.data.message);
         fetchTransactions(); // Rafraîchir la liste après achat
     } catch (e: any) {

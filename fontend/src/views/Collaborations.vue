@@ -25,7 +25,7 @@ const activeTab = ref<'received' | 'sent'>('received'); // Onglet actif par déf
 const fetchCollaborations = async () => {
     try {
         const response = await apiClient.get('/collaborations');
-        console.log(response.data);
+        //console.log(response.data);
         collaborations.value = response.data;
 
         // Nettoyer les collaborations en attente dans localStorage
@@ -35,7 +35,7 @@ const fetchCollaborations = async () => {
             const updatedPending = pendingCollaborations.filter((item: any) => !sentProduitIds.has(item.produit_id));
             if (updatedPending.length !== pendingCollaborations.length) {
                 saveCollaborationsToLocalStorage(updatedPending);
-                console.log('Collaborations en attente nettoyées dans localStorage');
+                //console.log('Collaborations en attente nettoyées dans localStorage');
             }
         }
     } catch (error) {
@@ -64,8 +64,8 @@ const updateCollaborationStatus = async (collaborationId: number, statut: string
         toast.success(response.data.message);
         await fetchCollaborations(); // Rafraîchir la liste
     } catch (error: any) {
-        console.log(error.response.data.message);
-        
+        //console.log(error.response.data.message);
+
         toast.error(`Erreur lors de la mise à jour de la collaboration${error.response?.data.message}`);
     }
 };
@@ -125,7 +125,7 @@ onMounted(() => {
                                                 ? 'En attente'
                                                 : collaboration.statut === 'valider'
                                                     ? 'Valider'
-                                        : 'Refusée'
+                                                    : 'Refusée'
                                         }}
                                     </span>
                                 </p>
@@ -155,7 +155,7 @@ onMounted(() => {
                 </div>
                 <p v-else class="text-center text-[var(--espace-gris)]">
                     Aucune collaboration reçue pour le moment.
-                    
+
                 </p>
             </div>
 
@@ -185,7 +185,7 @@ onMounted(() => {
                                                 ? 'En attente'
                                                 : collaboration.statut === 'valider'
                                                     ? 'Valider'
-                                        : 'Refusée'
+                                                    : 'Refusée'
                                         }}
                                     </span>
                                 </p>
