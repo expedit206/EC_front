@@ -143,6 +143,8 @@ import { useToast } from 'vue-toastification';
 import { useAuthStore } from '../stores/Auth';
 import apiClient from '../api/index';
 import { User } from "../components/types/index";
+import { useRouter } from 'vue-router';
+const router = useRouter();
 
 const props = defineProps({
   user: Object as () => User | null,
@@ -205,6 +207,10 @@ const updateProfile = async () => {
     editProfile.value = false;
     toast.success('Profil mis à jour avec succès.');
   } catch (error: any) {
+    if (error.response?.data?.message == 'Unauthenticated.') {
+      router.push('login')
+    }
+
     toast.error(error.response?.data.message || 'Erreur lors de la mise à jour.');
   } finally {
     loadingProfile.value = false; // Désactiver le chargement, même en cas d'erreur
@@ -242,6 +248,10 @@ const updateCommerce = async () => {
     editCommerce.value = false;
     toast.success('Commerce mis à jour avec succès.');
   } catch (error: any) {
+    if (error.response?.data?.message == 'Unauthenticated.') {
+      router.push('login')
+    }
+
     toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour du commerce.');
   } finally {
     loadingCommerce.value = false; // Désactiver le chargement, même en cas d'erreur

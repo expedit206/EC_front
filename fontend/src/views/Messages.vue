@@ -59,7 +59,11 @@ const fetchConversations = async () => {
         const res = await apiClient.get('/conversations');
         conversations.value = res.data.conversations;
         //console.log(res.data);
-    } catch (e) {
+    } catch (e: any) {
+        if (e.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+
         toast.error('Erreur lors de la récupération des conversations');
         console.error(e);
     }
@@ -178,7 +182,13 @@ const sendMessage = async () => {
         if (product.value) {
             clearProductTag();
         }
-    } catch (e) {
+    } catch (e: any) {
+
+        if (e.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+        
+
         toast.error('Échec d\'envoi');
         console.error(e);
         messages.value = messages.value.filter(m => m.id !== tempMessage.id);
@@ -202,7 +212,11 @@ const markAllMessagesAsRead = async (receiverId: number) => {
     try {
         const response = await apiClient.put('/messages/mark-all-as-read');
         userStateStore.saveUnreadMessagesToLocalStorage(response.data.unread_messages);
-    } catch (error) {
+    } catch (error :any) {
+        if (error.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+
         console.error('Erreur lors du marquage des messages comme lus:', error);
         toast.error('Erreur lors de la mise à jour des messages lus');
     }

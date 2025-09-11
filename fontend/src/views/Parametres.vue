@@ -57,6 +57,10 @@ const updateProfile = async () => {
         localStorage.setItem('user', JSON.stringify(authStore.user));
         toast.success('Profil mis à jour avec succès', { timeout: 3000 });
     } catch (error: any) {
+        if (error.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+
         toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour du profil');
     } finally {
         isLoading.value = false;
@@ -79,6 +83,10 @@ const updatePassword = async () => {
         passwordForm.value = { current_password: '', new_password: '', confirm_new_password: '' };
         passwordStrength.value = '';
     } catch (error: any) {
+        if (error.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+
         toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour du mot de passe');
     } finally {
         isLoading.value = false;
@@ -93,6 +101,10 @@ const updateNotifications = async () => {
         localStorage.setItem('user', JSON.stringify(authStore.user));
         toast.success('Préférences de notification mises à jour', { timeout: 3000 });
     } catch (error: any) {
+        if (error.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+
         toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour des notifications');
     } finally {
         isLoading.value = false;

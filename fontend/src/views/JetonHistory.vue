@@ -61,6 +61,9 @@ import apiClient from "../api/index";
 import { useAuthStore } from "../stores/Auth";
 import { useToast } from "vue-toastification";
 import { Transaction } from "../components/types/index"; // Import de l'interface Parrainage
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const authStore = useAuthStore();
 const user = authStore.user;
@@ -108,6 +111,10 @@ const redoTransaction = async (transaction: Transaction) => {
         toast.success(res.data.message);
         fetchTransactions(); // Rafraîchir la liste après achat
     } catch (e: any) {
+        if (e.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+
         toast.error(e.response?.data?.message || "Erreur lors de l'achat.");
         console.error(e);
     } finally {

@@ -34,7 +34,7 @@ onMounted(() => {
 
 <template>
     <div class="overflow-scroll bg-gray-100 pt-16 pb-20 px-4 sm:px-6">
-        <div class="container mx-auto max-w-4xl">
+        <div class="container mx-auto max-w-4xl pb-8">
             <!-- Titre -->
             <h1 class="text-2xl sm:text-3xl font-bold text-[var(--espace-vert)] mb-6 font-poppins">
                 <i class="fas fa-info-circle mr-2 text-[var(--espace-or)]"></i> Tout Savoir sur le Parrainage

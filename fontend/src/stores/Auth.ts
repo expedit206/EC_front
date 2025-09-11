@@ -60,6 +60,11 @@ export const useAuthStore = defineStore("auth", {
         this.user = response.data.user;
         return true;
       } catch (error) {
+        console.error(
+          "utilisateur non:",
+          error
+        );
+
         this.user = null;
         this.token = null;
         localStorage.removeItem("token");

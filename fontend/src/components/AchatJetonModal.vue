@@ -5,7 +5,7 @@
             <h2 class="text-3xl font-extrabold text-[var(--espace-vert)] text-center">
                 🎫 Acheter des Jetons
             </h2>
-            <p class="text-center text-gray-600 text-sm mb-6">1 jeton = 25 FCFA</p>
+            <p class="text-center text-gray-600 text-sm mb-6">1 jeton = 100 FCFA</p>
 
             <!-- Facilitateurs de quantité -->
             <div class="flex justify-center gap-3 mb-4">
@@ -107,7 +107,7 @@ const toast = useToast();
 const jetonQuantity = ref<number>(10);
 const phoneNumber = ref<string>("");
 const selectedService = ref<string>("");
-const montant = ref<number>(jetonQuantity.value * 25);
+const montant = ref<number>(jetonQuantity.value *100);
 const loading = ref(false);
 const serviceError = ref(false);
 const phoneError = ref(false);
@@ -137,7 +137,7 @@ const isFormValid = computed(() => {
 });
 
 const updateMontant = () => {
-    montant.value = jetonQuantity.value * 25;
+    montant.value = jetonQuantity.value * 100;
 };
 
 const setQuantity = (qty: number) => {

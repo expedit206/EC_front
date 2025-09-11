@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute,useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
 import apiClient from '../api/index';
 import AppHeader from '../components/AppHeader.vue';
@@ -8,6 +8,8 @@ import Loader from '../components/Loader.vue';
 import ProductCard from '../components/ProductCard.vue';
 
 const route = useRoute();
+const router = useRouter();
+
 const toast = useToast();
 const isLoading = ref(false);
 const commerçant = ref<any>(null);
@@ -45,12 +47,16 @@ const submitRating = async () => {
         const response = await apiClient.post(`/commercant/${route.params.commercantId}/rate`, {
             rating: userRating.value,
         });
+        
         averageRating.value = response.data.average_rating || 0;
         toast.success('Merci pour votre note !');
         userRating.value = null; // Réinitialiser après soumission
         showModal.value = false; // Fermer le modal
         voteCount.value = response.data.vote_count || voteCount.value + 1; // Mettre à jour le nombre de votes
     } catch (error: any) {
+        if (error.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }   
         toast.error(error.response?.data?.message || 'Erreur lors de la notation.');
     }
 };

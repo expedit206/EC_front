@@ -1,5 +1,5 @@
 <template>
-  <div class="overflow-y-scroll min-h-screen relative bg-gray-100 py-8 sm:px-6 ">
+  <div class="overflow-y-scroll pb-8 relative bg-gray-100 py-8 sm:px-6 ">
     <!-- Header Profil -->
     <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
       <div class="flex flex-col space-x-4 relative w-full gap-1 px-3">
@@ -154,7 +154,7 @@ const storageUrl = computed(() => getStorageBaseUrl());
 const router = useRouter();
 const toast = useToast();
 const authStore = useAuthStore();
-
+authStore.checkAuth()
 const user = ref(authStore.user);
 //console.log(user?.value)
 const showEditMenu = ref(false);
@@ -267,6 +267,10 @@ const uploadProfilePicture = async () => {
       cancelUpload();
     }
   } catch (err: any) {
+    if (err.response?.data?.message == 'Unauthenticated.') {
+      router.push('login')
+    }
+
     toast.error(err.response?.data?.message || "Erreur lors de l'envoi.");
   } finally {
     uploading.value = false;

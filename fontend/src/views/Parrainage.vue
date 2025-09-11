@@ -68,7 +68,11 @@ const fetchParrainageData = async () => {
         progression.value = data.progression;
         totalParrainages.value = data.total_parrainages || 0;
         totalParrainagesCommercants.value = data.total_parrainages_commercants || 0;
-    } catch (error) {
+    } catch (error :any) {
+        if (error.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+
         toast.error("Erreur lors de la récupération des données de parrainage");
         console.error(error);
     }
@@ -89,7 +93,11 @@ const generateCodeSuggestion = async () => {
         toast.success("Nouveau code suggéré avec succès !");
         // Mettre à jour le lien après génération
         if (code.value) link.value = `${getBaseReferralUrl()}/${code.value}`;
-    } catch (error) {
+    } catch (error :any) {
+        if (error.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+
         toast.error("Erreur lors de la génération du code");
         console.error(error);
     } finally {
@@ -116,6 +124,10 @@ const createCode = async () => {
         toast.success(response.data.message || "Code créé avec succès !");
         await fetchParrainageData();
     } catch (error: any) {
+        if (error.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+
         toast.error(error.response?.data?.message || "Erreur lors de la création du code");
         console.error(error);
     } finally {

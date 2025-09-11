@@ -23,12 +23,12 @@ const prixRevente = ref<number | null>(null);
 const observer = ref<IntersectionObserver | null>(null);
 const loadMoreTrigger = ref<HTMLElement | null>(null);
 const showBoostModal = ref(false); // Modale pour le boost
-const boostDuration = ref(1); // Durée en jours (1 à 20)
-const targetViewsIndex = ref(0); // Index pour les intervalles de vues
-const calculatedCost = ref(5); // Coût initial minimum (5 jetons)
+const targetViews = ref(0); // Vues cibles, début à 0
+const calculatedCost = ref(0); // Coût initial minimum (basé sur vues)
 
-const viewIntervals = [100, 500, 1000, 5000, 10000]; // Intervalles de vues
-const viewFactors = [5, 15, 25, 50, 75]; // Coût correspondant (jetons)
+// Intervalles stricts de 500 de 0 à 10000
+const viewIntervals = [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000, 9500, 10000]; // 21 valeurs
+const viewFactors = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]; // Facteurs linéaires commençant à 0
 
 // Fonction pour formater les nombres (vues et favoris)
 const formatNumber = (num: number | undefined): string => {
@@ -51,8 +51,6 @@ const fetchProduit = async () => {
             productStore.product.photo_url = productStore.product.photos[0];
         }
         await productStore.fetchProducts({ category: productStore.product.category_id, per_page: 8 }, true);
-        // //console.log(productStore.product);
-
     } catch (error: any) {
         toast.error(error || 'Erreur lors du chargement du produit');
         router.push({ name: 'home' });
@@ -132,8 +130,7 @@ const boostProduit = async () => {
 
     try {
         const response = await apiClient.post(`/produits/${productStore.product.id}/boost`, {
-            duration_days: boostDuration.value,
-            target_views: viewIntervals[targetViewsIndex.value],
+            target_views: targetViews.value,
         });
         authStore.user.jetons -= calculatedCost.value;
         productStore.product.boosted_until = response.data.data.end_date;
@@ -154,12 +151,11 @@ const openBoostModal = () => {
 };
 
 const calculateCost = () => {
-    const durationCost = boostDuration.value * 5; // 5 jetons par jour
-    const viewsCost = viewFactors[targetViewsIndex.value]; // Coût basé sur l'intervalle
-    calculatedCost.value = Math.max(5, durationCost + viewsCost); // Minimum 5 jetons
+    const index = viewIntervals.indexOf(targetViews.value);
+    calculatedCost.value = index !== -1 ? Math.max(5, viewFactors[index]) : 5; // Minimum 5 jetons
 };
 
-watch([boostDuration, targetViewsIndex], () => {
+watch(targetViews, () => {
     calculateCost();
 });
 
@@ -197,7 +193,6 @@ const recordView = async (productId: string) => {
                 product_id: productId,
                 user_id: userId,
             });
-            // toast.success(response.data.message);
         }, 1000);
 
         viewedProducts[productId] = true;
@@ -354,7 +349,7 @@ watch(productStore.product, (newProduit) => {
                             </p>
                             <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4 text-xs text-[var(--espace-gris)]">
                                 <p><strong>Catégorie :</strong> {{ productStore.product.category?.nom || 'Non spécifiée'
-                                }}</p>
+                                    }}</p>
                                 <p><strong>Quantité :</strong> {{ productStore.product.quantite }}</p>
                                 <p><strong>Ville :</strong> {{ productStore.product.ville || 'Non spécifiée' }}</p>
                                 <p><strong>Ajouté le :</strong> {{ new
@@ -414,12 +409,6 @@ watch(productStore.product, (newProduit) => {
                             </div>
                             <!-- Actions -->
                             <div class="flex flex-col sm:flex-row gap-3 mt-4">
-                                <button v-if="authStore.user?.commercant?.id !== productStore.product.commercant_id"
-                                    @click="contactCommercant"
-                                    class="flex-1 bg-[var(--espace-vert)] font-semibold px-4 py-2 rounded-lg hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)] text-white transition-all duration-200 active:scale-95 text-sm"
-                                    aria-label="Contacter le commerçant">
-                                    <i class="fas fa-phone mr-2 text-sm"></i> Contacter le commerçant
-                                </button>
                                 <button
                                     v-if="productStore.product.collaboratif && authStore.user?.commercant?.id !== productStore.product.commercant_id"
                                     @click="openCollaborationModal"
@@ -445,7 +434,7 @@ watch(productStore.product, (newProduit) => {
                                     @click="initChatFromProduct(productStore.product.id, productStore.product.nom, productStore.product.commercant.user.id)"
                                     class="flex-1 bg-green-500 text-[var(--espace-blanc)] font-semibold px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-200 active:scale-95 text-sm"
                                     aria-label="Envoyer un message ">
-                                    <i class="fas fa-comment mr-2 text-sm"></i> Envoyerun message
+                                    <i class="fas fa-comment mr-2 text-sm"></i> Envoyer un message
                                 </button>
                             </div>
                         </div>
@@ -511,22 +500,13 @@ watch(productStore.product, (newProduit) => {
                         </h2>
                         <form @submit.prevent="boostProduit" class="space-y-6">
                             <div>
-                                <label class="text-sm text-[var(--espace-vert)] font-medium mb-2 block">Durée
-                                    (jours)</label>
-                                <input type="range" v-model.number="boostDuration" min="1" max="20"
-                                    class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[var(--espace-or)]"
-                                    @input="calculateCost" />
-                                <p class="text-xs text-[var(--espace-gris)] mt-1 text-center">{{ boostDuration }} jours
-                                </p>
-                            </div>
-                            <div>
                                 <label class="text-sm text-[var(--espace-vert)] font-medium mb-2 block">Objectif de
                                     vues</label>
-                                <input type="range" v-model.number="targetViewsIndex" min="0" max="4"
+                                <input type="range" v-model.number="targetViews" min="0" max="10000" step="500"
                                     class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[var(--espace-or)]"
                                     @input="calculateCost" />
                                 <p class="text-xs text-[var(--espace-gris)] mt-1 text-center">
-                                    {{ viewIntervals[targetViewsIndex] }} vues
+                                    {{ targetViews }} vues
                                 </p>
                             </div>
                             <p class="text-sm text-[var(--espace-gris)]">Coût estimé : <strong

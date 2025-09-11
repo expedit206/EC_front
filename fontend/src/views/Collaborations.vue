@@ -38,8 +38,14 @@ const fetchCollaborations = async () => {
                 //console.log('Collaborations en attente nettoyées dans localStorage');
             }
         }
-    } catch (error) {
+    } catch (error :any) {
+        console.log(error.response?.data?.message)
         toast.error('Erreur lors du chargement des collaborations');
+        if (error.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+    
+
     } finally {
         isLoading.value = false;
     }

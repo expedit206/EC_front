@@ -210,6 +210,8 @@
 import { ref } from 'vue';
 import apiClient from '../api/index';
 import { useToast } from 'vue-toastification';
+import { useRouter } from 'vue-router';
+const router = useRouter();
 
 const props = defineProps<{
     isOpen: boolean;
@@ -276,7 +278,11 @@ const confirmUpgrade = async () => {
     toast.success(res.data.message);
     emit('upgraded');
     emit('close');
-} catch (e: any) {
+    } catch (e: any) {
+        if (e.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+
     if (e.response && e.response.data) {
         const errorData = e.response.data;
         toast.error(

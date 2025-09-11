@@ -5,6 +5,8 @@ import { useToast } from 'vue-toastification';
 import apiClient from '../api/index';
 import AppHeader from '../components/AppHeader.vue';
 import ProductCard from '../components/ProductCard.vue';
+import { useRouter } from 'vue-router';
+const router = useRouter();
 
 const toast = useToast();
 const products = ref<any[]>([]);
@@ -101,7 +103,12 @@ const updateProfile = async () => {
         await apiClient.put('/commercant/profil', profileForm.value);
         toast.success('Profil mis à jour avec succès.');
         fetchCommercantData();
-    } catch (error) {
+    } catch (error : any) {
+
+        if (error.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+
         toast.error('Erreur lors de la mise à jour du profil.');
     }
 };

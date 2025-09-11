@@ -152,7 +152,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="relative bg-[var(--espace-vert)] w-full h-full">
+    <div class="relative bg-[var(--espace-vert)] w-full ">
         <header class="bg-[var(--espace-vert)] text-[var(--espace-blanc)] top-0 left-0  z-50 shadow-md h-full">
             <!-- <a href="../views/Doc.vue">docu</a> -->
             <div class="  px-2 w-full sm:px-3 py-2 flex justify-between items-center gap-4 mb-4">

@@ -83,6 +83,10 @@ const subscribe = async (plan) => {
         await authStore.fetchUser()
         abonnement.value = { plan, actif: true, debut: new Date(), fin: new Date() }
     } catch (error) {
+        if (error.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+
         toast.error(error.response?.data.message || 'Erreur lors de la souscription')
     }
 }

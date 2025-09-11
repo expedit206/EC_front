@@ -7,6 +7,12 @@ import Loader from '../components/Loader.vue';
 import apiClient from '../api/index';
 import { useProductStore } from '../stores/product';
 import { useAuthStore } from '../stores/Auth';
+import { routerKey } from 'vue-router';
+
+import { useRouter } from 'vue-router';
+
+
+const router= useRouter();
 
 const productStore = useProductStore();
 const authStore = useAuthStore();
@@ -123,6 +129,8 @@ onMounted(async () => {
         await fetchCategories();
     } catch (error: any) {
         console.error('Erreur lors du chargement des produits ou catégories:', error);
+        if (error == 'Unauthenticated.') {
+router.push('login')        }
         toast.error('Erreur lors du chargement des produits. Veuillez réessayer.');
     }
 

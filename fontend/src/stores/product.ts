@@ -3,6 +3,9 @@ import { defineStore } from "pinia";
 import apiClient from "../api/index";
 import { Product } from "../components/types/index";
 import { useAuthStore } from "./Auth";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 interface FetchProductsParams {
   per_page?: string | number;
@@ -62,6 +65,10 @@ export const useProductStore = defineStore("product", {
           this.page = response.data.current_page + 1;
         }
       } catch (error: any) {
+          if (error.response?.data?.message == "Unauthenticated.") {
+            router.push("login");
+          }
+    
         throw (
           error.response?.data?.message ||
           "Erreur lors du chargement des produits"
@@ -127,6 +134,10 @@ export const useProductStore = defineStore("product", {
 
         return response.data.message;
       } catch (error: any) {
+          if (error.response?.data?.message == "Unauthenticated.") {
+            router.push("login");
+          }
+    
         console.log(error);
       
         // Revenir à l'état précédent en cas d'erreur
@@ -166,6 +177,11 @@ export const useProductStore = defineStore("product", {
           this.products.push(this.product);
         }
       } catch (error: any) {
+        
+          if (error.response?.data?.message == "Unauthenticated.") {
+            router.push("login");
+          }
+    
         throw (
           error.response?.data?.message ||
           "Erreur lors du chargement du produit"

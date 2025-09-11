@@ -48,6 +48,11 @@ const submitForm = async () => {
         toast.success('Commerçant créé avec succès !');
         router.push('/profil'); // Rediriger vers la liste des commerçants
     } catch (error: any) {
+
+        if (error.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+
         if (error.response?.data?.errors) {
             errors.value = error.response.data.errors;
         } else {

@@ -57,7 +57,11 @@ const fetchBadges = async () => {
             }))
         );
 
-    } catch (error) {
+    } catch (error:any) {
+          if (error.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+    
         console.error('Erreur lors du chargement des badges:', error);
     }
 };

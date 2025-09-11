@@ -71,7 +71,11 @@ const fetchProfile = async () => {
     try {
         const response = await apiClient.get(`/profile/public/${route.params.id}`);
         profile.value = response.data;
-    } catch (error) {
+    } catch (error : any) {
+        if (error.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+
         toast.error("Erreur lors de la récupération du profil.");
         console.error(error);
     }

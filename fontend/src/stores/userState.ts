@@ -3,6 +3,8 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 import apiClient from "../api/index";
 import { useToast } from "vue-toastification";
+import { useRouter } from "vue-router";
+const router = useRouter();
 
 export const useUserStateStore = defineStore("userState", () => {
   const collaborationsPending = ref(0);
@@ -59,6 +61,11 @@ export const useUserStateStore = defineStore("userState", () => {
       toast.success("Demande de collaboration envoyée !");
       return true;
     } catch (error: any) {
+        if (error.response?.data?.message == "Unauthenticated.") {
+          router.push("login");
+        }
+    
+
       const updatedCollaborations = pendingCollaborations.filter(
         (item: any) =>
           !(
@@ -88,7 +95,11 @@ export const useUserStateStore = defineStore("userState", () => {
       // Optionnel : Si vous voulez toujours sauvegarder les détails des collaborations, fetch une autre endpoint
       // Exemple : const collabDetails = await apiClient.get("/collaborations/pending");
       // saveCollaborationsToLocalStorage(collabDetails.data);
-    } catch (error) {
+    } catch (error : any) {
+        if (error.response?.data?.message == "Unauthenticated.") {
+          router.push("login");
+        }
+    
       console.error("Erreur lors de la synchronisation des badges:", error);
     }
   };

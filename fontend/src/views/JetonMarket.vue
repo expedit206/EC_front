@@ -104,7 +104,7 @@
                         </div>
                         <p class="text-sm text-gray-500">💰 Total: <span class="font-bold">{{ totalPrice }}</span> FCFA
                             | 🏦
-                            Commission (5%): <span class="font-bold">{{ commission }}</span> FCFA</p>
+                            Commission (10%): <span class="font-bold">{{ commission }}</span> FCFA</p>
                         <button type="submit" :disabled="loading"
                             class="w-full bg-gradient-to-r from-[var(--espace-or)] to-yellow-400 text-[var(--espace-vert)] py-3 rounded-xl font-bold shadow hover:from-[var(--espace-vert)] hover:to-green-700 hover:text-white transition">
                             <i v-if="loading" class="fas fa-spinner fa-spin mr-2"></i> Publier
@@ -326,7 +326,12 @@ const fetchUserOffers = async () => {
     try {
         const response = await apiClient.get('/jeton_market/my-offers');
         userOffers.value = response.data.data || [];
-    } catch (error) {
+    } catch (error: any) {
+
+        if (error.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+
         console.error('Erreur lors du chargement des offres de l\'utilisateur:', error);
         userOffers.value = [];
     }
@@ -354,6 +359,10 @@ const createWallet = async () => {
         await fetchUserWallets();
         showOfferForm.value = true;
     } catch (error: any) {
+        if (error.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+
         toast.error(error.response?.data?.message || "Erreur lors de la création du portefeuille");
         console.error('Erreur:', error);
     } finally {
@@ -390,7 +399,7 @@ const filteredOffers = computed(() => {
 });
 
 const totalPrice = computed(() => offerForm.value.nombre_jetons * offerForm.value.prix_unitaire);
-const commission = computed(() => totalPrice.value * 0.05);
+const commission = computed(() => totalPrice.value * 0.10);
 
 const fetchOffers = async () => {
     if (isFetching.value || currentPage.value > lastPage.value) return;
@@ -405,7 +414,11 @@ const fetchOffers = async () => {
         offers.value = [...offers.value, ...response.data.data];
         lastPage.value = response.data.last_page;
         currentPage.value += 1;
-    } catch (error) {
+    } catch (error : any) {
+        if (error.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+
         console.error('Erreur lors du chargement des offres:', error);
     } finally {
         isFetching.value = false;

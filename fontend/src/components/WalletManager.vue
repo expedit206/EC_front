@@ -91,6 +91,8 @@
 import { ref, defineProps, defineEmits } from 'vue';
 import apiClient from '../api/index';
 import { useToast } from 'vue-toastification';
+import { useRouter } from 'vue-router';
+const router = useRouter();
 
 const props = defineProps<{
     show: boolean;
@@ -148,6 +150,10 @@ const saveWallet = async () => {
         emit('refresh-wallets');
         cancelEdit();
     } catch (error: any) {
+        if (error.response?.data?.message == 'Unauthenticated.') {
+            router.push('login')
+        }
+
         toast.error(error.response?.data?.message || 'Erreur lors de la sauvegarde du portefeuille');
         console.error('Erreur:', error);
     } finally {
@@ -164,6 +170,10 @@ const deleteWallet = async (walletId: number) => {
             toast.success('Portefeuille supprimé avec succès !');
             emit('refresh-wallets');
         } catch (error: any) {
+            if (error.response?.data?.message == 'Unauthenticated.') {
+                router.push('login')
+            }
+
             toast.error(error.response?.data?.message || 'Erreur lors de la suppression du portefeuille');
             console.error('Erreur:', error);
         } finally {
