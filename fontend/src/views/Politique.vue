@@ -1,14 +1,16 @@
 <template>
     <div class="overflow-y-scroll bg-gray-50 flex flex-col">
         <!-- Hero Section -->
-        <section class="bg-gradient-to-r from-[var(--espace-vert)] to-green-700 text-white py-16 shadow-lg">
+        <section class="bg-gradient-to-r from-[var(--espace-vert)] to-green-700 text-white pt-6 pb-8 shadow-lg">
             <div class="max-w-4xl mx-auto text-center px-6">
                 <h1 class="text-4xl sm:text-5xl font-bold mb-4">Politique de Confidentialité</h1>
                 <p class="text-lg text-green-100 max-w-2xl mx-auto">
                     Découvrez comment <strong>Espace Cameroun</strong> protège vos données et respecte votre vie privée.
                 </p>
-                <p class="text-sm mt-4 italic text-green-200">
+                <!-- <p class="text-sm mt-4 italic text-green-200">
                     Dernière mise à jour : {{ updatedAt }}
+                </p> -->
+                <p class="text-lg font-semibold text-[var(--espace-or)] mt-2">Commerce facile, opportunités infinies.
                 </p>
             </div>
         </section>

@@ -125,6 +125,11 @@ const recordView = async (productId: string) => {
 
 onMounted(async () => {
     try {
+
+
+
+
+
         await productStore.fetchProducts();
         await fetchCategories();
     } catch (error: any) {
@@ -153,11 +158,16 @@ onUnmounted(() => {
         observer.value.unobserve(loadMoreTrigger.value);
     }
 });
+
+
 </script>
 
 <template>
+
+    
     <!-- Template inchangé -->
     <div class="pt-4 bg-[var(--espace-blanc)]  max-h-full relative">
+
         <Loader :isLoading="productStore.isLoading" />
         <div class="relative  overflow-y-scroll mx-auto px-4 sm:px-6 py-4 max-h-full ">
             <!-- Tri -->
@@ -176,16 +186,16 @@ onUnmounted(() => {
                     {{ option.label }}
                 </button>
                 <!-- Bouton toggle filtres -->
-                    <button @click="showFilters = !showFilters"
-                        class="relative flex items-center justify-center w-10 h-10 bg-[var(--espace-o)] text-[var(--espace-vert)] rounded-full hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition active:scale-95"
-                        :aria-label="showFilters ? 'Masquer les filtres' : 'Afficher les filtres'"
-                        :aria-expanded="showFilters">
-                        <i class="fas fa-filter text-sm"></i>
-                        <span v-if="activeFiltersCount() > 0"
-                            class="absolute -top-1 -right-1 bg-[var(--espace-vert)] text-[var(--espace-blanc)] text-[10px] rounded-full h-5 w-5 flex items-center justify-center">
-                            {{ activeFiltersCount() }}
-                        </span>
-                    </button>
+                <button @click="showFilters = !showFilters"
+                    class="relative flex items-center justify-center w-10 h-10 bg-[var(--espace-o)] text-[var(--espace-vert)] rounded-full hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition active:scale-95"
+                    :aria-label="showFilters ? 'Masquer les filtres' : 'Afficher les filtres'"
+                    :aria-expanded="showFilters">
+                    <i class="fas fa-filter text-sm"></i>
+                    <span v-if="activeFiltersCount() > 0"
+                        class="absolute -top-1 -right-1 bg-[var(--espace-vert)] text-[var(--espace-blanc)] text-[10px] rounded-full h-5 w-5 flex items-center justify-center">
+                        {{ activeFiltersCount() }}
+                    </span>
+                </button>
             </div>
 
 

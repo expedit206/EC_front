@@ -5,6 +5,7 @@
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold text-[var(--espace-vert)]">📘 Documentation - Espace Cameroun</h1>
             <p class="text-gray-600 mt-2">Votre espace pour faciliter le commerce au Cameroun</p>
+            <p class="text-lg font-semibold text-[var(--espace-or)] mt-1">Commerce facile, opportunités infinies.</p>
         </div>
 
         <!-- Introduction et Objectifs -->
