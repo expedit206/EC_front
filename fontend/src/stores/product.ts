@@ -47,6 +47,7 @@ export const useProductStore = defineStore("product", {
             sort: this.sort,
           },
         });
+        
         console.log(response.data)
         //console.log(response.data.data);
         // //console.log(response.data.data);
