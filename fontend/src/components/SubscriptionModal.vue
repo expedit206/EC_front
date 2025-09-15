@@ -286,7 +286,7 @@ const confirmUpgrade = async () => {
     if (e.response && e.response.data) {
         const errorData = e.response.data;
         toast.error(
-            `Paiement échoué :Verifiez vos informations et réessayer`
+            `Paiement échoué :Verifiez vos informations et réessayer${errorData.message }`
         );
     } else {
         toast.error('Verifiez vos informations et réessayer.');

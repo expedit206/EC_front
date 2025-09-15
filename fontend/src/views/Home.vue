@@ -1,5 +1,6 @@
+<!-- src/views/ProductList.vue (ou équivalent) -->
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, onBeforeUpdate, onUpdated } from 'vue';
 import { useToast } from 'vue-toastification';
 import ProductCard from '../components/ProductCard.vue';
 import AppHeader from '../components/AppHeader.vue';
@@ -7,13 +8,11 @@ import Loader from '../components/Loader.vue';
 import apiClient from '../api/index';
 import { useProductStore } from '../stores/product';
 import { useAuthStore } from '../stores/Auth';
-import { routerKey } from 'vue-router';
-
 import { useRouter } from 'vue-router';
+import ProductCardSkeleton from '../components/ProductCardSkeleton.vue';
 
-
-const router= useRouter();
-
+// Définitions
+const router = useRouter();
 const productStore = useProductStore();
 const authStore = useAuthStore();
 const categories = ref<any[]>([]);
@@ -31,7 +30,11 @@ const villes = ref(['Douala', 'Yaoundé', 'Bamenda', 'Buea', 'Garoua']);
 const observer = ref<IntersectionObserver | null>(null);
 const loadMoreTrigger = ref<HTMLElement | null>(null);
 
+// Variable pour le chargement supplémentaire
+const isLoadingMore = ref(false);
+let scrollPosition = 0; // Pour préserver la position de défilement
 
+// Fonctions
 const fetchCategories = async () => {
     try {
         const response = await apiClient.get('/categories');
@@ -55,9 +58,7 @@ const applyFilters = () => {
 
 const resetFilters = () => {
     filterForm.value = { search: '', category: '', prix_min: '', prix_max: '', ville: '', collaboratif: '' };
-    // productStore.fetchProducts({}, true);
     showFilters.value = false;
-
 };
 
 const changeSort = (newSort: string) => {
@@ -78,42 +79,28 @@ const handleTouchStart = (productId: string) => {
 
 const recordView = async (productId: string) => {
     const userId = authStore.user?.id;
-    // if (!userId?? null) {
-    //     // toast.error('Connexion requise pour enregistrer la vue.');
-    //     return;
-    // }
 
-    // Récupérer les vues stockées
     const viewedProducts = JSON.parse(localStorage.getItem('viewedProducts') || '{}');
-    const today = new Date().toISOString().split('T')[0]; // Date au format YYYY-MM-DD
+    const today = new Date().toISOString().split('T')[0];
     const lastResetDate = localStorage.getItem('lastResetDate');
 
-    // Vider les vues si c'est un nouveau jour
     if (!lastResetDate || lastResetDate !== today) {
         localStorage.removeItem('viewedProducts');
         localStorage.setItem('lastResetDate', today);
     }
 
-    // Vérifier si le produit est déjà dans les vues du jour
-    if (await viewedProducts[productId]) {
-
+    if (viewedProducts[productId]) {
         return; // Pas d'appel API si déjà vu aujourd'hui
     }
 
-    // //console.log(viewedProducts);
     try {
         setTimeout(async () => {
-
             const response = await apiClient.post(`/record_view`, {
                 product_id: productId,
                 user_id: userId ?? null,
             });
-            // //console.log(response.data)
-            // toast.success(response.data.message);
         }, 1000);
 
-
-        // Mettre à jour localStorage avec le produit vu
         viewedProducts[productId] = true;
         localStorage.setItem('viewedProducts', JSON.stringify(viewedProducts));
     } catch (error: any) {
@@ -122,27 +109,39 @@ const recordView = async (productId: string) => {
     }
 };
 
-
+// Cycle de vie
 onMounted(async () => {
     try {
-
-
-
-
-
-        await productStore.fetchProducts();
+     
+        console.log('Produits au montage:', productStore.products);
+        await productStore.fetchProducts({}, true, true); // Force un rechargement complet
+        console.log('Produits chargés:', productStore.products, 'isLoading:', productStore.isLoading);
         await fetchCategories();
+
+        if (!authStore.user) {
+            router.push("/login");
+            return;
+        }
+        
     } catch (error: any) {
         console.error('Erreur lors du chargement des produits ou catégories:', error);
-        if (error == 'Unauthenticated.') {
-router.push('login')        }
+        if (error === 'Unauthenticated.') {
+            router.push('login');
+        }
         toast.error('Erreur lors du chargement des produits. Veuillez réessayer.');
     }
 
     observer.value = new IntersectionObserver(
         (entries) => {
-            if (entries[0].isIntersecting && !productStore.isLoading && productStore.hasMore) {
-                productStore.fetchProducts(filterForm.value);
+            console.log('Observer déclenché, isLoadingMore:', isLoadingMore.value, 'hasMore:', productStore.hasMore);
+            if (entries[0].isIntersecting && !isLoadingMore.value && productStore.hasMore) {
+                isLoadingMore.value = true;
+                onBeforeUpdate(() => {
+                    scrollPosition = window.scrollY;
+                });
+                productStore.fetchProducts(filterForm.value).finally(() => {
+                    isLoadingMore.value = false;
+                });
             }
         },
         { threshold: 0.1 }
@@ -151,6 +150,10 @@ router.push('login')        }
     if (loadMoreTrigger.value) {
         observer.value.observe(loadMoreTrigger.value);
     }
+});+
+
+onUpdated(() => {
+    window.scrollTo(0, scrollPosition); // Restaure la position après mise à jour
 });
 
 onUnmounted(() => {
@@ -158,18 +161,12 @@ onUnmounted(() => {
         observer.value.unobserve(loadMoreTrigger.value);
     }
 });
-
-
 </script>
 
 <template>
-
-    
-    <!-- Template inchangé -->
-    <div class="pt-4 bg-[var(--espace-blanc)]  max-h-full relative">
-
+    <div class="pt-4 bg-[var(--espace-blanc)] max-h-full relative">
         <Loader :isLoading="productStore.isLoading" />
-        <div class="relative  overflow-y-scroll mx-auto px-4 sm:px-6 py-4 max-h-full ">
+        <div class="relative overflow-y-scroll mx-auto px-4 sm:px-6 py-4 max-h-full">
             <!-- Tri -->
             <div class="fixed flex items-center overflow-x-auto space-x-2 mb-3 snap-x snap-mandatory z-5">
                 <button v-for="option in [
@@ -197,8 +194,6 @@ onUnmounted(() => {
                     </span>
                 </button>
             </div>
-
-
 
             <!-- Filtres -->
             <Transition name="slide-up">
@@ -258,17 +253,25 @@ onUnmounted(() => {
                 </div>
             </Transition>
 
-            <!-- Liste des produits -->
+            <!-- Liste des produits avec skeletons pour le chargement initial et supplémentaire -->
             <TransitionGroup name="fade" tag="div"
-                class="  grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pt-12 ">
+                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pt-12">
+                <!-- Skeletons pour le chargement initial -->
+                <ProductCardSkeleton v-for="n in productStore.isLoading ? 8 : 0" :key="'skeleton-init-' + n"
+                    v-if="productStore.isLoading && productStore.products.length === 0" />
+
+                <!-- Produits déjà chargés -->
                 <ProductCard v-for="produit in productStore.products" :key="produit.id" :produit="produit"
                     @mouseover="handleMouseOver(produit.id)" @touchstart="handleTouchStart(produit.id)" />
+
+                <!-- Skeletons pour le chargement supplémentaire -->
+                <ProductCardSkeleton v-for="n in isLoadingMore ? 4 : 0" :key="'skeleton-more-' + n"
+                    v-if="isLoadingMore" />
             </TransitionGroup>
             <div ref="loadMoreTrigger" class="h-10 flex items-center justify-center" aria-live="polite"
-                :aria-busy="productStore.isLoading">
-                <p v-if="!productStore.hasMore" class="text-[var(--espace-gris)] text-xs font-poppins">
-                    Aucun produit supplémentaire
-                </p>
+                :aria-busy="isLoadingMore">
+                <p v-if="!productStore.hasMore" class="text-[var(--espace-gris)] text-xs font-poppins">Aucun produit
+                    supplémentaire</p>
             </div>
         </div>
     </div>
@@ -276,4 +279,14 @@ onUnmounted(() => {
 
 <style scoped>
 /* Styles existants inchangés */
+:root {
+    --espace-vert: #14532d;
+    --espace-or: #facc15;
+    --espace-blanc: #ffffff;
+    --espace-gris: #6b7280;
+}
+
+.font-poppins {
+    font-family: 'Poppins', sans-serif;
+}
 </style>

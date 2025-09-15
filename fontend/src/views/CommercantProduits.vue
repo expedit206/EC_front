@@ -223,7 +223,9 @@ const prevSlide = (id: string) => {
     slideIndexes.value[id] = Math.max((slideIndexes.value[id] || 0) - 1, 0);
 };
 
-onMounted(() => {
+onMounted(async() => {
+    await fetchProduits();
+    fetchCategories();
     setTimeout(() => {
         
         if (!authStore.user?.commercant) {
@@ -231,9 +233,7 @@ onMounted(() => {
             router.push("/");
             return;
         }
-    }, 1000);
-    fetchProduits();
-    fetchCategories();
+    }, 2000);
 });
 </script>
 

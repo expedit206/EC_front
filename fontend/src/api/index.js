@@ -6,7 +6,9 @@ const getBaseUrl = () => {
   if (host === "localhost" || host === "127.0.0.1") {
     return "http://localhost:8000/api/v1"; // URL locale
   }
-  return "https://espacecameroun.devfack.com/api/v1"; // URL de production (à ajuster selon votre domaine)
+    return "https://espacecameroun.devfack.com/api/v1"; // URL de production (à ajuster selon votre domaine)
+  
+  
 };
 
 axios.defaults.withCredentials = true;

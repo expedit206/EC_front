@@ -25,15 +25,18 @@ export const useProductStore = defineStore("product", {
   }),
 
   getters: {
-    // Getter pour récupérer l'utilisateur actuel depuis Auth
     user: (state) => useAuthStore().user,
   },
 
   actions: {
-    async fetchProducts(params: FetchProductsParams = {}, reset = false) {
-      if (this.isLoading || (!reset && !this.hasMore)) return;
+    async fetchProducts(
+      params: FetchProductsParams = {},
+      reset = false,
+      forceReload = false
+    ) {
+      if (this.isLoading || (!reset && !this.hasMore && !forceReload)) return;
       this.isLoading = true;
-      if (reset) {
+      if (reset || forceReload) {
         this.products = [];
         this.page = 1;
         this.hasMore = true;
@@ -47,52 +50,55 @@ export const useProductStore = defineStore("product", {
             sort: this.sort,
           },
         });
-        
-        console.log(response.data)
-        //console.log(response.data.data);
-        // //console.log(response.data.data);
-        // //console.log(response.data.data[0].is_favorited_by);
 
-        if (params.per_page === "all") {
+        console.log("Réponse API:", response.data);
+
+        if (!response.data || typeof response.data !== "object") {
+          throw new Error("Réponse API invalide");
+        }
+
+        if (params.per_page === "all" || forceReload) {
           this.products = reset
             ? response.data
             : [...this.products, ...response.data];
         } else {
-          const newProducts = response.data.data;
+          const newProducts = response.data.data || [];
+          if (!Array.isArray(newProducts)) {
+            throw new Error("Les données des produits ne sont pas un tableau");
+          }
           this.products = reset
             ? newProducts
             : [...this.products, ...newProducts];
-          this.hasMore = response.data.current_page < response.data.last_page;
+          this.hasMore =
+            response.data.current_page < (response.data.last_page || 1);
           this.page = response.data.current_page + 1;
         }
       } catch (error: any) {
-          if (error.response?.data?.message == "Unauthenticated.") {
-            router.push("login");
-          }
-    
-        throw (
-          error.response?.data?.message ||
-          "Erreur lors du chargement des produits"
-        );
+        console.error("Erreur lors du fetch:", error);
+        if (error.response?.data?.message === "Unauthenticated.") {
+          router.push("login");
+        } else {
+          throw (
+            error.response?.data?.message ||
+            "Erreur lors du chargement des produits"
+          );
+        }
       } finally {
         this.isLoading = false;
       }
     },
 
     async toggleFavorite(produitId: string) {
-      // Vérifier et récupérer l'utilisateur à la volée
       const authStore = useAuthStore();
       if (!authStore.user) {
-        await authStore.checkAuth(); // Tente de vérifier l'authentification si pas encore fait
+        await authStore.checkAuth();
         if (!authStore.user) {
           console.warn(
             "Utilisateur non connecté, redirection ou action nécessaire"
           );
-          // window.location.href = "/register"; // Décommentez si vous voulez rediriger
           return;
         }
       }
-      // Mettre à jour localement avant l'appel API (optimisation UI)
       const product = this.products.find((p) => p.id === produitId);
       let localUpdate = false;
       if (product) {
@@ -117,7 +123,6 @@ export const useProductStore = defineStore("product", {
         );
         const updatedProduct = response.data.produit;
 
-        // Mettre à jour les données avec les valeurs du backend
         if (localUpdate) {
           const productIndex = this.products.findIndex(
             (p) => p.id === produitId
@@ -135,13 +140,11 @@ export const useProductStore = defineStore("product", {
 
         return response.data.message;
       } catch (error: any) {
-          if (error.response?.data?.message == "Unauthenticated.") {
-            router.push("login");
-          }
-    
-        console.log(error);
-      
-        // Revenir à l'état précédent en cas d'erreur
+        if (error.response?.data?.message === "Unauthenticated.") {
+          router.push("login");
+        }
+        console.error("Erreur toggleFavorite:", error);
+
         if (localUpdate) {
           const product = this.products.find((p) => p.id === produitId);
           if (product) {
@@ -157,17 +160,13 @@ export const useProductStore = defineStore("product", {
               : this.product.counts.favorites_count + 1;
           }
         }
-        // throw (
-        //   error ||
-        //   "Erreur lors de la mise à jour des favris"
-        // );
       }
     },
 
     async viewProduct(produitId: string | string[]) {
       try {
         const response = await apiClient.get(`/produits/${produitId}`);
-        this.product = response.data.produit; // Stocker le produit unique
+        this.product = response.data.produit;
         const productIndex = this.products.findIndex((p) => p.id === produitId);
         if (productIndex !== -1) {
           this.products[productIndex] = {
@@ -178,11 +177,9 @@ export const useProductStore = defineStore("product", {
           this.products.push(this.product);
         }
       } catch (error: any) {
-        
-          if (error.response?.data?.message == "Unauthenticated.") {
-            router.push("login");
-          }
-    
+        if (error.response?.data?.message === "Unauthenticated.") {
+          router.push("login");
+        }
         throw (
           error.response?.data?.message ||
           "Erreur lors du chargement du produit"
