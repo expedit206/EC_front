@@ -133,7 +133,7 @@ const boostProduit = async () => {
             target_views: targetViews.value,
         });
         authStore.user.jetons -= calculatedCost.value;
-        productStore.product.boosted_until = response.data.data.end_date;
+        productStore.product.boosted = true;
         toast.success(response.data.message || 'Produit boosté avec succès !');
         showBoostModal.value = false;
     } catch (error: any) {
@@ -320,7 +320,7 @@ watch(productStore.product, (newProduit) => {
                                 </div>
                             </div>
                             <span
-                                v-if="productStore.product.boosted_until && new Date(productStore.product.boosted_until) > new Date()"
+                                v-if="productStore.product.boosted"
                                 class="absolute top-3 left-3 bg-[var(--espace-or)] text-[var(--espace-vert)] text-[10px] font-semibold px-2 py-1 rounded-full font-poppins"
                                 aria-label="Produit boosté">
                                 Boosté
@@ -360,7 +360,7 @@ watch(productStore.product, (newProduit) => {
                                         <span>{{ formatNumber(productStore.product.counts?.views_count) }} vues</span>
                                     </div>
                                     <div class="flex items-center gap-1">
-                                        <i class="fas fa-heart text-[10px]"
+                                        <i class="fas fa-bookmark text-[10px]"
                                             :class="{ 'text-[var(--espace-or)]': productStore.product.is_favorited_by }"></i>
                                         <span>{{ formatNumber(productStore.product.counts?.favorites_count) }}
                                             favoris</span>
@@ -370,7 +370,7 @@ watch(productStore.product, (newProduit) => {
                             <button @click="handleFavorite"
                                 class="w-full bg-[var(--espace-vert)] text-[var(--espace-blanc)] font-semibold py-2 rounded-lg hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)] transition-all duration-200 active:scale-95 text-sm mb-3"
                                 :aria-label="productStore.product.is_favorited_by ? 'Retirer des favoris' : 'Ajouter aux favoris'">
-                                <i class="fas fa-heart mr-2 text-sm"
+                                <i class="fas fa-bookmark mr-2 text-sm"
                                     :class="{ 'text-[var(--espace-or)]': productStore.product.is_favorited_by }"></i>
                                 {{ productStore.product.is_favorited_by ? 'Retirer des favoris' : 'Ajouter aux favoris'
                                 }}
@@ -425,8 +425,8 @@ watch(productStore.product, (newProduit) => {
                                 <button v-if="authStore.user?.commercant?.id === productStore.product.commercant_id"
                                     @click="openBoostModal"
                                     class="flex-1 bg-[var(--espace-or)] text-[var(--espace-vert)] flex items-center justify-center gap-1 font-semibold px-4 py-2 rounded-lg hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-all duration-200 active:scale-95 text-sm"
-                                    :disabled="!!productStore.product.boosted_until && new Date(productStore.product.boosted_until) > new Date()"
-                                    :aria-label="productStore.product.boosted_until && new Date(productStore.product.boosted_until) > new Date() ? 'Boost déjà actif' : 'Personnaliser le boost'">
+                                    :disabled="!!productStore.product.boosted "
+                                    :aria-label="productStore.product.boosted  ? 'Boost déjà actif' : 'Personnaliser le boost'">
                                     <span class="md:flex">Boost</span>
                                     <i class="fas fa-rocket mr-2 text-sm"></i>
                                 </button>

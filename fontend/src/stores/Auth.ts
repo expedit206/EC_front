@@ -2,6 +2,9 @@ import { defineStore } from "pinia";
 import apiClient from "../api/index";
 import { User } from "../components/types/index";
 import axios, { Axios } from "axios";
+import { useRouter } from "vue-router";
+const router = useRouter();
+
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -32,8 +35,8 @@ export const useAuthStore = defineStore("auth", {
     async register(data: {
       nom: string;
       telephone: string;
-      email?: string;
-      ville: string;
+      email?: string | null;
+      ville?: string | null;
       mot_de_passe: string;
       parrain_code?: string; // Changé de parrain_id à parrain_code
     }) {
@@ -64,6 +67,7 @@ export const useAuthStore = defineStore("auth", {
           "utilisateur non:",
           error
         );
+        router.push("/login");
 
         this.user = null;
         this.token = null;
@@ -71,10 +75,53 @@ export const useAuthStore = defineStore("auth", {
         return false;
       }
     },
+    
+//     async logout() {
+//         try {
+//         router.push('/login')
+//         if (this.token) {
+//           await apiClient.post("/logout");
+//         }
+//       } catch {
+//         // ignorer si token invalide ou expiré
+//       }
+
+//   try {
+//     // Appel à ton API pour déconnecter côté serveur
+//     router.push("/login");
+//     await apiClient.post('/logout');
+
+//     // 🔥 Supprimer les variables du localStorage
+//     const keysToRemove = [
+//       "pending_collaborations",
+//       "pending_orders",
+//       "cart",
+//       "token",
+//       "unread_messages",
+//       "viewedProducts"
+//     ];
+
+//     keysToRemove.forEach(key => localStorage.removeItem(key));
+
+//     // Optionnel : si tu veux tout nettoyer d'un coup
+//     // localStorage.clear();
+
+//     // Rediriger vers la page de login
+    
+//       this.user = null;
+//       this.token = null;
+//       localStorage.removeItem("token");
+//       delete apiClient.defaults.headers.common["Authorization"];
+
+//   } catch (error) {
+//     console.error("Erreur lors de la déconnexion :", error);
+//   }
+// },
 
     // Déconnexion
     async logout() {
       try {
+        router.push("/login");
         if (this.token) {
           await apiClient.post("/logout");
         }
@@ -86,6 +133,18 @@ export const useAuthStore = defineStore("auth", {
       this.token = null;
       localStorage.removeItem("token");
       delete apiClient.defaults.headers.common["Authorization"];
+      // 🔥 Supprimer les variables du localStorage
+          const keysToRemove = [
+            "pending_collaborations",
+            "pending_orders",
+            "cart",
+            "token",
+            "unread_messages",
+            "viewedProducts"
+          ];
+
+          keysToRemove.forEach(key => localStorage.removeItem(key));
+
     },
   },
 });

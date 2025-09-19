@@ -16,7 +16,7 @@ const getBaseReferralUrl = () => {
     if (host === "localhost" || host === "127.0.0.1") {
         return "http://localhost:4000/register";
     }
-    return "https://espacecameroun.devfack.com/register"; // URL de production
+    return "https://api.espacecameroun.com/register"; // URL de production
 };
 
 // Données réactives
@@ -68,7 +68,7 @@ const fetchParrainageData = async () => {
         progression.value = data.progression;
         totalParrainages.value = data.total_parrainages || 0;
         totalParrainagesCommercants.value = data.total_parrainages_commercants || 0;
-    } catch (error :any) {
+    } catch (error: any) {
         if (error.response?.data?.message == 'Unauthenticated.') {
             router.push('login')
         }
@@ -93,7 +93,7 @@ const generateCodeSuggestion = async () => {
         toast.success("Nouveau code suggéré avec succès !");
         // Mettre à jour le lien après génération
         if (code.value) link.value = `${getBaseReferralUrl()}/${code.value}`;
-    } catch (error :any) {
+    } catch (error: any) {
         if (error.response?.data?.message == 'Unauthenticated.') {
             router.push('login')
         }
@@ -182,15 +182,15 @@ onMounted(() => {
                 <h2 class="text-lg font-semibold mb-4" :style="{ color: currentColor }">Niveaux de Parrainage</h2>
                 <p class="text-[var(--espace-gris)] text-sm mb-2 flex justify-between" :style="{ color: currentColor }">
                 <div>
-                     niveau  : <strong>{{ niveauActuel ? niveauActuel.nom : "Pas de niveau" }} {{
-                         niveauActuel?.emoji }}
-                         <div>
+                    niveau : <strong>{{ niveauActuel ? niveauActuel.nom : "Pas de niveau" }} {{
+                        niveauActuel?.emoji }}
+                        <div>
 
                             ({{ totalParrainagesCommercants }}/{{ niveauSuivant ? niveauSuivant.filleuls_requis :
-                            niveauActuel?.filleuls_requis
-                        }} commerçants)
+                                niveauActuel?.filleuls_requis
+                            }} commerçants)
                         </div>
-                        </strong>
+                    </strong>
                 </div>
                 <span v-if="niveauSuivant?.jetons_bonus > 0" class="ml-2">+{{ niveauSuivant?.jetons_bonus }} jetons
                 </span>

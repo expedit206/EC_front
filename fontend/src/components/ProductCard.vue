@@ -38,9 +38,11 @@ const prevSlide = () => {
 
 const handleFavorite = async () => {
   try {
+    console.log(props.produit.id)
     await productStore.toggleFavorite(props.produit.id);
     emit('toggle-favorite', props.produit.id); // Émettre l'événement si nécessaire
   } catch (error: any) {
+    console.error('Erreur lors de la mise à jour des favoris :', error);
     toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour des favori.');
   }
 };
@@ -72,7 +74,7 @@ const handleFavorite = async () => {
         Collaboratif
       </span>
       <!-- Badge Boosté -->
-      <span v-if="produit.boosted_until && new Date(produit.boosted_until) > new Date()"
+      <span v-if="produit.boosted"
         class="absolute top-2 right-2 bg-[var(--espace-or)] text-[var(--espace-vert)] text-[10px] font-semibold px-2 py-1 rounded-full font-poppins"
         aria-label="Produit boosté">
         Boosté

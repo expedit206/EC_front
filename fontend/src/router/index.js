@@ -36,7 +36,7 @@ const routes = [
     name: "home",
     meta: { requiresAuth: true },
   },
-  { path: "/", redirect: "/home" },
+  { path: "/", redirect: "/login" },
   {
     path: "/commercant/produits",
     name: "commercant.produits",

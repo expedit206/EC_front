@@ -10,13 +10,12 @@ import apiClient from '../api/index';
 // Fonction pour générer l'URL de base du stockage dynamiquement
 const getStorageBaseUrl = () => {
     const host = window.location.hostname;
-    if (host === "localhost" || host === "127.0.0.1") {
-        return "http://localhost:8000/storage/";
+    if (host === 'localhost' || host === '127.0.0.1') {
+        return 'http://localhost:8000/storage/';
     }
-    return "https://espacecameroun.devfack.com/storage/"; // URL de production (à ajuster selon votre domaine)
+    return 'https://api.espacecameroun.com/storage/';
 };
 
-// Computed property pour l'URL du stockage
 const storageUrl = computed(() => getStorageBaseUrl());
 
 const router = useRouter();
@@ -37,7 +36,6 @@ const messagesContainer = ref<HTMLElement | null>(null);
 const product = ref<Product | null>(null);
 const isMobile = ref(window.innerWidth < 768);
 
-// Référence pour suivre le canal Echo actuel
 let currentChannel: any = null;
 
 const scrollToBottom = () => {
@@ -58,12 +56,10 @@ const fetchConversations = async () => {
     try {
         const res = await apiClient.get('/conversations');
         conversations.value = res.data.conversations;
-        //console.log(res.data);
     } catch (e: any) {
-        if (e.response?.data?.message == 'Unauthenticated.') {
-            router.push('login')
+        if (e.response?.data?.message === 'Unauthenticated.') {
+            router.push('login');
         }
-
         toast.error('Erreur lors de la récupération des conversations');
         console.error(e);
     }
@@ -82,14 +78,11 @@ const fetchMessages = async (receiverId: number, resetOffset = true) => {
         isSidebarOpen.value = false;
         const res = await apiClient.get(`/chat/${receiverId}?offset=${offset.value}`);
         messages.value = [...res.data.messages];
-        // //console.log(res.data);
-
         hasMore.value = res.data.hasMore;
 
         const storedProduct = localStorage.getItem('chatProduct');
         const conversation = conversations.value.find(c => c.user_id === receiverId);
 
-        // Priorité au commerçant si is_commercant est vrai
         let name = '';
         let profilePhoto = '/default-avatar.png';
         if (conversation) {
@@ -116,7 +109,10 @@ const fetchMessages = async (receiverId: number, resetOffset = true) => {
 
         await markAllMessagesAsRead(receiverId);
         scrollToBottom();
-    } catch (e) {
+    } catch (e: any) {
+        if (e.response?.data?.message === 'Unauthenticated.') {
+            router.push('login');
+        }
         toast.error('Erreur lors du chargement des messages');
         console.error(e);
     } finally {
@@ -149,10 +145,10 @@ const sendMessage = async () => {
         product_id: product.value?.id || null,
         sender: {
             id: authStore.user?.id ?? 0,
-            nom: authStore.user?.nom ?? "",
-            email: authStore.user?.email ?? "",
-            telephone: authStore.user?.telephone ?? "",
-            ville: authStore.user?.ville ?? "",
+            nom: authStore.user?.nom ?? '',
+            email: authStore.user?.email ?? '',
+            telephone: authStore.user?.telephone ?? '',
+            ville: authStore.user?.ville ?? '',
             premium: authStore.user?.premium ?? false,
             parrain_id: authStore.user?.parrain_id ?? 0,
         },
@@ -177,18 +173,14 @@ const sendMessage = async () => {
             content,
             product_id: product.value?.id,
         });
-        //console.log(res.data);
 
         if (product.value) {
             clearProductTag();
         }
     } catch (e: any) {
-
-        if (e.response?.data?.message == 'Unauthenticated.') {
-            router.push('login')
+        if (e.response?.data?.message === 'Unauthenticated.') {
+            router.push('login');
         }
-        
-
         toast.error('Échec d\'envoi');
         console.error(e);
         messages.value = messages.value.filter(m => m.id !== tempMessage.id);
@@ -212,11 +204,10 @@ const markAllMessagesAsRead = async (receiverId: number) => {
     try {
         const response = await apiClient.put('/messages/mark-all-as-read');
         userStateStore.saveUnreadMessagesToLocalStorage(response.data.unread_messages);
-    } catch (error :any) {
-        if (error.response?.data?.message == 'Unauthenticated.') {
-            router.push('login')
+    } catch (error: any) {
+        if (error.response?.data?.message === 'Unauthenticated.') {
+            router.push('login');
         }
-
         console.error('Erreur lors du marquage des messages comme lus:', error);
         toast.error('Erreur lors de la mise à jour des messages lus');
     }
@@ -231,38 +222,21 @@ const viewProfile = (userId: number, isCommercant: boolean) => {
     router.push(profileRoute);
 };
 
-// Gestion de la connexion au canal Echo
 const subscribeToChannel = (receiverId: number) => {
+    if (!authStore.user?.id || !receiverId) return;
     if (currentChannel) {
-        currentChannel.stopListening('MessageSent'); // Déconnexion du canal précédent
-        window.Echo.leave(`chat.${currentChannel.params.receiverId}`);
+        currentChannel.stopListening('.App\\Events\\MessageSent');
+        window.Echo.leave(`chat.${currentChannel.params.channelId}`);
     }
-    if (receiverId && authStore.user?.id) {
-        //console.log("🔔 Abonnement au canal chat." + receiverId);
-        currentChannel = window.Echo.channel(`public-channel`)
-            .listen('message.sent', (event: any) => {
-                //console.log("📩 Nouveau message reçu :", event.message);
-                if (selectedConversation.value?.user_id === receiverId && event.sender_id !== authStore.user?.id) {
-                    const newMessage: Message = {
-                        id: event.message.id,
-                        sender_id: event.sender_id,
-                        receiver_id: event.receiver_id,
-                        content: event.message.content,
-                        created_at: event.message.created_at,
-                        updated_at: event.message.updated_at,
-                        is_read: event.message.is_read,
-                        product_id: event.message.product_id || null,
-                        sender: event.sender,
-                        receiver: event.receiver,
-                        product: event.message.product || null,
-                    };
-                    messages.value.push(newMessage);
-                    scrollToBottom();
-                    userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
-                }
-            });
-        currentChannel.params = { receiverId }; // Stocker l'ID pour la déconnexion
-    }
+    const userId = authStore.user.id;
+    const channelId = [userId, receiverId].sort((a, b) => a - b).join('-');
+    const channelName = `chat.${channelId}`;
+    console.log(`🔔 Abonnement au canal ${channelName}`); // Log du canal
+    currentChannel = window.Echo.channel(channelName).listen('.App\\Events\\MessageSent', (event: any) => {
+        console.log('📩 Nouveau message reçu :', event); // Log de l'événement
+        // ... reste du code
+    });
+    currentChannel.params = { channelId };
 };
 
 onMounted(() => {
@@ -275,10 +249,15 @@ onMounted(() => {
 
 onUnmounted(() => {
     if (currentChannel) {
-        currentChannel.stopListening('MessageSent');
-        window.Echo.leave(`chat.${currentChannel.params.receiverId}`);
+        currentChannel.stopListening('.App\\Events\\MessageSent');
+        window.Echo.leave(`chat.${currentChannel.params.channelId}`);
     }
     window.removeEventListener('resize', handleResize);
+    watch(() => selectedConversation.value?.user_id, (newReceiverId) => {
+        if (newReceiverId) {
+            subscribeToChannel(newReceiverId);
+        }
+    });
 });
 
 watch(() => selectedConversation.value?.user_id, (newReceiverId) => {
@@ -300,7 +279,6 @@ watch(() => route.params.receiverId, async (receiverId) => {
             <div v-if="isSidebarOpen || !isMobile" class="bg-white pt-8 shadow-md p-4 overflow-y-auto transition-all"
                 :class="isMobile ? 'absolute top-0 left-0 h-full z-30 w-full' : 'w-[400px]'">
                 <h2 class="text-lg font-semibold text-[var(--espace-vert)] mb-4">Conversations</h2>
-
                 <div v-for="conv in conversations" :key="conv.user_id" @click="selectConversation(conv.user_id)"
                     class="p-2 hover:bg-gray-100 cursor-pointer rounded flex items-center justify-between transition-colors">
                     <div class="flex items-center">
@@ -356,8 +334,7 @@ watch(() => route.params.receiverId, async (receiverId) => {
                                 <router-link v-if="message.product?.id"
                                     :to="{ name: 'produit', params: { id: message.product.id } }"
                                     class="text-blue-500 underline hover:text-blue-700 ml-1">[Produit {{
-                                        message.product.nom
-                                    }}]</router-link>
+                                    message.product.nom }}]</router-link>
                                 {{ message.content }}
                             </p>
                             <p class="text-xs text-[var(--espace-gris)] text-right mr-2">

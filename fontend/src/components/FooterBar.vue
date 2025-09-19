@@ -17,7 +17,7 @@ const navLinks = computed(() => {
             ? [
                 { to: '/', label: 'Accueil', icon: 'fa-home' },
 
-            ...(authStore.user.commercant
+                ...(authStore.user.commercant?.email_verified_at
                 ? [{ to: '/commercant/produits', label: 'Mes Produits', icon: 'fa-box-open' },
 
                 { to: '/collaborations', label: 'Collaborations', icon: 'fa-handshake', badge: userStateStore.collaborationsPending },

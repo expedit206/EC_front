@@ -5,7 +5,6 @@ export interface User {
   telephone: string;
   ville: string | null;
   premium: boolean;
-  is_premium: boolean;
   jetons: number;
   parrain_id: number | null;
   parrainage_code: string | null;
@@ -61,7 +60,7 @@ export interface Product {
   category_id: string;
   collaboratif: boolean; // 0 or 1, could be boolean if converted
   commercant_id: string;
-  boosted_until: string | null;
+  boosted: boolean;
   favorites_count: number;
   is_favorited_by: boolean;
   marge_min: number; // Stored as string, consider converting to number if needed
@@ -140,6 +139,9 @@ export interface Commercant {
   ville?: string;
   logo?: string | null;
   user_id: number;
+
+  email_verified_at: string | null;
+  
   email: string | null;
   telephone: string | null;
   created_at: string;

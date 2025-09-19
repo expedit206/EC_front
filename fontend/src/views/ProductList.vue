@@ -54,7 +54,7 @@ const changeSort = (sort) => {
             <button v-for="option in [
                 { id: 'random', label: 'Aléatoire', icon: 'fa-random' },
                 { id: 'popular', label: 'Populaire', icon: 'fa-fire' },
-                { id: 'favorites', label: 'Favoris', icon: 'fa-heart' },
+                { id: 'favorites', label: 'Favoris', icon: 'fa-bookmark' },
             ]" :key="option.id" @click="changeSort(option.id)"
                 class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium font-poppins snap-center shrink-0 transition-all duration-200"
                 :class="{
@@ -86,13 +86,14 @@ const changeSort = (sort) => {
                             <span>{{ product.view_count }} vues</span>
                         </div>
                         <div class="flex items-center gap-2 text-xs text-[var(--espace-gris)]">
-                            <i class="fas fa-heart"></i>
+                            <i class="fas fa-bookmark"></i>
                             <span>{{ product.favorite_count }} favoris</span>
                         </div>
                         <button @click="toggleFavorite(product.id)"
                             class="text-[var(--espace-vert)] hover:text-[var(--espace-or)] transition"
                             :aria-label="product.is_favorited_by ? 'Retirer des favoris' : 'Ajouter aux favoris'">
-                            <i class="fas fa-heart" :class="{ 'text-[var(--espace-or)]': product.is_favorited_by }"></i>
+                            <i class="fas fa-bookmark"
+                                :class="{ 'text-[var(--espace-or)]': product.is_favorited_by }"></i>
                         </button>
                     </div>
                 </div>

@@ -8,20 +8,19 @@ import FormField from '../../components/Form.vue';
 const form = ref({
     nom: '',
     telephone: '',
-    email: '',
-    ville: '',
     mot_de_passe: '',
-    parrain_code: '', // Changé de parrain_id à parrain_code
+    mot_de_passe_confirmation: '', // Nouveau champ de confirmation
+    parrain_code: '',
 });
 
 const errors = ref<{
     nom?: string;
     telephone?: string;
-    email?: string;
-    ville?: string;
     mot_de_passe?: string;
-    parrain_code?: string; // Changé de parrain_id à parrain_code
+    mot_de_passe_confirmation?: string; // Validation
+    parrain_code?: string;
 }>({});
+
 const router = useRouter();
 const route = useRoute();
 const toast = useToast();
@@ -34,6 +33,10 @@ onMounted(() => {
         form.value.parrain_code = parrainCodeFromUrl;
     }
 });
+
+
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
 
 const isLoading = ref(false);
 
@@ -75,14 +78,28 @@ const register = async () => {
                 <FormField label="Nom" icon="fa-user" v-model="form.nom" type="text" required :error="errors.nom" />
                 <FormField label="Téléphone" icon="fa-phone" v-model="form.telephone" type="tel" required
                     :error="errors.telephone" />
-                <FormField label="Email (optionnel)" icon="fa-envelope" v-model="form.email" type="email"
-                    :error="errors.email" />
-                <FormField label="Ville" icon="fa-city" v-model="form.ville" type="text" required
-                    :error="errors.ville" />
-                <FormField label="Mot de passe" icon="fa-lock" v-model="form.mot_de_passe" type="password" required
-                    :error="errors.mot_de_passe" />
+                <div class="relative">
+                    <FormField label="Mot de passe" icon="fa-lock" v-model="form.mot_de_passe"
+                        :type="showPassword ? 'text' : 'password'" required :error="errors.mot_de_passe" />
+                    <button type="button" class="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
+                        @click="showPassword = !showPassword">
+                        <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                    </button>
+                </div>
+
+                <!-- Confirmation avec icône œil -->
+                <div class="relative">
+                    <FormField label="Confirmer le mot de passe" icon="fa-lock" v-model="form.mot_de_passe_confirmation"
+                        :type="showConfirmPassword ? 'text' : 'password'" required
+                        :error="errors.mot_de_passe_confirmation" />
+                    <button type="button" class="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
+                        @click="showConfirmPassword = !showConfirmPassword">
+                        <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                    </button>
+                </div>
                 <FormField label="Code de parrainage (optionnel)" icon="fa-users" v-model="form.parrain_code"
                     type="text" :error="errors.parrain_code" />
+
                 <button type="submit" :disabled="isLoading"
                     class="w-full bg-[var(--espace-or)] text-[var(--espace-vert)] font-semibold p-3 rounded-xl hover:bg-[var(--espace-vert)] hover:text-white transition flex items-center justify-center shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
                     <i :class="[isLoading ? 'fas fa-spinner fa-spin' : 'fas fa-user-plus', 'mr-2']"></i>

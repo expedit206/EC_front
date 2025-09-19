@@ -139,7 +139,7 @@
 
                         <label class="flex flex-col text-sm font-medium text-gray-700">
                             Numéro de téléphone
-                            <input v-model="phoneNumber" type="tel" placeholder="Ex: 696428651"
+                            <input v-model="phoneNumber" type="tel" placeholder="Ex: 696828151"
                                 class="mt-1 rounded-lg border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)] transition"
                                 :class="{ 'border-red-500': phoneError }" @input="phoneError = !phoneNumber" required />
                             <span v-if="phoneError" class="text-xs text-red-600 mt-1">Veuillez entrer un numéro
@@ -210,8 +210,13 @@
 import { ref } from 'vue';
 import apiClient from '../api/index';
 import { useToast } from 'vue-toastification';
+
+import { useAuthStore } from '../stores/Auth';
 import { useRouter } from 'vue-router';
+const user = useAuthStore().user;
 const router = useRouter();
+
+
 
 const props = defineProps<{
     isOpen: boolean;
@@ -273,8 +278,9 @@ const confirmUpgrade = async () => {
         payment_service: selectedService.value,
         phone_number: phoneNumber.value,
     });
-    isLoading.value = false;
+        isLoading.value = false;
 
+        if(user)user.premium = true;
     toast.success(res.data.message);
     emit('upgraded');
     emit('close');

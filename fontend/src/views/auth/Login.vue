@@ -6,6 +6,7 @@
     import FormField from '../../components/Form.vue';
     import apiClient from '../../api/index';
     import axios from 'axios';
+import { onMounted } from 'vue';
 
 
     const credentials = ref({
@@ -49,10 +50,21 @@
 
         }
     };
+
+    onMounted(async () => {
+    //   await   authStore.checkAuth()
+           
+            if (authStore.user) {
+                // console.log('Utilisateur déjà connecté, redirection vers la page d\'accueil.');
+                router.push({ name: 'home' });
+            } 
+
+         // Vérifier si l'utilisateur est déjà connecté
+        });
     </script>
 
     <template>
-        <div class="overflow-y-scroll  flex items-center justify-center px-4 py-4">
+        <div class="overflow-y-scroll  flex items-center justify-center px-4 py-4 pb-24">
             <div class="w-full max-w-lg bg-gray-30 rounded-2xl shadow-xl p-6 sm:p-10">
                 <h1 class="text-3xl sm:text-4xl font-bold text-center text-[var(--espace-vert)] mb-6">
                     <i class="fas fa-sign-in-alt mr-2 text-[var(--espace-or)]"></i> Connexion

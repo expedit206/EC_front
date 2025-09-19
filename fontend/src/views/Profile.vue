@@ -145,7 +145,7 @@ const getStorageBaseUrl = () => {
   if (host === "localhost" || host === "127.0.0.1") {
     return "http://localhost:8000/storage/";
   }
-  return "https://espacecameroun.devfack.com/storage/"; // URL de production (à ajuster selon votre domaine)
+  return "https://api.espacecameroun.com/storage/"; // URL de production (à ajuster selon votre domaine)
 };
 
 // Computed property pour l'URL du stockage

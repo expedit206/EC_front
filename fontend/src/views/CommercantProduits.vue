@@ -32,6 +32,21 @@ const form = ref({
     collaboratif: false,
     marge_min: 0,
 });
+const showDropdown = ref(false);
+
+const categorySearch = ref(""); // Valeur tapée par l'utilisateur
+const filteredCategories = computed(() =>
+    categories.value.filter(cat =>
+        cat.nom.toLowerCase().includes(categorySearch.value.toLowerCase())
+    )
+);
+
+
+const hideDropdown = () => {
+    setTimeout(() => {
+        showDropdown.value = false;
+    }, 150);
+};
 
 // Images
 const oldImages = ref<string[]>([]); // anciennes en BDD
@@ -192,10 +207,10 @@ const submitProduit = async () => {
         closeModal();
     } catch (error: any) {
 
-  if (error.response?.data?.message == 'Unauthenticated.') {
+        if (error.response?.data?.message == 'Unauthenticated.') {
             router.push('login')
         }
-    
+
         toast.error(
             error.response?.data.message || "Erreur lors de la sauvegarde du produit"
         );
@@ -223,11 +238,11 @@ const prevSlide = (id: string) => {
     slideIndexes.value[id] = Math.max((slideIndexes.value[id] || 0) - 1, 0);
 };
 
-onMounted(async() => {
+onMounted(async () => {
     await fetchProduits();
     fetchCategories();
     setTimeout(() => {
-        
+
         if (!authStore.user?.commercant) {
             toast.error("Accès réservé aux commerçants");
             router.push("/");
@@ -241,9 +256,9 @@ onMounted(async() => {
 <template>
     <Loader :isLoading="isLoading" />
 
-    <div class="h-full bg-gray-100 pt-5 px-4 sm:px-2 pb-16">
+    <div class="h-full bg-gray-100 pt-10 px-4 sm:px-2 pb-16">
         <div class="h-full w-full overflow-y-scroll">
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center fixed z-10 w-full pr-7">
                 <h1 class="text-1xl md:text-2xl font-bold text-[var(--espace-vert)] text-md mb-2 font-poppins">
                     <i class="fas fa-box-open mr-1 text-[var(--espace-or)] text-md!important"></i> Mes Produits
                 </h1>
@@ -259,7 +274,7 @@ onMounted(async() => {
                 </div>
             </div>
             <div v-else-if="produits.length"
-                class="grid grid-cols-1 pt-4 pb-2 lg:pb-12 md:grid-cols-3 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                class="grid grid-cols-1 pt-15 pb-2 lg:pb-12 md:grid-cols-3 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div v-for="produit in produits" :key="produit.id"
                     class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition relative">
                     <div class="relative w-full h-40 overflow-hidden rounded-t-lg mb-2">
@@ -307,7 +322,7 @@ onMounted(async() => {
                         <p class="text-sm text-[var(--espace-gris)]">Stock: {{ produit.quantite }}</p>
                         <div class="text-sm text-[var(--espace-gris)] mt-2">
                             <span><i class="fas fa-eye mr-1"></i> {{ produit.raw_views_count || 0 }} vues</span>
-                            <span class="ml-4"><i class="fas fa-heart mr-1"></i> {{ produit.favorites_count || 0 }}
+                            <span class="ml-4"><i class="fas fa-bookmark mr-1"></i> {{ produit.favorites_count || 0 }}
                                 favoris</span>
                         </div>
                     </div>
@@ -371,13 +386,30 @@ onMounted(async() => {
                             <label class="text-sm text-[var(--espace-vert)]">Stock</label>
                             <input v-model.number="form.stock" type="number" min="0" required class="input-style" />
                         </div>
-                        <div>
+
+
+                        <div class="relative">
                             <label class="text-sm text-[var(--espace-vert)]">Catégorie</label>
-                            <select v-model="form.category_id" required class="input-style">
-                                <option value="">Sélectionner une catégorie</option>
-                                <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.nom }}</option>
-                            </select>
+                            <!-- <input v-model="categorySearch" type="text" placeholder="Rechercher une catégorie"
+                                class="input-style" @focus="showDropdown = true" @blur="hideDropdown" /> -->
+
+                            <input v-model="categorySearch" type="text" placeholder="Rechercher une catégorie"
+                                class="input-style" @focus="showDropdown = true" @blur="
+                                    setTimeout(() => showDropdown = false, 150)
+                                    " />
+                            <ul v-if="showDropdown && filteredCategories.length"
+                                class="absolute z-50 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto">
+                                <li v-for="cat in filteredCategories" :key="cat.id" @click="form.category_id = cat.id; categorySearch = cat.nom;
+                                    // showDropdown = false
+                                        "
+                                    class="px-2 py-1 hover:bg-[var(--espace-or)] hover:text-[var(--espace-vert)] cursor-pointer">
+                                    {{ cat.nom }}
+                                </li>
+                            </ul>
                         </div>
+
+
+
                         <!-- Champ collaboratif conditionnel -->
                         <div v-if="showAddModal || !currentProduit?.collaboratif" class="flex items-center gap-2">
                             <input id="collaboratif" type="checkbox" v-model="form.collaboratif" />

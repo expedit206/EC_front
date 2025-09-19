@@ -17,4 +17,5 @@ import { onMounted } from 'vue';
 import HeaderBar from './components/HeaderBar.vue';
 import FooterBar from './components/FooterBar.vue';
 
+
 </script>

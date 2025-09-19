@@ -26,6 +26,24 @@ const handleFileChange = (event: Event) => {
     }
 };
 
+
+
+const sendVerificationEmail = async (email: string, code: string) => {
+
+    console.log(email, code);
+
+    try {
+
+
+        await window.emailjs.send("service_06884pt", "template_5x962ru", {
+            to_name: email,
+            code: code,
+        });
+        toast.success('Code de vérification envoyé.');
+    } catch (error) {
+        toast.error('Erreur lors de l\'envoi de l\'email.');
+    }
+};
 // Soumettre le formulaire
 const submitForm = async () => {
     isLoading.value = true;
@@ -44,6 +62,9 @@ const submitForm = async () => {
         const response = await apiClient.post('/commercants', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
+
+        await sendVerificationEmail(response.data.commercant.email, response.data.verification_code);
+
         //console.log(response.data.message)
         toast.success('Commerçant créé avec succès !');
         router.push('/profil'); // Rediriger vers la liste des commerçants

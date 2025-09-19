@@ -112,7 +112,7 @@ const recordView = async (productId: string) => {
 // Cycle de vie
 onMounted(async () => {
     try {
-     
+
         console.log('Produits au montage:', productStore.products);
         await productStore.fetchProducts({}, true, true); // Force un rechargement complet
         console.log('Produits chargés:', productStore.products, 'isLoading:', productStore.isLoading);
@@ -122,7 +122,7 @@ onMounted(async () => {
             router.push("/login");
             return;
         }
-        
+
     } catch (error: any) {
         console.error('Erreur lors du chargement des produits ou catégories:', error);
         if (error === 'Unauthenticated.') {
@@ -150,11 +150,11 @@ onMounted(async () => {
     if (loadMoreTrigger.value) {
         observer.value.observe(loadMoreTrigger.value);
     }
-});+
+}); +
 
-onUpdated(() => {
-    window.scrollTo(0, scrollPosition); // Restaure la position après mise à jour
-});
+    onUpdated(() => {
+        window.scrollTo(0, scrollPosition); // Restaure la position après mise à jour
+    });
 
 onUnmounted(() => {
     if (observer.value && loadMoreTrigger.value) {
@@ -165,13 +165,13 @@ onUnmounted(() => {
 
 <template>
     <div class="pt-4 bg-[var(--espace-blanc)] max-h-full relative">
-        <Loader :isLoading="productStore.isLoading" />
+        <!-- <Loader :isLoading="productStore.isLoading" /> -->
         <div class="relative overflow-y-scroll mx-auto px-4 sm:px-6 py-4 max-h-full">
             <!-- Tri -->
             <div class="fixed flex items-center overflow-x-auto space-x-2 mb-3 snap-x snap-mandatory z-5">
                 <button v-for="option in [
                     { id: 'popular', label: 'Populaire', icon: 'fa-fire' },
-                    { id: 'favorites', label: 'Favoris', icon: 'fa-heart' },
+                    { id: 'favorites', label: 'Favoris', icon: 'fa-bookmark' },
                 ]" :key="option.id" @click="changeSort(option.id)"
                     class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium font-poppins snap-center shrink-0 transition-all duration-200"
                     :class="{

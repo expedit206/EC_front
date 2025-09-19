@@ -12,4 +12,4 @@ VITE_PUSHER_APP_CLUSTER=mt1
 # secret = "8a0b7de48687f5d3d697"
 # cluster = "mt1"
 
-VITE_BASE_URL=https://espacecameroun.devfack.com
+VITE_BASE_URL=https://api.espacecameroun.com

@@ -14,7 +14,7 @@ const getStorageBaseUrl = () => {
     if (host === "localhost" || host === "127.0.0.1") {
         return "http://localhost:8000/storage/";
     }
-    return "https://espacecameroun.devfack.com/storage/"; // URL de production (à ajuster selon votre domaine)
+    return "https://api.espacecameroun.com/storage/"; // URL de production (à ajuster selon votre domaine)
 };
 
 // Computed property pour l'URL du stockage
@@ -40,7 +40,7 @@ const navLinks = computed(() => {
             ? [
                 { to: '/', label: 'Accueil', icon: 'fa-home', badge: 0 },
                 { to: '/messages', label: 'Chat', icon: 'fa-comment-dots', badge: userStateStore.unreadMessages },
-                ...(user.value.commercant
+                ...(user.value?.commercant?.email_verified_at
                     ? [{ to: '/commercant/produits', label: 'Produits', icon: 'fa-box-open', badge: 0 }]
                     : []),
                 { to: '/collaborations', label: 'Collaborations', icon: 'fa-handshake', badge: userStateStore.collaborationsPending },
@@ -74,7 +74,7 @@ const initializeUserData = async () => {
         }
     }
     if (user.value) {
-        await fetchBadges();
+         fetchBadges();
     }
 };
 
@@ -156,21 +156,21 @@ onUnmounted(() => {
 <template>
     <div class="relative bg-[var(--espace-vert)] w-full ">
 
-        
+
         <header class="bg-[var(--espace-vert)] text-[var(--espace-blanc)] top-0 left-0  z-50 shadow-md h-full">
             <!-- <a href="../views/Doc.vue">docu</a> -->
             <div class="  px-2 w-full sm:px-3 py-2 flex justify-between items-center gap-4 mb-4">
                 <RouterLink to="/" aria-label="Retour à l'accueil">
-                <div class="flex items-center gap-1 sm:gap-3">
+                    <div class="flex items-center gap-1 sm:gap-3">
                         <div class="rounded-full pb-1 pt-1">
                             <img src="/src/assets/images/logo/logoOrangeweb.webp" alt="Logo Espace Cameroun"
                                 class="h-10 w-10 object-contain transition-transform duration-300 hover:scale-105 shadow-sm hover:shadow-md" />
                         </div>
-                    <h1 class="text-lg sm:text-xl font-bold font-poppins text-[var(--espace-blanc)]">
-                        Espace Cameroun
-                    </h1>
-                </div>
-            </RouterLink>
+                        <h1 class="text-lg sm:text-xl font-bold font-poppins text-[var(--espace-blanc)]">
+                            Espace Cameroun
+                        </h1>
+                    </div>
+                </RouterLink>
                 <nav class="hidden lg:flex items-center space-x-4 sm:space-x-6 font-poppins text-sm sm:text-base">
                     <RouterLink v-for="link in navLinks" :key="link.to" :to="link.to"
                         class="hover:text-[var(--espace-or)] flex items-center gap-1 sm:gap-2 transition-colors duration-300"

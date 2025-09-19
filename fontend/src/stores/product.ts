@@ -5,7 +5,6 @@ import { Product } from "../components/types/index";
 import { useAuthStore } from "./Auth";
 import { useRouter } from "vue-router";
 
-const router = useRouter();
 
 interface FetchProductsParams {
   per_page?: string | number;
@@ -29,65 +28,58 @@ export const useProductStore = defineStore("product", {
   },
 
   actions: {
-    async fetchProducts(
-      params: FetchProductsParams = {},
-      reset = false,
-      forceReload = false
-    ) {
-      if (this.isLoading || (!reset && !this.hasMore && !forceReload)) return;
-      this.isLoading = true;
-      if (reset || forceReload) {
-        this.products = [];
-        this.page = 1;
-        this.hasMore = true;
-      }
+    
+    async fetchProducts(params: FetchProductsParams = {}, reset = false, forceReload = false) {
+  if (this.isLoading || (!reset && !this.hasMore && !forceReload)) return;
+  this.isLoading = true;
 
-      try {
-        const response = await apiClient.get("/produits", {
-          params: {
-            ...params,
-            page: this.page,
-            sort: this.sort,
-          },
-        });
+  if (reset || forceReload) {
+    this.products = [];
+    this.page = 1;
+    this.hasMore = true;
+  }
 
-        console.log("Réponse API:", response.data);
+  try {
+    const response = await apiClient.get("/produits", {
+      params: {
+        ...params,
+        page: this.page,
+        sort: this.sort,
+      },
+    });
 
-        if (!response.data || typeof response.data !== "object") {
-          throw new Error("Réponse API invalide");
-        }
+    console.log("Réponse de l'API:", response.data); // Debugging log
+    console.log("Réponse de l'API:", response.data.data); // Debugging log
 
-        if (params.per_page === "all" || forceReload) {
-          this.products = reset
-            ? response.data
-            : [...this.products, ...response.data];
-        } else {
-          const newProducts = response.data.data || [];
-          if (!Array.isArray(newProducts)) {
-            throw new Error("Les données des produits ne sont pas un tableau");
-          }
-          this.products = reset
-            ? newProducts
-            : [...this.products, ...newProducts];
-          this.hasMore =
-            response.data.current_page < (response.data.last_page || 1);
-          this.page = response.data.current_page + 1;
-        }
-      } catch (error: any) {
-        console.error("Erreur lors du fetch:", error);
-        if (error.response?.data?.message === "Unauthenticated.") {
-          router.push("login");
-        } else {
-          throw (
-            error.response?.data?.message ||
-            "Erreur lors du chargement des produits"
-          );
-        }
-      } finally {
-        this.isLoading = false;
-      }
-    },
+    const newProducts = response.data.data || [];
 
+    if (!Array.isArray(newProducts)) {
+      throw new Error("Les données des produits ne sont pas un tableau");
+    }
+
+    // ⚠️ NE concatène qu'une seule fois
+    if (reset || forceReload || params.per_page === "all") {
+      this.products = newProducts;
+    } else {
+      this.products = [...this.products, ...newProducts];
+    }
+
+    this.hasMore = response.data.current_page < (response.data.last_page || 1);
+    this.page = response.data.current_page + 1;
+  } catch (error: any) {
+
+    const router = useRouter();
+    console.error("Erreur lors du fetch:", error);
+    router.push("login");
+    if (error.response?.data?.message === "Unauthenticated.") {
+    } else {
+      // throw error.response?.data?.message || "Erreur lors du chargement des produits";
+    }
+  } finally {
+    this.isLoading = false;
+  }
+}
+,
     async toggleFavorite(produitId: string) {
       const authStore = useAuthStore();
       if (!authStore.user) {
@@ -140,6 +132,8 @@ export const useProductStore = defineStore("product", {
 
         return response.data.message;
       } catch (error: any) {
+    const router = useRouter();
+
         if (error.response?.data?.message === "Unauthenticated.") {
           router.push("login");
         }
@@ -177,6 +171,8 @@ export const useProductStore = defineStore("product", {
           this.products.push(this.product);
         }
       } catch (error: any) {
+    const router = useRouter();
+
         if (error.response?.data?.message === "Unauthenticated.") {
           router.push("login");
         }

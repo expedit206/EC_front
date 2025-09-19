@@ -95,11 +95,14 @@
 import { ref, computed, watch } from "vue";
 import apiClient from "../api/index";
 import { useToast } from "vue-toastification";
+import { useAuthStore } from "../stores/Auth";
+
 
 defineProps<{
     isOpen: boolean;
 }>();
 
+const user = useAuthStore().user;
 const emit = defineEmits(["close", "purchased"]);
 
 const toast = useToast();
@@ -171,6 +174,8 @@ const acheterJetons = async () => {
             payment_service: selectedService.value,
             phone_number: phoneNumber.value,
         });
+
+        if (user)user.jetons += jetonQuantity.value;
 
         //console.log(res.data)
         toast.success(res.data.message);

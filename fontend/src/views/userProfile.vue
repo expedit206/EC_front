@@ -48,7 +48,7 @@
             <i v-if="loadingProfile" class="fas fa-spinner fa-spin mr-2"></i>
             Enregistrer
           </button>
-          <button @click="editProfile = false"
+          <button @click="editProfile = false" type="button"
             class="w-full sm:w-auto bg-gray-300 text-[var(--espace-vert)] font-medium px-4 py-2 rounded-md hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-colors"
             aria-label="Annuler">
             Annuler
@@ -60,7 +60,35 @@
     <!-- Merchant Information -->
     <section v-if="user?.commercant" class="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-4">
       <h2 class="text-lg sm:text-xl font-semibold text-[var(--espace-vert)]">Informations du Commerce</h2>
-      <div v-if="!editCommerce" class="space-y-2 text-[var(--espace-gris)]">
+      <!-- Email Verification Form -->
+      <div v-if="!user.commercant.email_verified_at" class="space-y-4">
+        <p class="text-[var(--espace-gris)]">Veuillez vérifier votre email pour activer votre compte commerçant.</p>
+        <form @submit.prevent="verifyEmail" class="space-y-4">
+          <div>
+            <label class="block text-[var(--espace-gris)] text-sm font-medium" for="verification_code">Code de
+              vérification</label>
+            <input v-model="verificationForm.code" id="verification_code" type="text" required
+              class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]"
+              placeholder="Entrez le code reçu par email" />
+          </div>
+          <div class="flex gap-2">
+            <button type="submit" :disabled="loadingVerification" :class="[
+              'w-full sm:w-auto bg-[var(--espace-or)] text-[var(--espace-vert)] font-medium px-4 py-2 rounded-md transition-colors',
+              loadingVerification ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)]'
+            ]" aria-label="Vérifier le code">
+              <i v-if="loadingVerification" class="fas fa-spinner fa-spin mr-2"></i>
+              Vérifier
+            </button>
+            <button @click="resendVerificationCode" type="button" :disabled="loadingVerification"
+              class="w-full sm:w-auto bg-gray-300 text-[var(--espace-vert)] font-medium px-4 py-2 rounded-md hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-colors"
+              aria-label="Renvoyer le code">
+              Renvoyer
+            </button>
+          </div>
+        </form>
+      </div>
+      <!-- Merchant Info Display -->
+      <div v-else-if="!editCommerce" class="space-y-2 text-[var(--espace-gris)]">
         <div v-if="user.commercant.logo" class="w-24 h-24">
           <img :src="`http://localhost:8000/storage/${user.commercant.logo}`" alt="Logo du commerce"
             class="w-full h-full object-cover rounded-md shadow" />
@@ -70,13 +98,15 @@
         <p><strong>Email :</strong> {{ user.commercant.email || 'Non défini' }}</p>
         <p><strong>Téléphone :</strong> {{ user.commercant.telephone }}</p>
         <p><strong>Ville :</strong> {{ user.commercant.ville }}</p>
-        <!-- <p><strong>Produits actifs :</strong> {{ user.commercant.active_products || 0 }}</p> -->
+        <p><strong>Produits actifs :</strong> {{ user.commercant.active_products || 0 }}</p>
         <button @click="editCommerce = true"
-          class="mt-2 w-full sm:w-auto bg-[var(--espace-or)] text-[var(--espace-vert)] font-medium px-4 py-2 rounded-md hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-colors">
+          class="mt-2 w-full sm:w-auto bg-[var(--espace-or)] text-[var(--espace-vert)] font-medium px-4 py-2 rounded-md hover:bg-[var(--espace-vert)] hover:text-[var(--espace-blanc)] transition-colors"
+          aria-label="Modifier le commerce">
           Modifier
         </button>
       </div>
-      <form v-else @submit.prevent="updateCommerce" class=" space-y-4">
+      <!-- Merchant Edit Form -->
+      <form v-else @submit.prevent="updateCommerce" class="space-y-4">
         <div>
           <label class="block text-[var(--espace-gris)] text-sm font-medium" for="nom_commerce">Nom du commerce</label>
           <input v-model="commerceForm.nom" id="nom_commerce" type="text" required
@@ -86,15 +116,15 @@
         <div>
           <label class="block text-[var(--espace-gris)] text-sm font-medium"
             for="description_commerce">Description</label>
-          <textarea v-model="commerceForm.description" id="description_commerce" required
+          <textarea v-model="commerceForm.description" id="description_commerce"
             class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]"
             placeholder="Description du commerce" rows="3"></textarea>
         </div>
         <div>
           <label class="block text-[var(--espace-gris)] text-sm font-medium" for="email_commerce">Email</label>
-          <input v-model="commerceForm.email" id="email_commerce" type="email"
+          <input v-model="commerceForm.email" id="email_commerce" type="email" required
             class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--espace-vert)]"
-            placeholder="Email du commerce (optionnel)" />
+            placeholder="Email du commerce" />
         </div>
         <div>
           <label class="block text-[var(--espace-gris)] text-sm font-medium" for="telephone_commerce">Téléphone</label>
@@ -134,7 +164,9 @@
       </form>
     </section>
 
+   
   </div>
+
 </template>
 
 <script setup lang="ts">
@@ -142,20 +174,18 @@ import { ref, watch } from 'vue';
 import { useToast } from 'vue-toastification';
 import { useAuthStore } from '../stores/Auth';
 import apiClient from '../api/index';
-import { User } from "../components/types/index";
+import { User } from '../components/types/index';
 import { useRouter } from 'vue-router';
+// import emailjs from '@emailjs/browser';
 const router = useRouter();
-
-const props = defineProps({
-  user: Object as () => User | null,
-});
-
 const authStore = useAuthStore();
 const toast = useToast();
 const editProfile = ref(false);
+const editCommerce = ref(false);
+const loadingProfile = ref(false);
+const loadingCommerce = ref(false);
+const loadingVerification = ref(false);
 const user = ref<User | null>(authStore.user);
-const loadingProfile = ref(false); // Nouvel état pour le chargement du profil
-const loadingCommerce = ref(false); // Nouvel état pour le chargement du commerce
 
 const profileForm = ref({
   nom: user.value?.nom || '',
@@ -163,8 +193,6 @@ const profileForm = ref({
   email: user.value?.email || '',
   ville: user.value?.ville || '',
 });
-
-const editCommerce = ref(false);
 
 const commerceForm = ref({
   nom: user.value?.commercant?.nom || '',
@@ -175,7 +203,10 @@ const commerceForm = ref({
   logo: null as File | null,
   logoPreview: user.value?.commercant?.logo ? `http://localhost:8000/storage/${user.value.commercant.logo}` : null,
 });
-//console.log(`com ${JSON.stringify(commerceForm.value)}`);
+
+const verificationForm = ref({
+  code: '',
+});
 
 const handleLogoUpload = (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0];
@@ -193,8 +224,26 @@ const handleLogoUpload = (e: Event) => {
   }
 };
 
+const sendVerificationEmail = async (email : string, code : string) => {
+
+  
+  try {
+ 
+
+    await window.emailjs.send("service_06884pt", "template_5x962ru", {
+       to_name: email,
+    code: code,
+    });
+    toast.success('Code de vérification envoyé.');
+  } catch (error) {
+    toast.error('Erreur lors de l\'envoi de l\'email.');
+  }
+};
+
+
+
 const updateProfile = async () => {
-  loadingProfile.value = true; // Activer le chargement
+  loadingProfile.value = true;
   try {
     const response = await apiClient.post('/updateProfile', profileForm.value);
     if (user.value) {
@@ -207,18 +256,21 @@ const updateProfile = async () => {
     editProfile.value = false;
     toast.success('Profil mis à jour avec succès.');
   } catch (error: any) {
-    if (error.response?.data?.message == 'Unauthenticated.') {
-      router.push('login')
+    if (error.response?.data?.message === 'Unauthenticated.') {
+      router.push('login');
     }
-
     toast.error(error.response?.data.message || 'Erreur lors de la mise à jour.');
   } finally {
-    loadingProfile.value = false; // Désactiver le chargement, même en cas d'erreur
+    loadingProfile.value = false;
   }
 };
 
 const updateCommerce = async () => {
-  loadingCommerce.value = true; // Activer le chargement
+  if (!user.value?.commercant?.email_verified_at) {
+    toast.error('Veuillez vérifier votre email avant de modifier les informations.');
+    return;
+  }
+  loadingCommerce.value = true;
   try {
     const formData = new FormData();
     formData.append('nom', commerceForm.value.nom);
@@ -233,7 +285,6 @@ const updateCommerce = async () => {
     const response = await apiClient.post('/commercant/update', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    //console.log(`com ${JSON.stringify(response.data)}`);
 
     if (user.value?.commercant) {
       user.value.commercant.nom = response.data.commercant.nom;
@@ -248,13 +299,55 @@ const updateCommerce = async () => {
     editCommerce.value = false;
     toast.success('Commerce mis à jour avec succès.');
   } catch (error: any) {
-    if (error.response?.data?.message == 'Unauthenticated.') {
-      router.push('login')
+    if (error.response?.data?.message === 'Unauthenticated.') {
+      router.push('login');
     }
-
     toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour du commerce.');
   } finally {
-    loadingCommerce.value = false; // Désactiver le chargement, même en cas d'erreur
+    loadingCommerce.value = false;
+  }
+};
+
+
+const verifyEmail = async () => {
+  loadingVerification.value = true;
+  try {
+    const response = await apiClient.post('/commercant/verify-email', {
+      email: user.value?.commercant?.email,
+      code: verificationForm.value.code,
+    });
+    if (user.value?.commercant) {
+      user.value.commercant.email_verified_at = response.data.email_verified_at;
+      authStore.user = user.value;
+    }
+    verificationForm.value.code = '';
+    toast.success('Email vérifié avec succès.');
+    window.location.reload(); // Reload the page on success
+
+  } catch (error: any) {
+    if (error.response?.data?.message === 'Unauthenticated.') {
+      router.push('login');
+    }
+    toast.error(error.response?.data?.message || 'Erreur lors de la vérification.');
+  } finally {
+    loadingVerification.value = false;
+  }
+};
+
+const resendVerificationCode = async () => {
+  loadingVerification.value = true;
+  try {
+    const response = await apiClient.post('/commercant/resend-verification', {
+      email: user.value?.commercant?.email,
+    });
+    await sendVerificationEmail(user.value?.commercant?.email || '', response.data.verification_code);
+  } catch (error: any) {
+    if (error.response?.data?.message === 'Unauthenticated.') {
+      router.push('login');
+    }
+    toast.error(error.response?.data?.message || 'Erreur lors du renvoi.');
+  } finally {
+    loadingVerification.value = false;
   }
 };
 

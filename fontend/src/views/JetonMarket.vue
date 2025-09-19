@@ -262,7 +262,7 @@ const getStorageBaseUrl = () => {
     if (host === "localhost" || host === "127.0.0.1") {
         return "http://localhost:8000/storage/";
     }
-    return "https://espacecameroun.devfack.com/storage/"; // URL de production
+    return "https://api.espacecameroun.com/storage/"; // URL de production
 };
 
 // Computed property pour l'URL du stockage
@@ -414,7 +414,7 @@ const fetchOffers = async () => {
         offers.value = [...offers.value, ...response.data.data];
         lastPage.value = response.data.last_page;
         currentPage.value += 1;
-    } catch (error : any) {
+    } catch (error: any) {
         if (error.response?.data?.message == 'Unauthenticated.') {
             router.push('login')
         }
@@ -482,6 +482,8 @@ const confirmPayment = async () => {
         const response = await apiClient.post(`/jeton_market/buy/${selectedOfferId.value}`, {
             wallet_id: paymentDetails.value.walletId,
         });
+
+        console.log(response.data)
         showPaymentModal.value = false;
         fetchOffers();
         toast.success(response.data.message || "Achat effectué avec succès !");

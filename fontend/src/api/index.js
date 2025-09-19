@@ -4,11 +4,9 @@ import axios from "axios";
 const getBaseUrl = () => {
   const host = window.location.hostname;
   if (host === "localhost" || host === "127.0.0.1") {
-    return "http://localhost:8000/api/v1"; // URL locale
+    return "http://localhost:8000"; // URL locale
   }
-    return "https://espacecameroun.devfack.com/api/v1"; // URL de production (à ajuster selon votre domaine)
-  
-  
+  return "https://api.espacecameroun.com"; // URL de production (à ajuster selon votre domaine)
 };
 
 axios.defaults.withCredentials = true;
@@ -23,6 +21,5 @@ export const apiClient = axios.create({
     "Content-Type": "application/json",
   },
 });
-
 
 export default apiClient;
