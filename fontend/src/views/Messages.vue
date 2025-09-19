@@ -79,7 +79,7 @@ const fetchMessages = async (receiverId: number, resetOffset = true) => {
         const res = await apiClient.get(`/chat/${receiverId}?offset=${offset.value}`);
         messages.value = [...res.data.messages];
         hasMore.value = res.data.hasMore;
-
+console.log(res.data.messages);
         const storedProduct = localStorage.getItem('chatProduct');
         const conversation = conversations.value.find(c => c.user_id === receiverId);
 
@@ -222,55 +222,91 @@ const viewProfile = (userId: number, isCommercant: boolean) => {
     router.push(profileRoute);
 };
 
-const subscribeToChannel = (receiverId: number) => {
-    if (!authStore.user?.id || !receiverId) return;
+const subscribeToChannel = () => {
+    if (!authStore.user?.id) return;
+
     if (currentChannel) {
-        currentChannel.stopListening('.App\\Events\\MessageSent');
-        window.Echo.leave(`chat.${currentChannel.params.channelId}`);
+        currentChannel.stopListening('MessageSent');
+        window.Echo.leave('chat');
     }
-    const userId = authStore.user.id;
-    const channelId = [userId, receiverId].sort((a, b) => a - b).join('-');
-    const channelName = `chat.${channelId}`;
-    console.log(`🔔 Abonnement au canal ${channelName}`); // Log du canal
-    currentChannel = window.Echo.channel(channelName).listen('.App\\Events\\MessageSent', (event: any) => {
-        console.log('📩 Nouveau message reçu :', event); // Log de l'événement
-        // ... reste du code
+
+    console.log('🔔 Abonnement au canal public chat');
+    currentChannel = window.Echo.channel('chat').listen('MessageSent', (event: any) => {
+        console.log('📩 Nouveau message reçu :', event);
+        if (
+            selectedConversation.value?.user_id === event.message.receiver_id ||
+            selectedConversation.value?.user_id === event.message.sender_id
+        ) {
+            const newMessage: Message = {
+                id: event.message.id,
+                sender_id: event.message.sender_id,
+                receiver_id: event.message.receiver_id,
+                content: event.message.content,
+                created_at: event.message.created_at,
+                updated_at: event.message.updated_at,
+                is_read: event.message.is_read,
+                product_id: event.message.product_id || null,
+                sender: event.message.sender,
+                receiver: event.message.receiver,
+                product: event.message.product || null,
+            };
+            messages.value.push(newMessage);
+            scrollToBottom();
+            userStateStore.saveUnreadMessagesToLocalStorage(event.unread_messages);
+        }
     });
-    currentChannel.params = { channelId };
+
+    currentChannel.params = { channelId: 'chat' };
 };
 
+// Appeler subscribeToChannel dès que l'utilisateur est connecté
 onMounted(() => {
     fetchConversations();
     if (route.params.receiverId) {
         fetchMessages(parseInt(route.params.receiverId as string));
     }
+    if (authStore.user?.id) {
+        subscribeToChannel();
+    }
     window.addEventListener('resize', handleResize);
 });
 
-onUnmounted(() => {
-    if (currentChannel) {
-        currentChannel.stopListening('.App\\Events\\MessageSent');
-        window.Echo.leave(`chat.${currentChannel.params.channelId}`);
+watch(() => authStore.user?.id, (userId) => {
+    if (userId) {
+        subscribeToChannel();
     }
-    window.removeEventListener('resize', handleResize);
-    watch(() => selectedConversation.value?.user_id, (newReceiverId) => {
-        if (newReceiverId) {
-            subscribeToChannel(newReceiverId);
+});
+
+// Supprimer l'abonnement spécifique à receiverId
+watch(() => selectedConversation.value?.user_id, () => {
+    // Pas besoin de resubscrire, car on utilise un seul canal 'chat'
+});
+
+
+    // onMounted(() => {
+    //     fetchConversations();
+    //     if (route.params.receiverId) {
+    //         fetchMessages(parseInt(route.params.receiverId as string));
+    //     }
+    //     window.addEventListener('resize', handleResize);
+    // });
+
+    // onUnmounted(() => {
+    //     if (currentChannel) {
+    //         currentChannel.stopListening('MessageSent');
+    //         window.Echo.leave(`chat.${currentChannel.params.channelId}`);
+    //     }
+    //     window.removeEventListener('resize', handleResize);
+      
+    // });
+
+
+
+    watch(() => route.params.receiverId, async (receiverId) => {
+        if (receiverId) {
+            await fetchMessages(parseInt(receiverId as string));
         }
     });
-});
-
-watch(() => selectedConversation.value?.user_id, (newReceiverId) => {
-    if (newReceiverId) {
-        subscribeToChannel(newReceiverId);
-    }
-});
-
-watch(() => route.params.receiverId, async (receiverId) => {
-    if (receiverId) {
-        await fetchMessages(parseInt(receiverId as string));
-    }
-});
 </script>
 
 <template>
@@ -329,12 +365,13 @@ watch(() => route.params.receiverId, async (receiverId) => {
                             'bg-blue-200 ml-auto max-w-[85%] md:max-w-[70%]': message.sender_id === authStore.user?.id,
                             'bg-gray-200 max-w-[85%] md:max-w-[70%]': message.sender_id !== authStore.user?.id
                         }">
-                            <strong class="block text-[var(--espace-vert)]">{{ message.sender.nom }} :</strong>
+
+                            <strong class="block text-[var(--espace-vert)]">{{ message.sender?.nom }} :</strong>
                             <p class="text-gray-800">
                                 <router-link v-if="message.product?.id"
                                     :to="{ name: 'produit', params: { id: message.product.id } }"
                                     class="text-blue-500 underline hover:text-blue-700 ml-1">[Produit {{
-                                    message.product.nom }}]</router-link>
+                                        message.product.nom }}]</router-link>
                                 {{ message.content }}
                             </p>
                             <p class="text-xs text-[var(--espace-gris)] text-right mr-2">

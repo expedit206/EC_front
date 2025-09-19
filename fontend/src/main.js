@@ -35,11 +35,11 @@ if (token) {
     // forceTLS: false,
     forceTLS: true,
         enabledTransports: ["ws", "wss"],
-        auth: {
-          headers: {
-            Authorization: `Bearer ${token}`, // ✅ Auth via token
-          },
-        },
+        // auth: {
+        //   headers: {
+        //     Authorization: `Bearer ${token}`, // ✅ Auth via token
+        //   },
+        // },
       });
 
     
